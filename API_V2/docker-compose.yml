@@ -1,0 +1,46 @@
+version: '3.4'
+
+services:
+  pm_case_managemnt_api:
+    image: ${DOCKER_REGISTRY-}pmcasemanagemntapi
+    container_name: pm_case_managemnt_api
+    build:
+      context: .
+      dockerfile: PM_Case_Managemnt_API/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - pm_case_management_database
+      - redis
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  pm_case_management_database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pm_case_management_database
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Your_password123
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  redis:
+    image: redis:latest
+    container_name: api-pm_case_managemnt_cache-1
+    ports:
+      - "6379:6379"
+
+  pm_case_managment_seq:
+    image: datalust/seq:latest
+    container_name: pm_case_managment_seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:5341"
+      - "5342:80"
+
+volumes:
+  sqlserver_data:
