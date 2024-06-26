@@ -1,3 +1,0 @@
-EnergyEstimationDisabled
-EnergyEstimationEnabled
-251704646389
