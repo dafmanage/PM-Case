@@ -10,9 +10,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
 {
     public class ApplicantService : IApplicantService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public ApplicantService(DBContext dbContext)
+        public ApplicantService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

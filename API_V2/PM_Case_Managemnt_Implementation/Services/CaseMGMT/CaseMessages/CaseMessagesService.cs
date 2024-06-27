@@ -11,12 +11,12 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
 {
     public class CaseMessagesService : ICaseMessagesService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
         private readonly IConfiguration _configuration;
 
 
-        public CaseMessagesService(DBContext dbContext, IConfiguration configuration)
+        public CaseMessagesService(ApplicationDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
 

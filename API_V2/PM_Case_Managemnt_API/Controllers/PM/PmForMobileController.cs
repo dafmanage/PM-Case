@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Infrustructure.Data;
+using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
 using static PM_Case_Managemnt_Implementation.Services.Common.Dashoboard.DashboardService;
@@ -13,15 +15,15 @@ namespace PM_Case_Managemnt_API.Controllers.PM
     public class PmForMobileController : ControllerBase
     {
 
-        private readonly DBContext _db;
-        private readonly AuthenticationContext _onContext;
+        private readonly ApplicationDbContext _db;
+        private readonly UserManager<ApplicationUser> _userManager;
         List<AboutToExpireProjects> aboutToExpireProjects = new List<AboutToExpireProjects>();
         public Guid structureId = Guid.Empty;
 
-        public PmForMobileController(DBContext db, AuthenticationContext onContext)
+        public PmForMobileController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
         {
             _db = db;
-            _onContext = onContext;
+            _userManager = userManager;
 
         }
 
@@ -31,7 +33,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
 
 
-            var userId = _onContext.ApplicationUsers.Where(x => x.EmployeesId == employeeId).FirstOrDefault().Id;
+            var userId = _userManager.Users.Where(x => x.EmployeesId == employeeId).FirstOrDefault().Id;
             try
             {
 
@@ -63,7 +65,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
 
             try
             {
-                var userId = _onContext.ApplicationUsers.Where(x => x.EmployeesId == employeeId).FirstOrDefault().Id;
+                var userId = _userManager.Users.Where(x => x.EmployeesId == employeeId).FirstOrDefault().Id;
                 var taskmemoreply = new TaskMemoReply();
                 taskmemoreply.TaskMemoId = Guid.Parse(taskMemoId);
                 taskmemoreply.EmployeeId = employeeId;
@@ -493,7 +495,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
 
 
         [HttpGet("get-cordinating-activity")]
-        public IActionResult getCordinatingAactivity(Guid employeeId)
+        public async Task<IActionResult> getCordinatingAactivity(Guid employeeId)
         {
             var employee = _db.Employees.Find(employeeId);
             var activities = _db.Activities.
@@ -602,7 +604,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                         l.ProgressAttacment.Add(r);
 
                     }
-                    var currentuser = _onContext.Users.Find(p.CreatedBy.ToString());
+                    var currentUser = await _userManager.FindByIdAsync(p.CreatedBy.ToString());
                     var emp = _db.Employees.Find(p.EmployeeValueId);
                     l.submittedBy = new TaskMemberVm
                     {
@@ -640,7 +642,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
 
 
         [HttpGet("get-tasks")]
-        public ActionResult GetTasks(Guid employeeId)
+        public async Task<ActionResult> GetTasks(Guid employeeId)
         {
 
             var tasks = _db.Tasks.Include(x => x.Plan).ThenInclude(x => x.Program)
@@ -821,7 +823,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                         l.Remark = p.Remark;
                         l.SentTime = p.CreatedAt;
 
-                        var currentuser = _onContext.Users.Find(p.CreatedBy);
+                        var currentUser = await _userManager.FindByIdAsync(p.CreatedBy.ToString());
                         var emp = _db.Employees.Find(p.EmployeeValueId);
                         l.submittedBy = new TaskMemberVm
                         {
@@ -933,7 +935,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                         l.IsApprovedByDirector = p.IsApprovedByDirector;
                         l.Remark = p.Remark;
                         l.SentTime = p.CreatedAt;
-                        var currentuser = _onContext.Users.Find(p.CreatedBy);
+                        var currentUser = await _userManager.FindByIdAsync(p.CreatedBy.ToString());
                         var emp = _db.Employees.Find(p.EmployeeValueId);
                         l.submittedBy = new TaskMemberVm
                         {
@@ -1132,7 +1134,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                                 l.Remark = p.Remark;
                                 l.SentTime = p.CreatedAt;
 
-                                var currentuser = _onContext.Users.Find(p.CreatedBy);
+                                var currentUser = await _userManager.FindByIdAsync(p.CreatedBy.ToString());
                                 var emp = _db.Employees.Find(p.EmployeeValueId);
                                 l.submittedBy = new TaskMemberVm
                                 {
@@ -1244,7 +1246,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                                 l.IsApprovedByDirector = p.IsApprovedByDirector;
                                 l.Remark = p.Remark;
                                 l.SentTime = p.CreatedAt;
-                                var currentuser = _onContext.Users.Find(p.CreatedBy);
+                                var currentUser = await _userManager.FindByIdAsync(p.CreatedBy.ToString());
                                 var emp = _db.Employees.Find(p.EmployeeValueId);
                                 l.submittedBy = new TaskMemberVm
                                 {
@@ -1382,7 +1384,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                             l.Remark = p.Remark;
                             l.SentTime = p.CreatedAt;
 
-                            var currentuser = _onContext.Users.Find(p.CreatedBy);
+                            var currentUser = await _userManager.FindByIdAsync(p.CreatedBy.ToString());
                             var emp = _db.Employees.Find(p.EmployeeValueId);
                             l.submittedBy = new TaskMemberVm
                             {
@@ -1494,7 +1496,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                             l.IsApprovedByDirector = p.IsApprovedByDirector;
                             l.Remark = p.Remark;
                             l.SentTime = p.CreatedAt;
-                            var currentuser = _onContext.Users.Find(p.CreatedBy);
+                            var currentUser = await _userManager.FindByIdAsync(p.CreatedBy.ToString());
                             var emp = _db.Employees.Find(p.EmployeeValueId);
                             l.submittedBy = new TaskMemberVm
                             {

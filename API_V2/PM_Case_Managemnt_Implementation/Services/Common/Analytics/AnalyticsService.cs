@@ -9,8 +9,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
     public class AnalyticsService : IAnalyticsService
     {
 
-        private readonly DBContext _dBContext;
-        public AnalyticsService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public AnalyticsService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

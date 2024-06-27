@@ -22,14 +22,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         private UserManager<ApplicationUser> _userManager;
         private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
-        private AuthenticationContext _authenticationContext;
-        private readonly DBContext _dbcontext;
+        private readonly ApplicationDbContext _dbcontext;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
         private readonly RoleManager<IdentityRole> _roleManager;
 
         public AuthenticationService(
-            DBContext dbcontext,
-            AuthenticationContext authenticationContext,
+            ApplicationDbContext dbcontext,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IOptions<ApplicationSettings> appSettings,
@@ -40,7 +38,6 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
             _userManager = userManager;
             _singInManager = signInManager;
             _appSettings = appSettings.Value;
-            _authenticationContext = authenticationContext;
             _dbcontext = dbcontext;
             _encoderHub = encoderHub;
             _roleManager = roleManager;
@@ -156,7 +153,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         {
             string[] excludedRoleName = new string[] { "REGULATOR", "MONITOR" };
 
-            return await (from x in _authenticationContext.Roles
+            return await (from x in _roleManager.Roles
                           where !excludedRoleName.Contains(x.Name)
                           select new SelectRolesListDto
                           {
@@ -172,7 +169,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         {
 
 
-            var Users = await _authenticationContext.ApplicationUsers.Where(g => g.SubsidiaryOrganizationId == subOrgId).ToListAsync();
+            var Users = await _userManager.Users.Where(g => g.SubsidiaryOrganizationId == subOrgId).ToListAsync();
 
 
             return (from u in Users

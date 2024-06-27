@@ -8,8 +8,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 {
     public class BudgetYearService : IBudgetyearService
     {
-        private readonly DBContext _dBContext;
-        public BudgetYearService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public BudgetYearService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

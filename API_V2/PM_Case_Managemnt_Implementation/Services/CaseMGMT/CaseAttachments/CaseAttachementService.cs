@@ -6,9 +6,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
 {
     public class CaseAttachementService : ICaseAttachementService
     {
-        private readonly DBContext _dBContext;
+        private readonly ApplicationDbContext _dBContext;
 
-        public CaseAttachementService(DBContext dBContext)
+        public CaseAttachementService(ApplicationDbContext dBContext)
         {
             _dBContext = dBContext;
         }

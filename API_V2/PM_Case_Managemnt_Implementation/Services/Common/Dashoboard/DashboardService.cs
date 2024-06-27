@@ -10,7 +10,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
     public class DashboardService : IDashboardService
     {
 
-        private readonly DBContext _dBContext;
+        private readonly ApplicationDbContext _dBContext;
         private Random rnd = new Random();
 
         List<ProjectList> ProjectLists = new List<ProjectList>();
@@ -19,7 +19,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
         public BudgetYear budget = new BudgetYear();
         public Guid structureId = Guid.Empty;
         List<progress_Strucure> ps = new List<progress_Strucure>();
-        public DashboardService(DBContext context)
+        public DashboardService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

@@ -11,9 +11,9 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 {
     public class KPIService : IKPIService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public KPIService(DBContext dbContext)
+        public KPIService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

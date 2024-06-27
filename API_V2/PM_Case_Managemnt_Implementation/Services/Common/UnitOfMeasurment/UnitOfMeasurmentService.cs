@@ -10,8 +10,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     {
 
 
-        private readonly DBContext _dBContext;
-        public UnitOfMeasurmentService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public UnitOfMeasurmentService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

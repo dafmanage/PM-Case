@@ -8,9 +8,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
 {
     public class AppointmentService : IAppointmentService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public AppointmentService(DBContext dbContext)
+        public AppointmentService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

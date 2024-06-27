@@ -10,8 +10,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
     public class TaskService : ITaskService
     {
 
-        private readonly DBContext _dBContext;
-        public TaskService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public TaskService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

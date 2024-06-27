@@ -8,10 +8,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
 {
     public class FileSettingService : IFileSettingsService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
 
-        public FileSettingService(DBContext dbContext)
+        public FileSettingService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

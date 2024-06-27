@@ -9,10 +9,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
 {
     public class AppointmentWithCalenderService : IAppointmentWithCalenderService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
         private readonly ISMSHelper _smsService;
 
-        public AppointmentWithCalenderService(DBContext dbContext, ISMSHelper sMSHelper)
+        public AppointmentWithCalenderService(ApplicationDbContext dbContext, ISMSHelper sMSHelper)
         {
             _dbContext = dbContext;
             _smsService = sMSHelper;

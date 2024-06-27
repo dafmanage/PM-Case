@@ -7,8 +7,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     public class OrganzationProfileService : IOrganizationProfileService
     {
 
-        private readonly DBContext _dBContext;
-        public OrganzationProfileService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public OrganzationProfileService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

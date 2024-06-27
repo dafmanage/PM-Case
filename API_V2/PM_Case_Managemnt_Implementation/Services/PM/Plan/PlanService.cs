@@ -11,8 +11,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
     public class PlanService : IPlanService
     {
 
-        private readonly DBContext _dBContext;
-        public PlanService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public PlanService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Infrustructure.Data;
+using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -12,15 +14,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 {
     public class CaseEncodeService : ICaseEncodeService
     {
-        private readonly DBContext _dbContext;
-        private readonly AuthenticationContext _authenticationContext;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
 
-        public CaseEncodeService(DBContext dbContext, AuthenticationContext authenticationContext,
+        public CaseEncodeService(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager,
             IHubContext<EncoderHub, IEncoderHubInterface> encoderHub)
         {
             _dbContext = dbContext;
-            _authenticationContext = authenticationContext;
+            _userManager = userManager;
             _encoderHub = encoderHub;
         }
 
@@ -73,7 +75,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                     try
                     {
-                        string userId = _authenticationContext.ApplicationUsers.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
+                        string userId = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
                         Case caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(newCase.Id));
                         // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
 

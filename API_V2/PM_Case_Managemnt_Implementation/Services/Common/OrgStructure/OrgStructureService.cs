@@ -8,8 +8,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 {
     public class OrgStructureService : IOrgStructureService
     {
-        private readonly DBContext _dBContext;
-        public OrgStructureService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public OrgStructureService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

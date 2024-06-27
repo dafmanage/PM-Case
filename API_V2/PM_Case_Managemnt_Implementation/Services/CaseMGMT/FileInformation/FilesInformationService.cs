@@ -6,9 +6,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.FileInformationServ
     public class FilesInformationService : IFilesInformationService
     {
 
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public FilesInformationService(DBContext dbContext)
+        public FilesInformationService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

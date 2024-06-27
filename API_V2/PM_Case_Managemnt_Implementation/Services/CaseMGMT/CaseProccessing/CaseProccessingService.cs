@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
@@ -6,6 +7,7 @@ using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Implementation.Services.CaseService.Encode;
 using PM_Case_Managemnt_Infrustructure.Data;
+using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -15,22 +17,22 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
     public class CaseProccessingService : ICaseProccessingService
     {
 
-        private readonly DBContext _dbContext;
-        private readonly AuthenticationContext _authenticationContext;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ISMSHelper _smshelper;
         private readonly ICaseEncodeService _caseEncodeService;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
 
 
         public CaseProccessingService(
-            DBContext dbContext,
-            AuthenticationContext authenticationContext,
+            ApplicationDbContext dbContext,
+            UserManager<ApplicationUser> userManager,
             ISMSHelper smshelper,
             ICaseEncodeService caseEncodeService,
             IHubContext<EncoderHub, IEncoderHubInterface> encoderHub)
         {
             _dbContext = dbContext;
-            _authenticationContext = authenticationContext;
+            _userManager = userManager;
             _smshelper = smshelper;
             _caseEncodeService = caseEncodeService;
             _encoderHub = encoderHub;
@@ -66,7 +68,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         {
             try
             {
-                string userId = _authenticationContext.ApplicationUsers.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
+                string userId = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
                 Case caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
                 // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
 
@@ -169,7 +171,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             try
             {
                 CaseHistory selectedHistory = _dbContext.CaseHistories.Find(caseCompleteDto.CaseHistoryId);
-                Guid UserId = Guid.Parse((await _authenticationContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
+                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
 
                 CaseHistory selectedHistoryCC = _dbContext.CaseHistories.Where(x => x.CaseId == selectedHistory.CaseId && x.ReciverType == ReciverType.Cc).FirstOrDefault();
                 if (selectedHistory.ToEmployeeId != caseCompleteDto.EmployeeId)
@@ -268,7 +270,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
                 Employee currEmp = await _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id.Equals(revertCase.EmployeeId)).FirstOrDefaultAsync();
                 CaseHistory selectedHistory = _dbContext.CaseHistories.Find(revertCase.CaseHistoryId);
-                Guid UserId = Guid.Parse((await _authenticationContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
+                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
 
                 selectedHistory.AffairHistoryStatus = AffairHistoryStatus.Revert;
                 selectedHistory.RevertedAt = DateTime.Now;
@@ -282,7 +284,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = DateTime.Now,
-                    CreatedBy = Guid.Parse(_authenticationContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId.Equals(revertCase.EmployeeId)).First().Id),
+                    CreatedBy = Guid.Parse(_userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(revertCase.EmployeeId)).First().Id),
                     RowStatus = RowStatus.Active,
                     FromEmployeeId = revertCase.EmployeeId,
                     FromStructureId = currEmp.OrganizationalStructureId,
@@ -318,7 +320,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 Employee currEmp = await _dbContext.Employees.Where(el => el.Id.Equals(caseTransferDto.FromEmployeeId)).FirstOrDefaultAsync();
                 CaseHistory currentLastHistory = await _dbContext.CaseHistories.Where(el => el.Id.Equals(caseTransferDto.CaseHistoryId)).OrderByDescending(x => x.CreatedAt).FirstAsync();
 
-                Guid UserId = Guid.Parse((await _authenticationContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId.Equals(caseTransferDto.ToEmployeeId)).FirstAsync()).Id);
+                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(caseTransferDto.ToEmployeeId)).FirstAsync()).Id);
 
                 if (caseTransferDto.FromEmployeeId != currentLastHistory.ToEmployeeId)
                     throw new Exception("You are not authorized to transfer this case.");

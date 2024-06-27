@@ -10,8 +10,8 @@ namespace PM_Case_Managemnt_API.Controllers.Common
     {
 
         private readonly IDashboardService _dashboardService;
-        private readonly DBContext _dbContext;
-        public DashboardController(IDashboardService dashboardService, DBContext dBContext)
+        private readonly ApplicationDbContext _dbContext;
+        public DashboardController(IDashboardService dashboardService, ApplicationDbContext dBContext)
         {
             _dashboardService = dashboardService;
             _dbContext = dBContext;

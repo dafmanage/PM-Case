@@ -9,8 +9,8 @@ namespace PM_Case_Managemnt_API.Controllers.Case
     public class CaseREportController : ControllerBase
     {
         private readonly ICaseReportService _caserReportService;
-        private readonly DBContext _dbContext;
-        public CaseREportController(ICaseReportService caseReportService, DBContext dBContext)
+        private readonly ApplicationDbContext _dbContext;
+        public CaseREportController(ICaseReportService caseReportService, ApplicationDbContext dBContext)
         {
             _caserReportService = caseReportService;
             _dbContext = dBContext;

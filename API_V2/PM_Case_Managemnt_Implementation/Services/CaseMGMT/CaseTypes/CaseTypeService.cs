@@ -11,8 +11,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
     public class CaseTypeService : ICaseTypeService
     {
 
-        private readonly DBContext _dbContext;
-        public CaseTypeService(DBContext dbContext)
+        private readonly ApplicationDbContext _dbContext;
+        public CaseTypeService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

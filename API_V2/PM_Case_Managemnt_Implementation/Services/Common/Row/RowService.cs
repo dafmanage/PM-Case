@@ -7,9 +7,9 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.RowService
 {
     public class RowService : IRowService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public RowService(DBContext dbContext)
+        public RowService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

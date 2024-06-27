@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Infrustructure.Data;
+using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -11,12 +13,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     public class EmployeeService : IEmployeeService
     {
 
-        private readonly DBContext _dBContext;
-        private readonly AuthenticationContext _authentication;
-        public EmployeeService(DBContext context, AuthenticationContext authentication)
+        private readonly ApplicationDbContext _dBContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _dBContext = context;
-            _authentication = authentication;
+            _userManager = userManager;
         }
 
         public async Task<int> CreateEmployee(EmployeeDto employee)
@@ -60,7 +62,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
         public async Task<List<SelectListDto>> GetEmployeesNoUserSelectList(Guid subOrgId)
         {
-            var emp = _authentication.ApplicationUsers.Where(j => j.SubsidiaryOrganizationId == subOrgId).Select(x => x.EmployeesId).ToList();
+            var emp = _userManager.Users.Where(j => j.SubsidiaryOrganizationId == subOrgId).Select(x => x.EmployeesId).ToList();
 
 
             //var EmployeeSelectList = await (from e in _dBContext.Employees

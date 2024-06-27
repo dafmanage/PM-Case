@@ -8,9 +8,9 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
 {
     public class SmsTemplateService : ISmsTemplateService
     {
-        private readonly DBContext _dBContext;
+        private readonly ApplicationDbContext _dBContext;
 
-        public SmsTemplateService(DBContext dBContext)
+        public SmsTemplateService(ApplicationDbContext dBContext)
         {
             _dBContext = dBContext;
         }

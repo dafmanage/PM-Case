@@ -12,9 +12,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
     public class CaserReportService : ICaseReportService
     {
 
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
         private Random rnd = new Random();
-        public CaserReportService(DBContext dbContext)
+        public CaserReportService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

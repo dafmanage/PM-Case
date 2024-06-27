@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Infrustructure.Data;
+using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.Case;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -10,13 +12,13 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
     public class CaseIssueService : ICaseIssueService
     {
 
-        private readonly DBContext _dbContext;
-        private readonly AuthenticationContext _authenticationContext;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CaseIssueService(DBContext dbContext, AuthenticationContext authenticationContext)
+        public CaseIssueService(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
         {
             _dbContext = dbContext;
-            _authenticationContext = authenticationContext;
+            _userManager = userManager;
         }
 
         public async Task<List<CaseEncodeGetDto>> GetNotCompletedCases(Guid subOrgId)
@@ -54,7 +56,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         {
             try
             {
-                string userId = _authenticationContext.ApplicationUsers.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
+                string userId = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
                 //Case caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
                 // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
 

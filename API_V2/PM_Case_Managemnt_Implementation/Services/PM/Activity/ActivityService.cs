@@ -10,8 +10,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 {
     public class ActivityService : IActivityService
     {
-        private readonly DBContext _dBContext;
-        public ActivityService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public ActivityService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

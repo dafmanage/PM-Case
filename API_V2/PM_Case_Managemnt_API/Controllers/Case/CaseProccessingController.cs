@@ -15,10 +15,10 @@ namespace PM_Case_Managemnt_API.Controllers.Case
     public class CaseProccessingController : ControllerBase
     {
         private readonly ICaseProccessingService _caseProcessingService;
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
         private readonly IApplicantService _applicantService;
 
-        public CaseProccessingController(ICaseProccessingService caseProccessingService, DBContext dBContext, IApplicantService applicantService)
+        public CaseProccessingController(ICaseProccessingService caseProccessingService, ApplicationDbContext dBContext, IApplicantService applicantService)
         {
             _caseProcessingService = caseProccessingService;
             _dbContext = dBContext;

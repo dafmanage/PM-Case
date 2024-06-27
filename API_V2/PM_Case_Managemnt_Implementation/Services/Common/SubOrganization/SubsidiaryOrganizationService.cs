@@ -14,24 +14,21 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
     public class SubsidiaryOrganizationService : ISubsidiaryOrganizationService
     {
 
-        private readonly DBContext _dBContext;
+        private readonly ApplicationDbContext _dBContext;
         private readonly IAuthenticationService _authService;
-        private AuthenticationContext _authenticationContext;
         private readonly IEmployeeService _empService;
         private readonly IOrgStructureService _orgStucService;
         private UserManager<ApplicationUser> _userManager;
 
-        public SubsidiaryOrganizationService(DBContext dbContext,
+        public SubsidiaryOrganizationService(ApplicationDbContext dbContext,
             IAuthenticationService authService,
             IEmployeeService empService,
-            AuthenticationContext authenticationContext,
             IOrgStructureService orgStucService,
             UserManager<ApplicationUser> userManager)
         {
             _dBContext = dbContext;
             _authService = authService;
             _empService = empService;
-            _authenticationContext = authenticationContext;
             _orgStucService = orgStucService;
             _userManager = userManager;
         }

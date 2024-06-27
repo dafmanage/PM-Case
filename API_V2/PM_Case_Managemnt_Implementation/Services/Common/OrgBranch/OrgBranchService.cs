@@ -9,8 +9,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     public class OrgBranchService : IOrgBranchService
     {
 
-        private readonly DBContext _dBContext;
-        public OrgBranchService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public OrgBranchService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

@@ -12,10 +12,10 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
     public class ProgramService : IProgramService
     {
 
-        private readonly DBContext _dBContext;
+        private readonly ApplicationDbContext _dBContext;
         private readonly IPlanService planService;
 
-        public ProgramService(DBContext context, IPlanService planService)
+        public ProgramService(ApplicationDbContext context, IPlanService planService)
         {
             _dBContext = context;
             this.planService = planService;

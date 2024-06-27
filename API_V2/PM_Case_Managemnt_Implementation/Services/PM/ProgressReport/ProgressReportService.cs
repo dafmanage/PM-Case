@@ -10,8 +10,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
     public class ProgressReportService : IProgressReportService
     {
 
-        private readonly DBContext _dBContext;
-        public ProgressReportService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public ProgressReportService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

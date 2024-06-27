@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Infrustructure.Data;
+using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using System.Net.Http.Headers;
@@ -15,15 +17,15 @@ namespace PM_Case_Managemnt_API.Controllers.Case
     public class AffairForMobileController : ControllerBase
     {
 
-        private readonly DBContext _db;
-        private readonly AuthenticationContext _onContext;
+        private readonly ApplicationDbContext _db;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ISMSHelper _smshelper;
 
 
-        public AffairForMobileController(DBContext dbContext, AuthenticationContext onContext, ISMSHelper sMSHelper)
+        public AffairForMobileController(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, ISMSHelper sMSHelper)
         {
             _db = dbContext;
-            _onContext = onContext;
+            _userManager = userManager;
             _smshelper = sMSHelper;
         }
 
@@ -367,7 +369,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
             try
             {
                 var currentUser = Guid.Parse(appointment.employeeId);
-                var empId = _onContext.ApplicationUsers.Where(x => x.EmployeesId == currentUser).FirstOrDefault().Id;
+                var empId = _userManager.Users.Where(x => x.EmployeesId == currentUser).FirstOrDefault().Id;
 
                 var gerdate = appointment.executionDate.Split('/');
                 var ethipianDate = EthiopicDateTime.GetEthiopicDate(int.Parse(gerdate[0]), int.Parse(gerdate[1]), int.Parse(gerdate[2]));
@@ -428,7 +430,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
 
                 Guid affairHIsId = Guid.Parse(completeAffair.affairHisId);
                 var currentUser = Guid.Parse(completeAffair.employeeId);
-                var empId = _onContext.ApplicationUsers.Where(x => x.EmployeesId == currentUser).FirstOrDefault().Id;
+                var empId = _userManager.Users.Where(x => x.EmployeesId == currentUser).FirstOrDefault().Id;
 
                 CaseCompleteDto caseCompleteDto = new CaseCompleteDto
                 {
@@ -447,7 +449,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
 
 
                 CaseHistory selectedHistory = _db.CaseHistories.Find(caseCompleteDto.CaseHistoryId);
-                Guid UserId = Guid.Parse((await _onContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
+                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
 
                 if (selectedHistory.ToEmployeeId != caseCompleteDto.EmployeeId)
                     throw new Exception("You are unauthorized to complete this case.");
@@ -514,7 +516,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
 
                 Employee currEmp = await _db.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == (revertCase.EmployeeId)).FirstOrDefaultAsync();
                 CaseHistory selectedHistory = _db.CaseHistories.Find(revertCase.CaseHistoryId);
-                Guid UserId = Guid.Parse((await _onContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
+                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
 
                 selectedHistory.AffairHistoryStatus = AffairHistoryStatus.Revert;
                 selectedHistory.RevertedAt = DateTime.Now;
@@ -528,7 +530,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = DateTime.Now,
-                    CreatedBy = Guid.Parse(_onContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId.Equals(revertCase.EmployeeId)).First().Id),
+                    CreatedBy = Guid.Parse(_userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(revertCase.EmployeeId)).First().Id),
                     RowStatus = RowStatus.Active,
                     FromEmployeeId = revertCase.EmployeeId,
                     FromStructureId = currEmp.OrganizationalStructureId,
@@ -677,7 +679,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                 Employee currEmp = await _db.Employees.Where(el => el.Id == request.empIdd).FirstOrDefaultAsync();
                 CaseHistory currentLastHistory = await _db.CaseHistories.Where(el => el.Id == request.affairHisIdd).OrderByDescending(x => x.CreatedAt).FirstOrDefaultAsync();
 
-                Guid UserId = Guid.Parse((await _onContext.ApplicationUsers.Where(appUsr => appUsr.EmployeesId == request.empIdd).FirstOrDefaultAsync()).Id);
+                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId == request.empIdd).FirstOrDefaultAsync()).Id);
 
                 if (request.empIdd != currentLastHistory.ToEmployeeId)
                     throw new Exception("You are not authorized to transfer this case.");
@@ -787,7 +789,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
             {
 
                 var currentUser = Guid.Parse(message.employeeId);
-                var empId = _onContext.ApplicationUsers.Where(x => x.EmployeesId == currentUser).FirstOrDefault().Id;
+                var empId = _userManager.Users.Where(x => x.EmployeesId == currentUser).FirstOrDefault().Id;
                 Guid affairId = Guid.Parse(message.affairId);
 
                 var affair = _db.Cases.Find(affairId);

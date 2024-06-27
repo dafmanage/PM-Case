@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using PM_Case_Managemnt_Implementation.DTOS.Case;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService;
@@ -12,14 +13,14 @@ namespace PM_Case_Managemnt_Implementation.Helpers
 {
     public class SMSHelper : ISMSHelper
     {
-        private readonly AuthenticationContext _authenticationContext;
-        private readonly DBContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _dbContext;
         private readonly ICaseMessagesService _caseMessagesService;
         private readonly IConfiguration _configuration;
 
-        public SMSHelper(AuthenticationContext authenticationContext, DBContext dBContext, ICaseMessagesService caseMessagesService, IConfiguration configuration)
+        public SMSHelper(UserManager<ApplicationUser> userManager, ApplicationDbContext dBContext, ICaseMessagesService caseMessagesService, IConfiguration configuration)
         {
-            _authenticationContext = authenticationContext;
+            _userManager = userManager;
             _dbContext = dBContext;
             _caseMessagesService = caseMessagesService;
             _configuration = configuration;
@@ -27,7 +28,7 @@ namespace PM_Case_Managemnt_Implementation.Helpers
         public async Task<bool> MessageSender(string reciver, string message, string UserId, Guid? orgId = null)
         {
             // reciver = "0937637310";
-            ApplicationUser user = await _authenticationContext.ApplicationUsers.Where(x => x.Id.Equals(UserId)).FirstAsync();
+            ApplicationUser user = await _userManager.Users.Where(x => x.Id.Equals(UserId)).FirstAsync();
             //Employee employee = _dbContext.Employees.Include(x => x.OrganizationalStructure.OrganizationProfile).FirstOrDefault(x => x.Id == user.EmployeesId);
 
             Employee employee = _dbContext.Employees.Include(x => x.OrganizationalStructure.SubsidiaryOrganization).FirstOrDefault(x => x.Id == user.EmployeesId);
@@ -74,7 +75,7 @@ namespace PM_Case_Managemnt_Implementation.Helpers
             try
             {
                 //reciver = "0937637310";
-                ApplicationUser user = await _authenticationContext.ApplicationUsers.Where(x => x.Id.ToLower().Equals(UserId.ToLower())).FirstAsync();
+                ApplicationUser user = await _userManager.Users.Where(x => x.Id.ToLower().Equals(UserId.ToLower())).FirstAsync();
                 //Employee employee = _dbContext.Employees.Include(x => x.OrganizationalStructure.OrganizationProfile).FirstOrDefault(x => x.Id == user.EmployeesId);
                 Employee employee = _dbContext.Employees.Include(x => x.OrganizationalStructure.SubsidiaryOrganization).FirstOrDefault(x => x.Id == user.EmployeesId);
                 if (orgId != null)

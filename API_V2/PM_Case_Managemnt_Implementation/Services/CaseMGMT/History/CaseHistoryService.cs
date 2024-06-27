@@ -8,9 +8,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
 {
     public class CaseHistoryService : ICaseHistoryService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public CaseHistoryService(DBContext dbContext)
+        public CaseHistoryService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

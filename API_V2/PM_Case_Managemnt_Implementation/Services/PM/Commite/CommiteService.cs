@@ -10,8 +10,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
 {
     public class CommiteService : ICommiteService
     {
-        private readonly DBContext _dBContext;
-        public CommiteService(DBContext context)
+        private readonly ApplicationDbContext _dBContext;
+        public CommiteService(ApplicationDbContext context)
         {
             _dBContext = context;
         }

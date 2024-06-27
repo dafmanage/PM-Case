@@ -1,5 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_API.Models.KPI;
+using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.Case;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -10,14 +13,14 @@ using Task = PM_Case_Managemnt_Infrustructure.Models.PM.Task;
 
 namespace PM_Case_Managemnt_Infrustructure.Data
 {
-    public class DBContext : DbContext
-
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
 
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+        {
+        }
 
-        public DBContext(DbContextOptions<DBContext> options) : base(options) { }
-
-        // organization
         public virtual DbSet<OrganizationProfile> OrganizationProfile { get; set; }
 
         //public virtual DbSet<OrganizationBranch> OrganizationBranches { get; set; }
@@ -97,6 +100,31 @@ namespace PM_Case_Managemnt_Infrustructure.Data
         public DbSet<KPIDetails> KPIDetails { get; set; }
         public DbSet<KPIData> KPIDatas { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
 
+            var cascadeFKs = modelBuilder.Model.GetEntityTypes()
+                .SelectMany(t => t.GetForeignKeys())
+                .Where(fk => !fk.IsOwnership && fk.DeleteBehavior == DeleteBehavior.Cascade);
+
+            foreach (var fk in cascadeFKs)
+                fk.DeleteBehavior = DeleteBehavior.NoAction;
+
+
+            modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
+            {
+                entity.HasKey(l => new { l.LoginProvider, l.ProviderKey });
+            });
+            modelBuilder.Entity<IdentityUserRole<string>>(entity =>
+            {
+                entity.HasKey(r => new { r.UserId, r.RoleId });
+            });
+            modelBuilder.Entity<IdentityUserToken<string>>(entity =>
+            {
+                entity.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+            });
+
+
+        }
     }
 }

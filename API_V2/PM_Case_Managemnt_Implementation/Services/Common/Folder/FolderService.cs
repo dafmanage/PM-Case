@@ -8,9 +8,9 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.FolderService
     public class FolderService : IFolderService
     {
 
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public FolderService(DBContext dbContext)
+        public FolderService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

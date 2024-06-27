@@ -7,9 +7,9 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.ShelfService
 {
     public class ShelfService : IShelfService
     {
-        private readonly DBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public ShelfService(DBContext dbContext)
+        public ShelfService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
