@@ -22,16 +22,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
         {
             try
             {
-                //DateTime dateTime= DateTime.Now;
-
-                //if (!string.IsNullOrEmpty(appointmentWithCalender.AppointementDate))
-                //{
-                //    string[] startDate = appointmentWithCalender.AppointementDate.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-                //    dateTime = EthiopicDateTime.GetGregorianDate(Int32.Parse(startDate[0]), Int32.Parse(startDate[1]), Int32.Parse(startDate[2]));
-                //}
                 var hist = _dbContext.CaseHistories.Find(appointmentWithCalender.CaseId);
-
-
 
                 AppointementWithCalender appointment = new()
                 {
@@ -60,18 +51,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                 await _dbContext.AppointementWithCalender.AddAsync(appointment);
                 await _dbContext.SaveChangesAsync();
 
-
-                AppointmentGetDto ev = new AppointmentGetDto();
-                ev.id = appointment.Id.ToString();
-                ev.description = "Appointment with " + cases.Applicant.ApplicantName + " at " + appointment.Time + "\n Affair Number " + cases.CaseNumber;
-                ev.date = appointment.AppointementDate.ToString();
-                ev.everyYear = false;
-                ev.type = "event";
-                ev.name = "Appointment ";
-
-
-
-
+                var ev = new AppointmentGetDto
+                {
+                    id = appointment.Id.ToString(),
+                    description = $"Appointment with {cases.Applicant.ApplicantName} at {appointment.Time}\n Affair Number {cases.CaseNumber}",
+                    date = appointment.AppointementDate.ToString(),
+                    everyYear = false,
+                    type = "event",
+                    name = "Appointment"
+                };
 
                 return ev;
             }
@@ -85,7 +73,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
         {
             try
             {
-
                 List<AppointmentGetDto> Events = new List<AppointmentGetDto>();
 
                 var appointements = _dbContext.AppointementWithCalender.Where(x => x.EmployeeId == employeeId).Include(a => a.Case).ToList();
@@ -99,14 +86,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                     ev.type = "event";
                     ev.name = string.IsNullOrEmpty(a.Remark) ? "Appointment " : a.Remark;
                     Events.Add(ev);
+                    
                 });
 
                 return Events;
-
-
-
-
-
 
             }
             catch (Exception ex)

@@ -198,7 +198,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         [HttpGet("forApproval")]
         public async Task<List<ActivityViewDto>> forApproval(Guid employeeId)
         {
-            return await _activityService.GetActivtiesForApproval(employeeId);
+            return await _activityService.GetActivitiesForApproval(employeeId);
         }
 
         [HttpPost("approve")]

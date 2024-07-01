@@ -47,7 +47,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
 
         public bool RemoveAttachment(Guid attachmentId)
         {
-
             try
             {
                 var case1 = _dBContext.CaseAttachments.Find(attachmentId);

@@ -50,7 +50,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
                               Remark = t.Remark
                           }).ToListAsync();
 
-
         }
 
         public async Task<List<SelectListDto>> GetNotIncludedEmployees(Guid CommiteId, Guid subOrgId)

@@ -19,8 +19,7 @@ namespace PM_Case_Managemnt_Implementation.DTOS.PM
         public float OverAllPerformance { get; set; }
         public string StartDate { get; set; } = null!;
         public string EndDate { get; set; } = null!;
-        public List<SelectListDto> Members { get; set; } = null!;
-
+        public List<Activity> Members { get; set; } = null!;
         public List<MonthPerformanceViewDto>? MonthPerformance { get; set; } = null!;
 
         public float OverAllProgress { get; set; }

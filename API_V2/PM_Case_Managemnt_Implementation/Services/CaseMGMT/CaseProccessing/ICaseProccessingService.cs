@@ -16,7 +16,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
         public Task<int> SendSMS(CaseCompleteDto smsdetail);
 
-
         public Task<int> ArchiveCase(ArchivedCaseDto archivedCaseDto);
         public Task<CaseState> GetCaseState(Guid CaseTypeId, Guid caseHistoryId);
 

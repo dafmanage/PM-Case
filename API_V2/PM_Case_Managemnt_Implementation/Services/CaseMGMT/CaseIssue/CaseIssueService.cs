@@ -51,7 +51,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
         }
 
-
         public async Task IssueCase(CaseIssueDto caseAssignDto)
         {
             try
@@ -89,13 +88,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                     AssignedToEmployeeId = toEmployee,
                     ForwardedToEmployeeId = toEmployeeCC
 
-
-
                 };
                 _dbContext.CaseIssues.Add(issueCase);
                 _dbContext.SaveChanges();
-
-
 
             }
             catch (Exception ex)
@@ -103,7 +98,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 throw new Exception(ex.Message);
             }
         }
-
 
         public async Task<List<CaseEncodeGetDto>> GetAll(Guid? employeeId)
         {
@@ -154,8 +148,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 _dbContext.Entry(issueCase).Property(curr => curr.IssueStatus).IsModified = true;
                 _dbContext.SaveChanges();
             }
-
-
 
             catch (Exception ex)
             {

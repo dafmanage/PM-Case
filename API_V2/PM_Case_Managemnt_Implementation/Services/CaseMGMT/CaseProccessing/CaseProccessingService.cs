@@ -23,7 +23,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         private readonly ICaseEncodeService _caseEncodeService;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
 
-
         public CaseProccessingService(
             ApplicationDbContext dbContext,
             UserManager<ApplicationUser> userManager,
@@ -446,7 +445,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             Employee user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
 
-
             CaseHistory currentHistry = _dbContext.CaseHistories
                 .Include(x => x.Case.CaseType)
                  .Include(x => x.Case.Applicant)
@@ -456,9 +454,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 .Include(x => x.Case)?.FirstOrDefault(x =>
 
                                      x.Id == historyId);
-
-
-
 
             if (currentHistry != null && (currentHistry.AffairHistoryStatus == AffairHistoryStatus.Pend || currentHistry.AffairHistoryStatus == AffairHistoryStatus.Waiting || currentHistry.AffairHistoryStatus == AffairHistoryStatus.Completed))
             {
@@ -470,15 +465,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 _dbContext.SaveChanges();
             }
 
-
-
             List<SelectListDto> attachments = (from x in _dbContext.CaseAttachments.Where(x => x.CaseId == currentHistry.CaseId)
                                                select new SelectListDto
                                                {
                                                    Id = x.Id,
-                                                   Name = x.FilePath
-
-
+                                                   Name = x.FilePath,
                                                }).ToList();
 
             attachments.AddRange((from x in _dbContext.FilesInformations.Where(x => x.CaseId == currentHistry.CaseId)
@@ -502,10 +493,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 ApplicantPhoneNo = currentHistry.Case.ApplicantId != null ? currentHistry.Case.Applicant.PhoneNumber : "",
                 EmployeeName = currentHistry.Case.EmployeeId != null ? currentHistry.Case.Employee?.FullName : "",
                 EmployeePhoneNo = currentHistry.Case.EmployeeId != null ? currentHistry.Case.Employee?.PhoneNumber : "",
-                //ApplicantName = currentHistry.Case.Applicant.ApplicantName,
-                //ApplicantPhoneNo = currentHistry.Case.Applicant.PhoneNumber,
-                //EmployeeName = currentHistry.Case.Employee?.FullName,
-                //EmployeePhoneNo = currentHistry.Case.Employee?.PhoneNumber,
                 LetterNumber = currentHistry.Case.LetterNumber,
                 LetterSubject = currentHistry.Case.LetterSubject,
                 Position = user.Position.ToString(),
@@ -523,18 +510,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             };
 
-
             return result;
 
-
-
-
-
-
-
         }
-
-
         public async Task<int> ArchiveCase(ArchivedCaseDto archivedCaseDto)
         {
 
@@ -543,7 +521,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             cases.FolderId = archivedCaseDto.FolderId;
             cases.IsArchived = true;
 
-
             _dbContext.Entry(cases).Property(x => x.FolderId).IsModified = true;
             _dbContext.Entry(cases).Property(x => x.IsArchived).IsModified = true;
 
@@ -551,7 +528,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             return 1;
         }
-
 
         public async Task<CaseState> GetCaseState(Guid CaseTypeId, Guid caseHistoryId)
         {
@@ -562,8 +538,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             int childcount = _dbContext.CaseHistories.Find(caseHistoryId).childOrder + 1;
             foreach (var childaffair in childCaseType)
             {
-
-
 
                 if (childaffair.OrderNumber == childcount)
                 {
@@ -603,12 +577,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             return false;
 
         }
-
-
     }
-
-
-
     public class CaseState
     {
         public string CurrentState { get; set; }

@@ -30,8 +30,6 @@ namespace PM_Case_Managemnt_Implementation.Helpers
             return new PagedList<T>(items, metaData);
         }
 
-
-
     }
 
     public class PagedDataResponse<T>

@@ -14,6 +14,24 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
         private readonly ApplicationDbContext _dbContext;
         private Random rnd = new Random();
+
+        // private DateTime ConvertToGregorianDate(string ethiopicDate)
+        
+        // {
+        // string[] dateParts = ethiopicDate.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
+        // if (dateParts.Length != 3)
+        // {
+        //     throw new ArgumentException("Invalid date format. Expected format: dd/mm/yyyy", nameof(ethiopicDate));
+        // }
+
+        // int day = int.Parse(dateParts[0]);
+        // int month = int.Parse(dateParts[1]);
+        // int year = int.Parse(dateParts[2]);
+
+        // DateTime gregorianDate = EthiopicDateTime.GetGregorianDate(year, month, day);
+        // return Convert.ToDateTime(gregorianDate);
+        // }
+        
         public CaserReportService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -29,14 +47,19 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 string[] startDate = startAt.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
                 DateTime MDateTime = Convert.ToDateTime(EthiopicDateTime.GetGregorianDate(Int32.Parse(startDate[1]), Int32.Parse(startDate[0]), Int32.Parse(startDate[2])));
                 allAffairs = allAffairs.Where(x => x.CreatedAt >= MDateTime).ToList();
+
+                // DateTime MDateTime = ConvertToGregorianDate(startAt);
+                // AffairMessages = AffairMessages.Where(x => x.CreatedAt >= MDateTime).ToList();
             }
 
             if (!string.IsNullOrEmpty(endAt))
             {
-
                 string[] endDate = endAt.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
                 DateTime MDateTime = Convert.ToDateTime(EthiopicDateTime.GetGregorianDate(Int32.Parse(endDate[1]), Int32.Parse(endDate[0]), Int32.Parse(endDate[2])));
                 allAffairs = allAffairs.Where(x => x.CreatedAt <= MDateTime).ToList();
+
+                // DateTime MDateTime = ConvertToGregorianDate(endAt);
+                // AffairMessages = AffairMessages.Where(x => x.CreatedAt <= MDateTime).ToList();
             }
 
 
@@ -49,20 +72,20 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 eachReport.CaseNumber = affair.CaseNumber;
                 eachReport.Subject = affair.LetterSubject;
                 eachReport.IsArchived = affair.IsArchived.ToString();
-                var firstOrDefault = affair.CaseHistories.OrderByDescending(x => x.CreatedAt)
-                    .FirstOrDefault();
+
+                var firstOrDefault = affair.CaseHistories.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
                 if (firstOrDefault != null)
-                    eachReport.OnStructure = _dbContext.OrganizationalStructures.Find(firstOrDefault
-                            .ToStructureId).StructureName;
-                var affairHistory = affair.CaseHistories.OrderByDescending(x => x.CreatedAt)
-                    .FirstOrDefault();
+                    eachReport.OnStructure = _dbContext.OrganizationalStructures.Find(firstOrDefault.ToStructureId).StructureName;
+
+                var affairHistory = affair.CaseHistories.OrderByDescending(x => x.CreatedAt).FirstOrDefault();
                 if (affairHistory != null)
-                    eachReport.OnEmployee = _dbContext.Employees.Find(affairHistory
-                            .ToEmployeeId).FullName;
+                    eachReport.OnEmployee = _dbContext.Employees.Find(affairHistory.ToEmployeeId).FullName;
                 eachReport.CaseStatus = affair.AffairStatus.ToString();
                 report.Add(eachReport);
+
                 eachReport.CreatedDateTime = affair.CreatedAt;
                 eachReport.CaseCounter = affair.CaseType.Counter;
+
                 var change = DateTime.Now.Subtract(eachReport.CreatedDateTime).TotalHours;
                 if (affair.AffairStatus == AffairStatus.Completed)
                 {
@@ -79,14 +102,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 eachReport.ElapsTime = d;
 
             }
-            //if (affairStatus != null)
-            //{
-            //    report = affairStatus == AffairStatus.Completed ? report.OrderBy(x => x.ElapsTime).ToList() : report.OrderByDescending(x => x.ElapsTime).ToList();
-            //}
+            
             var AllReport = report.OrderByDescending(x => x.CreatedDateTime).ToList();
             return AllReport;
-
-
 
         }
 
@@ -110,11 +128,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             datas.backgroundColor = new List<string>();
 
 
-
             foreach (var eachreport in report2)
             {
-
-
 
                 var allAffairs = _dbContext.Cases.Where(x => x.CaseType.CaseTypeTitle == eachreport.CaseTypeTitle);
                 var caseCount = allAffairs.Count();
@@ -150,10 +165,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
                 Chart.datasets.Add(datas);
 
-
-
             }
-
 
             return Chart;
         }
@@ -164,12 +176,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             var allAffairs = _dbContext.Cases.Where(x => x.CaseNumber != null && x.SubsidiaryOrganizationId == subOrgId);
 
-
-
-
-
             var caseCount = allAffairs.Count();
-
 
             if (!string.IsNullOrEmpty(startAt))
             {
@@ -177,8 +184,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 DateTime MDateTime = Convert.ToDateTime(EthiopicDateTime.GetGregorianDate(Int32.Parse(startDate[1]), Int32.Parse(startDate[0]), Int32.Parse(startDate[2])));
                 allAffairs = allAffairs.Where(x => x.CreatedAt >= MDateTime);
                 caseCount = allAffairs.Count();
-
-
             }
 
             if (!string.IsNullOrEmpty(endAt))
@@ -304,10 +309,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             return empPerformance;
         }
 
-
-
-
-
         public async Task<List<SMSReportDto>> GetSMSReport(Guid subOrgId, string? startAt, string? endAt)
         {
             var AffairMessages = _dbContext.CaseMessages.Where(x => x.Case.SubsidiaryOrganizationId == subOrgId).Include(x => x.Case.CaseType).Include(x => x.Case.Employee).Include(x => x.Case.Applicant).Select(y => new
@@ -325,9 +326,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 MessageGroup = y.MessageFrom.ToString(),
                 IsSMSSent = y.Messagestatus,
                 CreatedAt = y.CreatedAt
-            }
+            }).ToList();
 
-            ).ToList();
             if (!string.IsNullOrEmpty(startAt))
             {
                 string[] startDate = startAt.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
@@ -480,8 +480,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             }
 
-
-
             var caseTypeDuration = 0.0;
             var casetype = caseTypes.Where(x => x.OrderNumber == history.childOrder + 1).FirstOrDefault();
 
@@ -527,38 +525,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             }
         }
 
-
-
-        //static  public string getElapsedTIme(int childOrder,List<CaseType> affairTypes)
-        //  {
-
-
-
-        //      var co = (float)0;
-
-        //      foreach (var childaffair in affairTypes)
-        //      {
-        //          int childcount = childOrder;
-
-        //          if (childaffair.OrderNumber == childcount+1)
-        //          {
-        //              var c = childaffair.Counter;
-        //              co = childaffair.Counter;
-        //              if (c >= 60)
-        //              {
-        //                  c = c / 60;
-        //                  return c.ToString() + "Hr.";
-        //              }
-        //              else
-        //              {
-        //                  return c.ToString() + "min";
-        //              }
-
-        //          }
-        //      }
-        //      return "";
-        //  }
-
         static public string getElapsedTime(DateTime? historyCreatedTime, DateTime? ActionTake)
         {
             if (historyCreatedTime.HasValue)
@@ -586,14 +552,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 return "";
             }
 
-
-
-
         }
-
-
-
-
-
     }
 }
+

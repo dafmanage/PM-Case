@@ -15,7 +15,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
 
         private readonly IConfiguration _configuration;
 
-
         public CaseMessagesService(ApplicationDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
@@ -70,8 +69,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
 
                               }).ToListAsync();
 
-
-
             }
             catch (Exception ex)
             {
@@ -79,15 +76,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
             }
         }
 
-
-
-
-
-        public async Task SemdMessages(List<CaseUnsentMessagesGetDto> Messages)
+        public async Task SendMessages(List<CaseUnsentMessagesGetDto> Messages)
         {
             try
             {
-
                 string ipAddress = _configuration["ApplicationSettings:SMS_IP"];
                 string coder = _configuration["ApplicationSettings:ORG_CODE"];
 
