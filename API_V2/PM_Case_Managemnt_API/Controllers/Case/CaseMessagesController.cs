@@ -33,7 +33,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
         {
             try
             {
-                await _caseMessagesService.SemdMessages(messages);
+                await _caseMessagesService.SendMessages(messages);
                 return Ok();
             }
             catch (Exception ex)
@@ -41,9 +41,5 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                 throw new Exception(ex.Message);
             }
         }
-
-
-
-
     }
 }
