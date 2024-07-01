@@ -1,7 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
+using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
+
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Infrustructure.Data;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -18,8 +22,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
             _smsService = sMSHelper;
         }
 
-        public async Task<AppointmentGetDto> Add(AppointmentWithCalenderPostDto appointmentWithCalender)
+       public async Task<ResponseMessage<AppointmentGetDto>> Add(AppointmentWithCalenderPostDto appointmentWithCalender)
         {
+            var response  = new ResponseMessage<AppointmentGetDto>();
             try
             {
                 //DateTime dateTime= DateTime.Now;
@@ -27,7 +32,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                 //if (!string.IsNullOrEmpty(appointmentWithCalender.AppointementDate))
                 //{
                 //    string[] startDate = appointmentWithCalender.AppointementDate.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-                //    dateTime = EthiopicDateTime.GetGregorianDate(Int32.Parse(startDate[0]), Int32.Parse(startDate[1]), Int32.Parse(startDate[2]));
+                //    dateTime = XAPI.EthiopicDateTime.GetGregorianDate(Int32.Parse(startDate[0]), Int32.Parse(startDate[1]), Int32.Parse(startDate[2]));
                 //}
                 var hist = _dbContext.CaseHistories.Find(appointmentWithCalender.CaseId);
 
@@ -52,7 +57,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                  " ሰዐት በቢሮ ቁጥር፡ - ይገኙ";
 
 
-                bool isSmssent = await _smsService.UnlimittedMessageSender(cases.Applicant.PhoneNumber, message, appointment.CreatedBy.ToString());
+               bool isSmssent= await _smsService.UnlimittedMessageSender(cases.Applicant.PhoneNumber, message, appointment.CreatedBy.ToString());
 
                 if (!isSmssent)
                     await _smsService.UnlimittedMessageSender(cases.PhoneNumber2, message, appointment.CreatedBy.ToString());
@@ -67,32 +72,39 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                 ev.date = appointment.AppointementDate.ToString();
                 ev.everyYear = false;
                 ev.type = "event";
-                ev.name = "Appointment ";
+                ev.name = "Appointment " ;
 
 
+                response.Success = true;
+                response.Message = "Operation Successfull";
+                response.Data = ev;
 
 
-
-                return ev;
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = "Error faced !!";
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+                return response;
             }
         }
 
-        public async Task<List<AppointmentGetDto>> GetAll(Guid employeeId)
+         public async Task<ResponseMessage<List<AppointmentGetDto>>> GetAll(Guid employeeId)
         {
+            var response = new ResponseMessage<List<AppointmentGetDto>>();
             try
             {
 
                 List<AppointmentGetDto> Events = new List<AppointmentGetDto>();
-
+              
                 var appointements = _dbContext.AppointementWithCalender.Where(x => x.EmployeeId == employeeId).Include(a => a.Case).ToList();
                 appointements.ForEach(a =>
                 {
                     var ev = new AppointmentGetDto();
-                    ev.id = a.Id.ToString();
+                    ev.id =a.Id.ToString();
                     ev.description = "Appointment with " + a?.Case?.Applicant?.ApplicantName + " at " + a.Time + "\n Affair Number " + a.Case.CaseNumber;
                     ev.date = a.AppointementDate.ToString();
                     ev.everyYear = false;
@@ -101,17 +113,29 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                     Events.Add(ev);
                 });
 
-                return Events;
+                if (Events == null){
+                    response.Message = "No available Event";
+                    response.Success = false;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Data = null;
+                    return response;
+                }
+                response.Message = "Events fetched Succesfully";
+                response.Success = true;
+                response.Data = Events;
+                return response;
 
 
 
 
 
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
+               
+            } catch(Exception ex) {
+                response.Message = "Faced Error";
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Data = null;
+                return response;
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Services.Auth;
@@ -59,7 +60,7 @@ namespace PM_Case_Managemnt_Implementation.Data
             services.AddScoped<IFileSettingsService, FileSettingService>();
             services.AddScoped<ICaseEncodeService, CaseEncodeService>();
             services.AddScoped<ICaseAttachementService, CaseAttachementService>();
-            services.AddScoped<IApplicantService, ApplicantService>();
+            services.AddScoped<IApplicantServices, ApplicantService>();
             services.AddScoped<ICaseHistoryService, CaseHistoryService>();
             services.AddScoped<ICaseForwardService, CaseForwardService>();
             services.AddScoped<ICaseMessagesService, CaseMessagesService>();

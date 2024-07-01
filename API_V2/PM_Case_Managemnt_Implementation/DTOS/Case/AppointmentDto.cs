@@ -1,4 +1,5 @@
-﻿namespace PM_Case_Managemnt_Implementation.DTOS.CaseDto
+﻿
+namespace PM_Case_Managemnt_Implementation.DTOS.CaseDto
 {
     public class AppointmentPostDto
     {

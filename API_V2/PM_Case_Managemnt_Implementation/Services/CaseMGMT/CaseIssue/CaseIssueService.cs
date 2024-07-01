@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.Case;
@@ -21,8 +23,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             _userManager = userManager;
         }
 
-        public async Task<List<CaseEncodeGetDto>> GetNotCompletedCases(Guid subOrgId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetNotCompletedCases(Guid subOrgId)
         {
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
             try
             {
                 List<CaseEncodeGetDto> cases = await _dbContext.Cases.Where(ca => ca.AffairStatus != AffairStatus.Completed && ca.SubsidiaryOrganizationId == subOrgId).Include(p => p.Employee).Include(p => p.CaseType).Include(p => p.Applicant).Select(st => new CaseEncodeGetDto
@@ -42,35 +45,70 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
                 }).ToListAsync();
 
-                return cases;
+                if (cases == null){
+                    response.Message = "could not find not completed cases with the given Id.";
+                    response.Success = false;
+                    response.Data = null;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    return response;
+                }
+                response.Message = "Successfuly fetched uncompleted cases.";
+                response.Success = true;
+                response.Data = cases;
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                return response;
             }
 
         }
 
 
-        public async Task IssueCase(CaseIssueDto caseAssignDto)
+         public async Task<ResponseMessage<string>>  IssueCase(CaseIssueDto caseAssignDto)
         {
+            var response = new ResponseMessage<string>();
+            
             try
             {
-                string userId = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
+                var user = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault();
                 //Case caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
                 // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
+                if (user == null){
+                    response.Success = false;
+                    response.Message = "Couldnt find target employee";
+                    response.Data = null;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    return response;
+                }
 
+                string userId = user.Id;
                 var toEmployee = caseAssignDto.AssignedToEmployeeId == Guid.Empty || caseAssignDto.AssignedToEmployeeId == null ?
              _dbContext.Employees.FirstOrDefault(
                  e =>
                      e.OrganizationalStructureId == caseAssignDto.AssignedToStructureId &&
                      e.Position == Position.Director).Id : caseAssignDto.AssignedToEmployeeId;
 
-                var toEmployeeCC =
+                var toEmployeeCC_nullable =
                 _dbContext.Employees.FirstOrDefault(
                     e =>
                         e.OrganizationalStructureId == caseAssignDto.ForwardedToStructureId &&
-                        e.Position == Position.Director).Id;
+                        e.Position == Position.Director);
+                
+                if (toEmployeeCC_nullable == null){
+                    response.Message = "Could not find employee";
+                    response.Success = false;
+                    response.Data = null;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    return response;
+                }
+                
+                
+                var toEmployeeCC = toEmployeeCC_nullable.Id;
                 //Case currCase = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
                 //currCase.AffairStatus = AffairStatus.Assigned;
 
@@ -94,19 +132,29 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 };
                 _dbContext.CaseIssues.Add(issueCase);
                 _dbContext.SaveChanges();
+                
+                response.Success = true;
+                response.Message = "Issued Successfully";
+                response.Data = "OK";
 
+                return response;
 
 
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                return response;
             }
         }
 
 
-        public async Task<List<CaseEncodeGetDto>> GetAll(Guid? employeeId)
+       public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetAll(Guid? employeeId)
         {
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
             try
             {
                 List<CaseEncodeGetDto> cases = await _dbContext.CaseIssues.
@@ -134,32 +182,64 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                         IssueAction = st.AssignedToEmployeeId == employeeId ? true : false,
 
                     }).ToListAsync();
+                if (cases == null){
+                    response.Success = false;
+                    response.Message = "No such cases";
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Data = null;
+                    return response;
+                }
+                response.Success = true;
+                response.Message = "Cases successfully feteched.";
+                response.Data = cases;
 
-                return cases;
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Success = false;
+                response.Message = $"{ex.Message}";
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Data = null;
+                
+                return response;
             }
         }
 
 
-        public async Task TakeAction(CaseIssueActionDto caseActionDto)
+        public async Task<ResponseMessage<string>> TakeAction(CaseIssueActionDto  caseActionDto)
         {
+            var response = new ResponseMessage<string>();
 
             try
             {
                 var issueCase = _dbContext.CaseIssues.Find(caseActionDto.issueCaseId);
+                if (issueCase == null){
+                    response.Message = "Error while fetching.";
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Data = null;
+                    response.Success = false;
+                    return response;
+                }
                 issueCase.IssueStatus = Enum.Parse<IssueStatus>(caseActionDto.action);
                 _dbContext.Entry(issueCase).Property(curr => curr.IssueStatus).IsModified = true;
                 _dbContext.SaveChanges();
+                response.Message = "Operation Successfull";
+                response.Success = true;
+                response.Data = "OK";
+                return response;
             }
 
 
 
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Data = null;
+                response.Success = false;
+
+                return response;
             }
         }
 

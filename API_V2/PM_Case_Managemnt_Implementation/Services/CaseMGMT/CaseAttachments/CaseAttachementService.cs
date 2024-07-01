@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 
@@ -13,21 +15,30 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
             _dBContext = dBContext;
         }
 
-        public async Task AddMany(List<CaseAttachment> caseAttachments)
+        public async Task<ResponseMessage<string>> AddMany(List<CaseAttachment> caseAttachments)
         {
+            var response = new ResponseMessage<string>();
             try
             {
                 await _dBContext.AddRangeAsync(caseAttachments);
                 await _dBContext.SaveChangesAsync();
-            }
-            catch (Exception ex)
+                response.Message = "Succesfully saved";
+                response.Success = true;
+                response.Data = "OK";
+                return response;
+            } catch (Exception ex)
             {
-                throw new Exception("Error adding attachemnts");
+                response.Message = "Error adding attachements";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                return response;
             }
         }
 
-        public async Task<List<CaseAttachment>> GetAll(Guid subOrgId, string CaseId = null)
+        public async Task<ResponseMessage<List<CaseAttachment>>> GetAll(Guid subOrgId, string CaseId = null)
         {
+            var response = new ResponseMessage<List<CaseAttachment>>();
             try
             {
                 List<CaseAttachment> attachemnts = new List<CaseAttachment>();
@@ -36,30 +47,54 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                     attachemnts = await _dBContext.CaseAttachments.Where(x => x.Case.SubsidiaryOrganizationId == subOrgId).ToListAsync();
                 else
                     attachemnts = await _dBContext.CaseAttachments.Where(el => el.CaseId.Equals(Guid.Parse(CaseId))).ToListAsync();
-
-                return attachemnts;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error Getting Attachments");
+                if (attachemnts == null){
+                    response.Message = "Couldnt get any attachments with the given criteria.";
+                    response.Success = false;
+                    response.Data = null;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    return response;
+                }
+                response.Message = "Attachments fetched successfully";
+                response.Success = true;
+                response.Data = attachemnts;
+                return response;
+            } catch(Exception ex) {
+                response.Message = "Error Getting Attachments";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                return response;
             }
         }
 
-        public bool RemoveAttachment(Guid attachmentId)
+        public ResponseMessage<bool> RemoveAttachment(Guid attachmentId)
         {
+            var response = new ResponseMessage<bool>();
 
             try
             {
                 var case1 = _dBContext.CaseAttachments.Find(attachmentId);
-
+                if (case1 == null){
+                    response.Message = "could not find attachment with the given attachmentID";
+                    response.Success = false;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Data = false;
+                    return response;
+                }
                 _dBContext.CaseAttachments.Remove(case1!);
                 _dBContext.SaveChanges();
-
-                return true;
+                response.Success = true;
+                response.Message = "Attachment removed successfully.";
+                response.Data = true;
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception();
+                response.Message = "Error while removing attachment";
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Data = false;
+                return response;
             }
         }
     }
