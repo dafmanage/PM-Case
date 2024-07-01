@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Auth;
@@ -26,12 +28,21 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
             _encoderHub = encoderHub;
         }
 
-        public async Task<string> Add(CaseEncodePostDto caseEncodePostDto)
+        public async Task<ResponseMessage<string>> Add(CaseEncodePostDto caseEncodePostDto)
         {
+            var response = new ResponseMessage<string>();
             try
             {
-                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null)
-                    throw new Exception("Please Provide an Applicant ID or Employee ID");
+                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null){
+
+                    response.Message = "Please Provide an Applicant ID or Employee ID";
+                    response.Data = null;
+                    response.Success = false;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                    return response;
+
+                }
 
 
                 Case newCase = new()
@@ -51,14 +62,22 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                     SubsidiaryOrganizationId = caseEncodePostDto.SubsidiaryOrganizationId
 
                 };
-                string caseNumber = await GetCaseNumber(caseEncodePostDto.SubsidiaryOrganizationId);
-                newCase.CaseNumber = caseNumber;
+                ResponseMessage<string> caseNumber = await GetCaseNumber(caseEncodePostDto.SubsidiaryOrganizationId);
+                newCase.CaseNumber = caseNumber.Data;
 
                 await _dbContext.AddAsync(newCase);
                 await _dbContext.SaveChangesAsync();
 
-                CaseType caseType = _dbContext.CaseTypes.Find(caseEncodePostDto.CaseTypeId);
+                CaseType? caseType = _dbContext.CaseTypes.Find(caseEncodePostDto.CaseTypeId);
 
+                if (caseType == null){
+                    response.Message = "Case type not found.";
+                    response.Data = null;
+                    response.Success = false;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                    return response;
+                }
                 if (caseType.CaseForm == CaseForm.Inside)
                 {
                     Employee emp = _dbContext.Employees.Find(caseEncodePostDto.EmployeeId);
@@ -75,10 +94,32 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                     try
                     {
-                        string userId = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
-                        Case caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(newCase.Id));
-                        // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
+                        var user = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault();
+                        
+                        if (user == null){
 
+                            response.Message = "User not found.";
+                            response.Data = null;
+                            response.Success = false;
+                            response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                            return response;
+
+                        }
+
+                        string userId = user.Id;
+                        
+                        Case? caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(newCase.Id));
+                        // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
+                        if (caseToAssign == null){
+
+                            response.Message = "Case to assign not found.";
+                            response.Data = null;
+                            response.Success = false;
+                            response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                            return response;
+                        }
                         if (caseAssignDto.ForwardedToStructureId != null)
                         {
                             var startupHistory = new CaseHistory
@@ -130,10 +171,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                             //}
                         }
-                        var assigndCase = await GetAllTransfred(emp.Id);
+                        ResponseMessage<List<CaseEncodeGetDto>> assigndCase = await GetAllTransfred(emp.Id);
 
 
-                        await _encoderHub.Clients.Group(emp.Id.ToString()).getNotification(assigndCase, emp.Id.ToString());
+                        await _encoderHub.Clients.Group(emp.Id.ToString()).getNotification(assigndCase.Data, emp.Id.ToString());
 
                         //await _encoderHub.Clients.All.getNotification(assigndCase);
 
@@ -141,29 +182,60 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception(ex.Message);
-                    }
+                        response.Message = $"{ex.Message}";
+                        response.Data = null;
+                        response.Success = false;
+                        response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
 
+                        return response;
+                    }
+                    
                 }
 
-                return newCase.Id.ToString();
+                response.Success = true;
+                response.Message = "Operation Successfull.";
+                response.Data = newCase.Id.ToString();
+
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
         }
 
-        public async Task<string> Update(CaseEncodePostDto caseEncodePostDto)
+        public async Task<ResponseMessage<string>> Update(CaseEncodePostDto caseEncodePostDto)
         {
+
+            var response = new ResponseMessage<string>();
             try
             {
-                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null)
-                    throw new Exception("Please Provide an Applicant ID or Employee ID");
+                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null){
+                    
+                    response.Message = "Please Provide an Applicant ID or Employee ID";
+                    response.Data = null;
+                    response.Success = false;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                    return response;
+                }
 
                 var case1 = _dbContext.Cases.Find(caseEncodePostDto.caseID);
 
+                if (case1 == null){
+                    
+                    response.Message = "Case not found.";
+                    response.Data = null;
+                    response.Success = false;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
 
+                    return response;
+                }
 
                 case1.ApplicantId = caseEncodePostDto.ApplicantId;
                 //EmployeeId = caseEncodePostDto.EmployeeId,
@@ -181,16 +253,27 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
 
 
-                return case1.Id.ToString();
+                response.Message = "Operation Successfull";
+                response.Data = case1.Id.ToString();
+                response.Success = true;
+                
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
         }
 
-        public async Task<List<CaseEncodeGetDto>> GetAll(Guid userId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetAll(Guid userId)
         {
+
+            var response =  new ResponseMessage<List<CaseEncodeGetDto>>();
             try
             {
                 List<CaseEncodeGetDto> cases2 = new List<CaseEncodeGetDto>();
@@ -235,19 +318,29 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                 }
 
-                return cases2;
+                response.Message = "Opertaion Successfull";
+                response.Success = true;
+                response.Data = cases2;
+
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
         }
-        public async Task<CaseEncodeGetDto> GetSingleCase(Guid caseId)
+        public async Task<ResponseMessage<CaseEncodeGetDto>> GetSingleCase(Guid caseId)
         {
+            var response = new ResponseMessage<CaseEncodeGetDto>();
             try
             {
 
-                CaseEncodeGetDto case1 =
+                CaseEncodeGetDto? case1 =
                     await _dbContext.Cases.Where(ca => ca.Id == caseId)
                     .Include(p => p.Employee)
                     .Include(p => p.CaseType)
@@ -273,7 +366,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                     }).FirstOrDefaultAsync();
 
+                if (case1 == null){
 
+                    response.Message = "Case not found.";
+                    response.Data = null;
+                    response.Success = false;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                    return response;
+                }
 
                 case1.Attachments = await _dbContext.CaseAttachments.Where(x => x.CaseId == case1.Id).Select(x => new SelectListDto
                 {
@@ -285,18 +386,28 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
 
 
+                
+                response.Message = "Operation Successfull.";
+                response.Success = true;
+                response.Data = case1;
 
-
-                return case1;
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
 
         }
-        public async Task<string> GetCaseNumber(Guid subOrgId)
+        public async Task<ResponseMessage<string>> GetCaseNumber(Guid subOrgId)
         {
+
+            var response = new ResponseMessage<string>();
 
             var subOrgName = _dbContext.SubsidiaryOrganizations.Where(x => x.Id == subOrgId).Select(c => c.OrganizationNameEnglish).FirstOrDefault();
 
@@ -324,17 +435,30 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                 CaseNumber += "1";
             }
 
-            return CaseNumber;
+            response.Message = "Operation Successfull.";
+            response.Data = CaseNumber;
+            response.Success = true;
+
+            return response;
 
         }
 
-        public async Task<List<CaseEncodeGetDto>> GetAllTransfred(Guid employeeId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetAllTransfred(Guid employeeId)
 
 
         {
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
 
-            Employee user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
+            Employee? user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
+            if (user == null){
 
+                response.Message = "User not found.";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                return response;
+            }
             List<CaseEncodeGetDto> notfications = new List<CaseEncodeGetDto>();
 
             if (user.Position == Position.Secertary)
@@ -395,15 +519,30 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                 }).ToListAsync(); ;
             }
-            return notfications.OrderByDescending(x => x.CreatedAt).ToList();
+            response.Message = "Operatinonal successfull.";
+            response.Data = notfications.OrderByDescending(x => x.CreatedAt).ToList();
+
+            return response;
         }
 
 
 
-        public async Task<List<CaseEncodeGetDto>> MyCaseList(Guid employeeId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> MyCaseList(Guid employeeId)
         {
-            Employee user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
 
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
+            Employee? user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
+            
+            if (user == null){
+
+                response.Message = "User not found.";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                return response;
+                
+            }
 
             if (user.Position == Position.Secertary)
             {
@@ -447,8 +586,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                                 }).ToListAsync();
 
 
-
-                return allAffairHistory;
+                response.Message = "Operation Successful.";
+                response.Data = allAffairHistory;
+                response.Success = true;
+                return response;
             }
             else
             {
@@ -484,15 +625,21 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                                 ToStructure = x.ToStructure.StructureName,
                                 AffairHistoryStatus = x.AffairHistoryStatus.ToString()
                             }).ToListAsync();
+                response.Message = "Operation Successfull";
+                response.Data = allAffairHistory;
+                response.Success = true;
 
-                return allAffairHistory;
+                return response;
+
             }
-
+            
         }
 
 
-        public async Task<List<CaseEncodeGetDto>> SearchCases(string filter, Guid subOrgId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> SearchCases(string filter, Guid subOrgId)
         {
+
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
 
 
             var allAffairHistory = await _dbContext.CaseHistories
@@ -532,15 +679,20 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
 
 
-            return allAffairHistory;
+            response.Message = "Operational Successfull.";
+            response.Data = allAffairHistory;
+            response.Success = true;
+
+            return response;
 
         }
 
 
-        public async Task<List<CaseEncodeGetDto>> CompletedCases(Guid subOrgId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> CompletedCases(Guid subOrgId)
         {
             // Employee user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
 
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
 
             List<CaseEncodeGetDto> cases = await _dbContext.Cases.Where(ca => ca.SubsidiaryOrganizationId == subOrgId && ca.AffairStatus.Equals(AffairStatus.Completed) && !ca.IsArchived).Include(p => p.Employee).Include(p => p.CaseType).Include(p => p.Applicant).Select(st => new CaseEncodeGetDto
             {
@@ -559,14 +711,19 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
             }).ToListAsync();
 
-            return cases;
+            response.Message = "Operation Successfull.";
+            response.Data = cases;
+            response.Success = true;
+
+            return response;
 
         }
 
 
-        public async Task<List<CaseEncodeGetDto>> GetArchivedCases(Guid subOrgId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetArchivedCases(Guid subOrgId)
         {
 
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
 
             List<CaseEncodeGetDto> cases = await _dbContext.Cases.Where(ca => ca.SubsidiaryOrganizationId == subOrgId && ca.IsArchived).Include(p => p.Employee).Include(p => p.CaseType).Include(p => p.Applicant).Include(x => x.Folder.Row.Shelf).Include(x => x.CaseAttachments).Select(st => new CaseEncodeGetDto
             {
@@ -593,7 +750,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
             }).ToListAsync();
 
-            return cases;
+            response.Message = "OPeration Successfull.";
+            response.Data = cases;
+            response.Success = true;
+
+            return response;
 
 
 

@@ -5,6 +5,8 @@ using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using System.Data;
+using Azure;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using String = System.String;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
@@ -18,9 +20,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         {
             _dbContext = dbContext;
         }
-        public async Task<List<CaseReportDto>> GetCaseReport(Guid subOrgId, string? startAt, string? endAt)
+        public async Task<ResponseMessage<List<CaseReportDto>>> GetCaseReport(Guid subOrgId, string? startAt, string? endAt)
         {
-
+            var response = new ResponseMessage<List<CaseReportDto>>();
+            
             var allAffairs = _dbContext.Cases.Where(x => x.SubsidiaryOrganizationId == subOrgId).Include(a => a.CaseType)
                .Include(a => a.CaseHistories).ToList();
 
@@ -84,14 +87,19 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             //    report = affairStatus == AffairStatus.Completed ? report.OrderBy(x => x.ElapsTime).ToList() : report.OrderByDescending(x => x.ElapsTime).ToList();
             //}
             var AllReport = report.OrderByDescending(x => x.CreatedDateTime).ToList();
-            return AllReport;
+            response.Message = "Operation Successful";
+            response.Success = true;
+            response.Data = AllReport;
+            return response;
 
 
 
         }
 
-        public async Task<CaseReportChartDto> GetCasePieChart(Guid subOrgId, string? startAt, string? endAt)
+        public async Task<ResponseMessage<CaseReportChartDto>> GetCasePieChart(Guid subOrgId, string? startAt, string? endAt)
         {
+            var response = new ResponseMessage<CaseReportChartDto>();
+            
             var report = _dbContext.CaseTypes.Where(x => x.SubsidiaryOrganizationId == subOrgId).ToList();
             var report2 = (from q in report
                            join b in _dbContext.Cases on q.Id equals b.CaseTypeId
@@ -155,13 +163,17 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             }
 
 
-            return Chart;
+            response.Message = "Operation Successful";
+            response.Data = Chart;
+            response.Success = true;
+
+            return response;
         }
 
-        public async Task<CaseReportChartDto> GetCasePieCharByCaseStatus(Guid subOrgId, string? startAt, string? endAt)
+        public async Task<ResponseMessage<CaseReportChartDto>> GetCasePieCharByCaseStatus(Guid subOrgId, string? startAt, string? endAt)
         {
 
-
+            var response = new ResponseMessage<CaseReportChartDto>();
             var allAffairs = _dbContext.Cases.Where(x => x.CaseNumber != null && x.SubsidiaryOrganizationId == subOrgId);
 
 
@@ -211,12 +223,17 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             Chart.datasets.Add(datas);
 
-            return Chart;
+            response.Message = "Operation Successful";
+            response.Success = true;
+            response.Data = Chart;
+
+            return response;
         }
 
 
-        public async Task<List<EmployeePerformance>> GetCaseEmployeePerformace(Guid subOrgId, string key, string OrganizationName)
+        public async Task<ResponseMessage<List<EmployeePerformance>>> GetCaseEmployeePerformace(Guid subOrgId, string key, string OrganizationName)
         {
+            var response = new ResponseMessage<List<EmployeePerformance>>();
 
             List<Employee> employees = new List<Employee>();
             List<CaseHistory> affairHistories = new List<CaseHistory>();
@@ -301,15 +318,20 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
                 }
             }
-            return empPerformance;
+
+            response.Message = "Operation Succesfull";
+            response.Data = empPerformance;
+            response.Success = true;
+            return response;
         }
 
 
 
 
 
-        public async Task<List<SMSReportDto>> GetSMSReport(Guid subOrgId, string? startAt, string? endAt)
+        public async Task<ResponseMessage<List<SMSReportDto>>> GetSMSReport(Guid subOrgId, string? startAt, string? endAt)
         {
+            var response = new ResponseMessage<List<SMSReportDto>>();
             var AffairMessages = _dbContext.CaseMessages.Where(x => x.Case.SubsidiaryOrganizationId == subOrgId).Include(x => x.Case.CaseType).Include(x => x.Case.Employee).Include(x => x.Case.Applicant).Select(y => new
 
             SMSReportDto
@@ -343,13 +365,16 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 AffairMessages = AffairMessages.Where(x => x.CreatedAt <= MDateTime).ToList();
             }
 
-            return AffairMessages;
+            response.Message = "Operation Successful";
+            response.Data = AffairMessages;
+            response.Success = true;
+            return response;
         }
 
 
-        public async Task<List<CaseDetailReportDto>> GetCaseDetail(Guid subOrgId, string key)
+        public async Task<ResponseMessage<List<CaseDetailReportDto>>> GetCaseDetail(Guid subOrgId, string key)
         {
-
+            var response = new ResponseMessage<List<CaseDetailReportDto>>();
             if (string.IsNullOrEmpty(key))
             {
                 key = "";
@@ -388,13 +413,18 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             var result2 = affairs.OrderByDescending(x => x.CaseNumber).ToList();
 
-            return result2;
+            response.Message = "Operation Successful";
+            response.Data = result2;
+            response.Success = true;
+            return response;
         }
 
 
-        public async Task<CaseProgressReportDto> GetCaseProgress(Guid caseId)
+        public async Task<ResponseMessage<CaseProgressReportDto>> GetCaseProgress(Guid caseId)
         {
 
+            var response = new ResponseMessage<CaseProgressReportDto>();
+            
             var cases = _dbContext.Cases.Include(x => x.CaseType).Include(x => x.Employee).Include(x => x.Applicant).Where(x => x.Id == caseId);
             var casetype = _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == cases.FirstOrDefault().CaseTypeId).ToList();
             var result = await (from c in cases
@@ -438,20 +468,26 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
 
                                 }).FirstOrDefaultAsync();
-
-            return result;
+            response.Message = "Operation Successful";
+            response.Data = result;
+            response.Success = true;
+            return response;
 
 
         }
 
 
-        public async Task<List<CaseType>> GetChildCaseTypes(Guid caseId)
+        public async Task<ResponseMessage<List<CaseType>>> GetChildCaseTypes(Guid caseId)
         {
+            var response = new ResponseMessage<List<CaseType>>();
+            
             var casse = await _dbContext.Cases.Where(x => x.Id == caseId).Select(x => x.CaseTypeId).FirstOrDefaultAsync();
             var caseTypes = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == casse).OrderBy(x => x.OrderNumber).ToListAsync();
 
-
-            return caseTypes;
+            response.Message = "Operation Successful";
+            response.Data = caseTypes;
+            response.Success = true;
+            return response;
 
 
 

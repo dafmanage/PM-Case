@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Implementation.Services.CaseService.Encode;
 using PM_Case_Managemnt_Infrustructure.Data;
@@ -39,13 +41,25 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
         }
 
-        public async Task<int> ConfirmTranasaction(ConfirmTranscationDto confirmTranscationDto)
+        public async Task<ResponseMessage<int>> ConfirmTranasaction(ConfirmTranscationDto confirmTranscationDto)
         {
+            var response = new ResponseMessage<int>();
 
             try
             {
 
                 var history = _dbContext.CaseHistories.Find(confirmTranscationDto.CaseHistoryId);
+                
+                if (history == null){
+                    
+                    response.Message = "Couldnt find history";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+                    
+                    return response;
+                }
+
                 history.IsConfirmedBySeretery = true;
                 history.SecreteryConfirmationDateTime = DateTime.Now;
                 history.SecreteryId = confirmTranscationDto.EmployeeId;
@@ -56,22 +70,53 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 _dbContext.Entry(history).Property(c => c.SecreteryId).IsModified = true;
                 _dbContext.SaveChanges();
 
-                return 1;
+                response.Success = true;
+                response.Data = 1;
+                response.Message = "Successfull";
+
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = 0;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
             }
         }
 
-        public async Task<int> AssignTask(CaseAssignDto caseAssignDto)
+        public async Task<ResponseMessage<int>> AssignTask(CaseAssignDto caseAssignDto)
         {
+            var response = new ResponseMessage<int>();
             try
             {
-                string userId = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault().Id;
-                Case caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
-                // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
+                var user = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault();
+                if (user == null){
 
+                    response.Message = "Couldnt find user.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
+
+                string userId = user.Id;
+                Case? caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
+                // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
+                
+                if (caseToAssign == null){
+
+                    response.Message = "Couldnt find case to assign";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
+                
                 var toEmployeeId = caseAssignDto.AssignedToEmployeeId == Guid.Empty || caseAssignDto.AssignedToEmployeeId == null ?
              _dbContext.Employees.FirstOrDefault(
                  e =>
@@ -80,7 +125,16 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
                 var fromEmployeestructure = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == caseAssignDto.AssignedByEmployeeId).First().OrganizationalStructure.Id;
 
-                Case currCase = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
+                Case? currCase = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
+                if (currCase == null){
+
+                    response.Message = "Couldnt find current case.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
                 currCase.AffairStatus = AffairStatus.Assigned;
 
                 _dbContext.Entry(currCase).Property(curr => curr.AffairStatus).IsModified = true;
@@ -154,28 +208,55 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 var assigndCase = await _caseEncodeService.GetAllTransfred(toEmployeeId.Value);
 
 
-                await _encoderHub.Clients.Group(toEmployeeId.Value.ToString()).getNotification(assigndCase, toEmployeeId.Value.ToString());
+                await _encoderHub.Clients.Group(toEmployeeId.Value.ToString()).getNotification(assigndCase.Data, toEmployeeId.Value.ToString());
 
                 //await _encoderHub.Clients.All.getNotification(assigndCase);
-                return 1;
+                response.Message = "operation Successful";
+                response.Data = 1;
+                response.Success = true;
+
+                return response;
 
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = 0;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
             }
         }
 
-        public async Task<int> CompleteTask(CaseCompleteDto caseCompleteDto)
+        public async Task<ResponseMessage<int>> CompleteTask(CaseCompleteDto caseCompleteDto)
         {
+
+            var response = new ResponseMessage<int>();
             try
             {
-                CaseHistory selectedHistory = _dbContext.CaseHistories.Find(caseCompleteDto.CaseHistoryId);
-                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
+                CaseHistory? selectedHistory = _dbContext.CaseHistories.Find(caseCompleteDto.CaseHistoryId);
+                if (selectedHistory == null){
 
+                    response.Message = "Couldnt find history";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+                    
+                    return response;
+                }
+                Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
+                
                 CaseHistory selectedHistoryCC = _dbContext.CaseHistories.Where(x => x.CaseId == selectedHistory.CaseId && x.ReciverType == ReciverType.Cc).FirstOrDefault();
-                if (selectedHistory.ToEmployeeId != caseCompleteDto.EmployeeId)
-                    throw new Exception("You are unauthorized to complete this case.");
+                if (selectedHistory.ToEmployeeId != caseCompleteDto.EmployeeId){
+
+                    response.Message = "You are unauthorized to complete this case.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.MethodNotAllowed.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
 
 
                 selectedHistory.AffairHistoryStatus = AffairHistoryStatus.Completed;
@@ -186,9 +267,18 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 selectedHistoryCC.CompletedDateTime = DateTime.Now;
                 selectedHistoryCC.Remark = caseCompleteDto.Remark;
 
-                Case currentCase = await _dbContext.Cases.Include(x => x.Applicant).Include(x => x.Employee).FirstOrDefaultAsync(x => x.Id == selectedHistory.CaseId);
-                CaseHistory currentHist = await _dbContext.CaseHistories.Include(x => x.Case).Include(x => x.ToStructure).FirstOrDefaultAsync(x => x.Id == selectedHistory.Id);
+                Case? currentCase = await _dbContext.Cases.Include(x => x.Applicant).Include(x => x.Employee).FirstOrDefaultAsync(x => x.Id == selectedHistory.CaseId);
+                CaseHistory? currentHist = await _dbContext.CaseHistories.Include(x => x.Case).Include(x => x.ToStructure).FirstOrDefaultAsync(x => x.Id == selectedHistory.Id);
+                if (currentCase ==  null || currentHist == null){
 
+                    response.Message = "Empty current Case or Empty current History";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                    
+                }
                 _dbContext.CaseHistories.Attach(selectedHistory);
                 _dbContext.Entry(selectedHistory).Property(x => x.AffairHistoryStatus).IsModified = true;
                 _dbContext.Entry(selectedHistory).Property(x => x.CompletedDateTime).IsModified = true;
@@ -202,6 +292,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 //_dbContext.SaveChanges();
 
                 var selectedCase = _dbContext.Cases.Find(selectedHistory.CaseId);
+                if (selectedCase == null){
+
+                    response.Message = "Selected Case is Empty";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
                 selectedCase.CompletedAt = DateTime.Now;
                 selectedCase.AffairStatus = AffairStatus.Completed;
 
@@ -255,21 +354,42 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 string message = name + "\nበጉዳይ ቁጥር፡" + currentCase.CaseNumber + "\nየተመዘገበ ጉዳዮ በ፡" + currentHist.ToStructure.StructureName + " ተጠናቋል\nየቢሮ ቁጥር: - ";
 
                 //await _smshelper.SendSmsForCase(message, currentHist.CaseId, currentHist.Id, UserId.ToString(), MessageFrom.Complete);
-                return 1;
+                response.Message = "Operation Successfull";
+                response.Data = 1;
+                response.Success = true;
+
+                return response;
 
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = 0;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
             }
         }
-        public async Task<int> RevertTask(CaseRevertDto revertCase)
+        public async Task<ResponseMessage<int>> RevertTask(CaseRevertDto revertCase)
         {
+            var response = new ResponseMessage<int>();
             try
             {
 
-                Employee currEmp = await _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id.Equals(revertCase.EmployeeId)).FirstOrDefaultAsync();
-                CaseHistory selectedHistory = _dbContext.CaseHistories.Find(revertCase.CaseHistoryId);
+                
+                Employee? currEmp = await _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id.Equals(revertCase.EmployeeId)).FirstOrDefaultAsync();
+                
+                if (currEmp == null){
+
+                    response.Message = "Current Employee doesnt exist.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
+                CaseHistory? selectedHistory = _dbContext.CaseHistories.Find(revertCase.CaseHistoryId);
                 Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(selectedHistory.ToEmployeeId)).FirstAsync()).Id);
 
                 selectedHistory.AffairHistoryStatus = AffairHistoryStatus.Revert;
@@ -300,30 +420,69 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 await _dbContext.CaseHistories.AddAsync(newHistory);
                 await _dbContext.SaveChangesAsync();
 
-                Case currentCase = await _dbContext.Cases.Include(x => x.Applicant).Include(x => x.Employee).FirstOrDefaultAsync(x => x.Id == selectedHistory.CaseId);
+                Case? currentCase = await _dbContext.Cases.Include(x => x.Applicant).Include(x => x.Employee).FirstOrDefaultAsync(x => x.Id == selectedHistory.CaseId);
+                if (currentCase == null){
+
+                    response.Message = "Selected Case is Empty";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
+                
                 string name = currentCase.Applicant != null ? currentCase.Applicant.ApplicantName : currentCase.Employee.FullName;
                 var message = name + "\nበጉዳይ ቁጥር፡" + currentCase.CaseNumber + "\nየተመዘገበ ጉዳዮ በ፡" + selectedHistory.ToStructure.StructureName + " ወደኋላ ተመልሷል  \nየቢሮ ቁጥር: -";
 
                 //await _smshelper.SendSmsForCase(message, newHistory.CaseId, newHistory.Id, UserId.ToString(), MessageFrom.Revert);
-                return 1;
+                response.Data = 1;
+                response.Success = true;
+                response.Message = "Opertation Succesfull";
+
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = 0;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
             }
         }
 
-        public async Task<int> TransferCase(CaseTransferDto caseTransferDto)
+        public async Task<ResponseMessage<int>> TransferCase(CaseTransferDto caseTransferDto)
         {
+            var response = new ResponseMessage<int>();
+            
             try
             {
-                Employee currEmp = await _dbContext.Employees.Where(el => el.Id.Equals(caseTransferDto.FromEmployeeId)).FirstOrDefaultAsync();
+                Employee? currEmp = await _dbContext.Employees.Where(el => el.Id.Equals(caseTransferDto.FromEmployeeId)).FirstOrDefaultAsync();
+                if (currEmp == null){
+
+                    response.Message = "Selected Employee doesnt exist.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
                 CaseHistory currentLastHistory = await _dbContext.CaseHistories.Where(el => el.Id.Equals(caseTransferDto.CaseHistoryId)).OrderByDescending(x => x.CreatedAt).FirstAsync();
 
                 Guid UserId = Guid.Parse((await _userManager.Users.Where(appUsr => appUsr.EmployeesId.Equals(caseTransferDto.ToEmployeeId)).FirstAsync()).Id);
 
                 if (caseTransferDto.FromEmployeeId != currentLastHistory.ToEmployeeId)
-                    throw new Exception("You are not authorized to transfer this case.");
+                {
+
+                    response.Message = "You are not authorized to transfer this case.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.MethodNotAllowed.ToString();
+                    response.Success = false;
+
+                    return response;
+
+                }
 
                 currentLastHistory.AffairHistoryStatus = AffairHistoryStatus.Transfered;
                 currentLastHistory.TransferedDateTime = DateTime.Now;
@@ -365,42 +524,70 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
 
                 /// Sending SMS
-                Case currentCase = await _dbContext.Cases.Include(x => x.Applicant).Include(x => x.Employee).FirstOrDefaultAsync(x => x.Id == newHistory.CaseId);
+                Case? currentCase = await _dbContext.Cases.Include(x => x.Applicant).Include(x => x.Employee).FirstOrDefaultAsync(x => x.Id == newHistory.CaseId);
+                if (currentCase == null){
+
+                    response.Message = "Selected Case is Empty";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
                 string name = currentCase.Applicant != null ? currentCase.Applicant.ApplicantName : currentCase.Employee.FullName;
                 string toStructure = _dbContext.OrganizationalStructures.Find(newHistory.ToStructureId).StructureName;
 
 
                 var assigndCase = await _caseEncodeService.GetAllTransfred(toEmployee);
-                await _encoderHub.Clients.Group(toEmployee.ToString()).getNotification(assigndCase, toEmployee.ToString());
+                await _encoderHub.Clients.Group(toEmployee.ToString()).getNotification(assigndCase.Data, toEmployee.ToString());
 
                 string message = name + "\nበጉዳይ ቁጥር፡" + currentCase.CaseNumber + "\nየተመዘገበ ጉዳዮ ለ " + toStructure + " ተላልፏል\nየቢሮ ቁጥር:";
 
                 //await _smshelper.SendSmsForCase(message, newHistory.CaseId, newHistory.Id, UserId.ToString(), MessageFrom.Transfer);
-                return 1;
+                response.Message = "Operation Successfull.";
+                response.Data = 1;
+                response.Success = true;
+
+                return response;
             }
             catch (Exception ex)
 
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = 0;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
             }
         }
 
 
 
-        public async Task<ResponseMessage> AddToWaiting(Guid caseHistoryId)
+        public async Task<ResponseMessage<int>> AddToWaiting(Guid caseHistoryId)
         {
+            var response = new ResponseMessage<int>();
             try
             {
 
 
                 var history = _dbContext.CaseHistories.Find(caseHistoryId);
+                if (history == null){
+
+                    response.Message = "History doesnt exist.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
                 if (history.WaitingPeriod > 3)
                 {
-                    return new ResponseMessage
-                    {
-                        Success = false,
-                        Message = "Case Has Reached Maximum Waiting"
-                    };
+                    
+                    response.Data = 0;
+                    response.Success = false;
+                    response.Message = "Case Has Reached Maximum Waiting";
+                    return response;
                 }
 
                 history.AffairHistoryStatus = AffairHistoryStatus.Waiting;
@@ -414,40 +601,58 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
                 await _dbContext.SaveChangesAsync();
 
-                return new ResponseMessage
-                {
-                    Success = true,
-                    Message = "Case Added To Waiting Successfully!!!"
-                };
+                response.Message = "Added Successfully";
+                response.Data = 1;
+                response.Success = true;
+
+                return response;
 
 
 
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
-                {
-                    Success = false,
-                    Message = ex.Message
-                };
+                response.Message = $"{ex.Message}";
+                response.Data = 0;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
             }
         }
 
-        public async Task<int> SendSMS(CaseCompleteDto smsdetail)
+        public async Task<ResponseMessage<int>> SendSMS(CaseCompleteDto smsdetail)
         {
+            var response = new ResponseMessage<int>();
 
             var history = _dbContext.CaseHistories.Find(smsdetail.CaseHistoryId);
             await _smshelper.SendSmsForCase(smsdetail.Remark, history.CaseId, history.Id, smsdetail.EmployeeId.ToString(), MessageFrom.Custom_text);
-            return 1;
+            response.Message = "Successfull.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
         }
 
-        public async Task<CaseEncodeGetDto> GetCaseDetial(Guid employeeId, Guid historyId)
+        public async Task<ResponseMessage<CaseEncodeGetDto>> GetCaseDetial(Guid employeeId, Guid historyId)
         {
 
-            Employee user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
+            var response = new ResponseMessage<CaseEncodeGetDto>();
+            try{
 
+            Employee? user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
 
-            CaseHistory currentHistry = _dbContext.CaseHistories
+            if (user ==  null){
+
+                response.Message = "Employee doesnt exist.";
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                response.Success = false;
+
+                return response;
+            }
+
+            CaseHistory? currentHistry = _dbContext.CaseHistories
                 .Include(x => x.Case.CaseType)
                  .Include(x => x.Case.Applicant)
                  .Include(x => x.Case.Employee)
@@ -458,7 +663,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                                      x.Id == historyId);
 
 
+            if (currentHistry == null){
 
+                response.Message = "Selected history deosnt exist.";
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                response.Success = false;
+
+                return response;
+            }
 
             if (currentHistry != null && (currentHistry.AffairHistoryStatus == AffairHistoryStatus.Pend || currentHistry.AffairHistoryStatus == AffairHistoryStatus.Waiting || currentHistry.AffairHistoryStatus == AffairHistoryStatus.Completed))
             {
@@ -482,7 +695,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                                                }).ToList();
 
             attachments.AddRange((from x in _dbContext.FilesInformations.Where(x => x.CaseId == currentHistry.CaseId)
-                                  select new SelectListDto { Id = x.Id, Name = x.FilePath, Photo = x.FileDescription }).ToList());
+                             select new SelectListDto { Id = x.Id, Name = x.FilePath, Photo  = x.FileDescription }).ToList());
 
             List<CaseDetailStructureDto> caseDetailstructures = _dbContext.CaseHistories.Include(x => x.FromEmployee).Include(x => x.FromStructure).Where(x => x.CaseId == currentHistry.CaseId).OrderByDescending(x => x.CreatedAt).Select(x => new CaseDetailStructureDto
             {
@@ -523,8 +736,22 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             };
 
+            response.Message = "Operation Successfull";
+            response.Data = result;
+            response.Success = true;
 
-            return result;
+            return response;
+
+            }
+            catch (Exception ex){
+
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
+            }
 
 
 
@@ -535,72 +762,184 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         }
 
 
-        public async Task<int> ArchiveCase(ArchivedCaseDto archivedCaseDto)
+        public async Task<ResponseMessage<int>> ArchiveCase(ArchivedCaseDto archivedCaseDto)
         {
 
-            Case cases = _dbContext.Cases.Find(archivedCaseDto.CaseId);
+            var response = new ResponseMessage<int>();
+            
+            try{
 
-            cases.FolderId = archivedCaseDto.FolderId;
-            cases.IsArchived = true;
+                Case? cases = _dbContext.Cases.Find(archivedCaseDto.CaseId);
+
+                if (cases == null){
+
+                    response.Message = "Could not find matching cases.";
+                    response.Data = 0;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
+
+                cases.FolderId = archivedCaseDto.FolderId;
+                cases.IsArchived = true;
 
 
-            _dbContext.Entry(cases).Property(x => x.FolderId).IsModified = true;
-            _dbContext.Entry(cases).Property(x => x.IsArchived).IsModified = true;
+                _dbContext.Entry(cases).Property(x => x.FolderId).IsModified = true;
+                _dbContext.Entry(cases).Property(x => x.IsArchived).IsModified = true;
 
-            await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
-            return 1;
+                response.Message = "Operation Successfull";
+                response.Data = 1;
+                response.Success = true;
+
+                return response;
+
+            }
+
+            catch (Exception ex){
+                
+                response.Message = $"{ex.Message}";
+                response.Data = 0;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
+
+            }
         }
 
 
-        public async Task<CaseState> GetCaseState(Guid CaseTypeId, Guid caseHistoryId)
+        public async Task<ResponseMessage<CaseState>> GetCaseState(Guid CaseTypeId, Guid caseHistoryId)
         {
+            var response = new ResponseMessage<CaseState>();
 
-            var childCaseType = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == CaseTypeId).ToListAsync();
-            CaseState caseState = new CaseState();
+            try{
 
-            int childcount = _dbContext.CaseHistories.Find(caseHistoryId).childOrder + 1;
-            foreach (var childaffair in childCaseType)
-            {
+                var childCaseType = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == CaseTypeId).ToListAsync();
+                CaseState caseState = new CaseState();
 
+                var child_nullable = _dbContext.CaseHistories.Find(caseHistoryId);
 
+                if (child_nullable == null){
 
-                if (childaffair.OrderNumber == childcount)
+                    response.Message = "Could not find child.";
+                    response.Data = null;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+
+                    return response;
+                }
+
+                int childcount = child_nullable.childOrder + 1;
+
+                foreach (var childaffair in childCaseType)
                 {
-                    caseState.CurrentState = childaffair.CaseTypeTitle;
+                
 
-                    caseState.NeededDocuments = new List<string>();
-
-                    var files = await _dbContext.FileSettings.Where(x => x.CaseTypeId == childaffair.Id).ToListAsync();
-
-                    foreach (var file in files)
+              
+                    if (childaffair.OrderNumber == childcount)
                     {
-                        caseState.NeededDocuments.Add(file.FileName);
+                        caseState.CurrentState = childaffair.CaseTypeTitle;
+
+                        caseState.NeededDocuments = new List<string>();
+
+                        var files = await _dbContext.FileSettings.Where(x => x.CaseTypeId == childaffair.Id).ToListAsync();
+
+                        foreach (var file in files)
+                        {
+                            caseState.NeededDocuments.Add(file.FileName);
+                        }
+                    }
+
+                    if (childaffair.OrderNumber == childcount + 1)
+                    {
+
+                        caseState.NextState = childaffair.CaseTypeTitle;
                     }
                 }
 
-                if (childaffair.OrderNumber == childcount + 1)
-                {
+                response.Message = "Opertaion Successfull.";
+                response.Data = caseState;
+                response.Success = true;
 
-                    caseState.NextState = childaffair.CaseTypeTitle;
-                }
+                return response;
+            
             }
 
-            return caseState;
+            catch (Exception ex){
+
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
+            }
         }
 
-        public async Task<bool> Ispermitted(Guid employeeId, Guid caseId)
+        public async Task<ResponseMessage<bool>> Ispermitted(Guid employeeId, Guid caseId)
         {
-            var caseIDD = _dbContext.CaseHistories.Find(caseId).CaseId;
-            var employee = _dbContext.CaseHistories.Where(x => x.CaseId == caseIDD && x.ReciverType == ReciverType.Orginal).OrderByDescending(z => z.childOrder).FirstOrDefault().ToEmployeeId;
+            var response = new ResponseMessage<bool>();
+            
+            try{
+            var caseIDD_nullable = _dbContext.CaseHistories.Find(caseId);
+
+            if (caseIDD_nullable == null){
+                
+                response.Message = "Could not find matching case.";
+                response.Data = false;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                response.Success = false;
+
+                return response;
+            }
+            
+            var caseIDD = caseIDD_nullable.CaseId;
+
+            var employee_nullable = _dbContext.CaseHistories.Where(x => x.CaseId == caseIDD && x.ReciverType == ReciverType.Orginal).OrderByDescending(z => z.childOrder).FirstOrDefault();
+
+            if (employee_nullable == null){
+                
+                response.Message = "Could not find matching employee.";
+                response.Data = false;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                response.Success = false;
+
+                return response;
+            }
+
+            var employee = employee_nullable.ToEmployeeId;
 
             var casehistor = _dbContext.CaseHistories.Where(x => x.CaseId == caseIDD).OrderBy(x => x.childOrder).Where(x => x.CompletedDateTime != null).Select(x => x.CompletedDateTime).ToList();
 
             if ((employeeId.ToString().ToLower() == employee.ToString().ToLower()) && casehistor.Count == 0)
             {
-                return true;
+                response.Message = "Is permitted";
+                response.Data = true;
+                response.Success = true;
+
+                return response;
             }
-            return false;
+
+            response.Message = "Is not permitted";
+            response.Data = false;
+            response.Success = true;
+
+            return response; 
+            
+            }
+
+            catch (Exception ex){
+
+                response.Message = $"{ex.Message}";
+                response.Data = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+
+                return response;
+            }
 
         }
 
