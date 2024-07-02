@@ -297,11 +297,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                         float ActualPlan = 0;
                         float Goal = 0;
                         var Tasks = planItems.Tasks;
-                        if (!Tasks.Any() && !planItems.Activities.Any())
+                        if (Tasks.Count == 0 && planItems.Activities.Count == 0)
                         {
                             Pro_Goal = Pro_Goal + Plans.Sum(x => x.PlanWeight);
                         }
-                        else if (planItems.Activities.Any())
+                        else if (planItems.Activities.Count != 0)
                         {
                             Pro_Goal = Pro_Goal + ((planItems.Activities.First().Goal * (float)planItems.PlanWeight) / Plans.Sum(x => x.PlanWeight));
                         }
@@ -311,7 +311,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                             float BeginingPercent = 0;
                             float ActualWorkedPercent = 0;
                             float GoalPercent = 0;
-                            if (!Activities.Any() && !taskItems.Activities.Any())
+                            if (Activities.Count == 0 && !taskItems.Activities.Any())
                             {
                                 Goal = Goal + planItems.PlanWeight;
                             }
@@ -396,11 +396,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                     float ActualPlan = 0;
                     float Goal = 0;
                     var Tasks = planItems.Tasks.ToList();
-                    if (!Tasks.Any() && !planItems.Activities.Any())
+                    if (Tasks.Count == 0 && planItems.Activities.Count == 0)
                     {
                         Pro_Goal = Pro_Goal + Plans.Sum(x => x.PlanWeight);
                     }
-                    else if (planItems.Activities.Any())
+                    else if (planItems.Activities.Count != 0)
                     {
                         Pro_Goal = Pro_Goal + ((planItems.Activities.FirstOrDefault().Goal * (float)planItems.PlanWeight) / Plans.Sum(x => x.PlanWeight));
                     }
@@ -410,7 +410,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                         float BeginingPercent = 0;
                         float ActualWorkedPercent = 0;
                         float GoalPercent = 0;
-                        if (!Activities.Any() && !taskItems.Activities.Any())
+                        if (Activities.Count == 0 && !taskItems.Activities.Any())
                         {
                             Goal = Goal + planItems.PlanWeight;
                         }
@@ -585,11 +585,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                 ActualPlan = 0;
                 Goal = 0;
                 var Tasks = planItems.Tasks.ToList();
-                if (planItems.HasTask && planItems.Tasks.Any())
+                if (planItems.HasTask && planItems.Tasks.Count != 0)
                 {
                     foreach (var taskItems in Tasks)
                     {
-                        if (!taskItems.HasActivityParent && taskItems.Activities.Any() && taskItems.Weight != null)
+                        if (!taskItems.HasActivityParent && taskItems.Activities.Count != 0 && taskItems.Weight != null)
                         {
                             BeginingPlan = BeginingPlan + ((taskItems.Activities.FirstOrDefault().Begining * (float)taskItems.Weight) / planItems.PlanWeight);
                             ActualPlan = ActualPlan + ((taskItems.Activities.FirstOrDefault().ActualWorked * (float)taskItems.Weight) / planItems.PlanWeight);
@@ -599,14 +599,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                             Goal = planItems.PlanWeight == 0 ? Goal : Goal + (((float)taskGoal * (float)taskItems.Weight) / planItems.PlanWeight);
                             OverallProgress = (OverallProgress + ((taskItems.Activities.FirstOrDefault().ActualWorked + taskItems.Activities.FirstOrDefault().Begining) * (float)taskItems.Weight) / planItems.PlanWeight);
                         }
-                        else if (taskItems.ActivitiesParents.Any())
+                        else if (taskItems.ActivitiesParents.Count != 0)
                         {
                             var Activities = taskItems.ActivitiesParents;
                             float BeginingPercent = 0;
                             float ActualWorkedPercent = 0;
                             float GoalPercent = 0;
                             float oProgress = 0;
-                            if (!Activities.Any())
+                            if (Activities.Count == 0)
                             {
                                 Goal = Goal + planItems.PlanWeight;
                             }
@@ -629,7 +629,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                         }
                     }
                 }
-                else if (planItems.Activities.Any())
+                else if (planItems.Activities.Count != 0)
                 {
                     Goal = Goal + (float)planItems.Activities.First().Goal;
                     BeginingPlan = BeginingPlan + (float)planItems.Activities.First().Begining;

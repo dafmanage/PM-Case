@@ -174,12 +174,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                         var taskMemos = await _dBContext.TaskMemos.Where(x => x.TaskId == task.Id).ToListAsync();
                         var taskMembers = await _dBContext.TaskMembers.Where(x => x.TaskId == task.Id).ToListAsync();
 
-                        if (taskMemos.Any())
+                        if (taskMemos.Count != 0)
                         {
                             _dBContext.TaskMemos.RemoveRange(taskMemos);
                             await _dBContext.SaveChangesAsync();
                         }
-                        if (taskMembers.Any())
+                        if (taskMembers.Count != 0)
                         {
                             _dBContext.TaskMembers.RemoveRange(taskMembers);
                             await _dBContext.SaveChangesAsync();
@@ -197,7 +197,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                                 foreach (var actpro in actProgress)
                                 {
                                     var progAttachments = await _dBContext.ProgressAttachments.Where(x => x.ActivityProgressId == actpro.Id).ToListAsync();
-                                    if (progAttachments.Any())
+                                    if (progAttachments.Count != 0)
                                     {
                                         _dBContext.ProgressAttachments.RemoveRange(progAttachments);
                                         await _dBContext.SaveChangesAsync();
@@ -205,7 +205,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
                                 }
 
-                                if (actProgress.Any())
+                                if (actProgress.Count != 0)
                                 {
                                     _dBContext.ActivityProgresses.RemoveRange(actProgress);
                                     await _dBContext.SaveChangesAsync();
@@ -214,7 +214,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                                 var activityTargets = await _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == act.Id).ToListAsync();
 
 
-                                if (activityTargets.Any())
+                                if (activityTargets.Count != 0)
                                 {
                                     _dBContext.ActivityTargetDivisions.RemoveRange(activityTargets);
                                     await _dBContext.SaveChangesAsync();
@@ -224,14 +224,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                                 var employees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == act.Id).ToListAsync();
 
 
-                                if (activityTargets.Any())
+                                if (activityTargets.Count != 0)
                                 {
                                     _dBContext.EmployeesAssignedForActivities.RemoveRange(employees);
                                     await _dBContext.SaveChangesAsync();
                                 }
                             }
 
-                            if (activities.Any())
+                            if (activities.Count != 0)
                             {
                                 _dBContext.Activities.RemoveRange(activities);
                                 await _dBContext.SaveChangesAsync();
@@ -239,7 +239,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
 
                         }
-                        if (actParent.Any())
+                        if (actParent.Count != 0)
                         {
                             _dBContext.ActivityParents.RemoveRange(actParent);
                             await _dBContext.SaveChangesAsync();
@@ -247,7 +247,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                         }
                         var actvities2 = await _dBContext.Activities.Where(x => x.TaskId == task.Id).ToListAsync();
 
-                        if (actvities2.Any())
+                        if (actvities2.Count != 0)
                         {
                             foreach (var act in actvities2)
                             {
@@ -256,7 +256,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                                 foreach (var actpro in actProgress)
                                 {
                                     var progAttachments = await _dBContext.ProgressAttachments.Where(x => x.ActivityProgressId == actpro.Id).ToListAsync();
-                                    if (progAttachments.Any())
+                                    if (progAttachments.Count != 0)
                                     {
                                         _dBContext.ProgressAttachments.RemoveRange(progAttachments);
                                         await _dBContext.SaveChangesAsync();
@@ -264,7 +264,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
                                 }
 
-                                if (actProgress.Any())
+                                if (actProgress.Count != 0)
                                 {
                                     _dBContext.ActivityProgresses.RemoveRange(actProgress);
                                     await _dBContext.SaveChangesAsync();
@@ -273,7 +273,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                                 var activityTargets = await _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == act.Id).ToListAsync();
 
 
-                                if (activityTargets.Any())
+                                if (activityTargets.Count != 0)
                                 {
                                     _dBContext.ActivityTargetDivisions.RemoveRange(activityTargets);
                                     await _dBContext.SaveChangesAsync();
@@ -283,7 +283,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                                 var employees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == act.Id).ToListAsync();
 
 
-                                if (employees.Any())
+                                if (employees.Count != 0)
                                 {
                                     _dBContext.EmployeesAssignedForActivities.RemoveRange(employees);
                                     await _dBContext.SaveChangesAsync();
@@ -301,7 +301,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
 
                     }
-                    if (tasks.Any())
+                    if (tasks.Count != 0)
                     {
                         _dBContext.Tasks.RemoveRange(tasks);
                         await _dBContext.SaveChangesAsync();
@@ -309,21 +309,21 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
 
                 }
-                if (plans.Any())
+                if (plans.Count != 0)
                 {
                     _dBContext.Plans.RemoveRange(plans);
                     await _dBContext.SaveChangesAsync();
 
                 }
             }
-            if (programs.Any())
+            if (programs.Count != 0)
             {
                 _dBContext.Programs.RemoveRange(programs);
                 await _dBContext.SaveChangesAsync();
             }
 
             var users = await _userManager.Users.Where(x => x.SubsidiaryOrganizationId == suOrgId).ToListAsync();
-            if (users.Any())
+            if (users.Count != 0)
             {
                 foreach (var user in users)
                 {

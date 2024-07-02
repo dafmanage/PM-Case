@@ -111,7 +111,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
             }
             List<DiagramDto> result = new List<DiagramDto>();
 
-            if (childs.Any())
+            if (childs.Count != 0)
             {
                 result.Add(childs[0]);
             }
@@ -275,7 +275,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                     var MonthDeclarator = ProgramViewModelList.Where(x => x.ProgramPlanViewModels.Count() > 0).First().ProgramPlanViewModels.Where(x => x.FiscalPlanPrograms.Count > 0).First().FiscalPlanPrograms.ToList();
 
 
-                    if (MonthDeclarator.Any())
+                    if (MonthDeclarator.Count != 0)
                     {
                         if (ReportBy == "Quarter")
                         {
@@ -510,7 +510,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                     }
 
 
-                    if (MonthDeclarator.Any())
+                    if (MonthDeclarator.Count != 0)
                     {
                         if (ReportBy == "Quarter")
                         {
@@ -720,7 +720,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                             List<PlanOcc> planOccs = new List<PlanOcc>();
 
                                             var byQuarter = ActItems.ActivityTargetDivisions.OrderBy(x => x.Order).ToList();
-                                            if (!QuarterMonth.Any())
+                                            if (QuarterMonth.Count == 0)
                                             {
 
                                                 int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
@@ -826,7 +826,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                         actparentlst.activityLsts = activityLsts;
                                         actparentlsts.Add(actparentlst);
                                     }
-                                    else if (actparent.Activities.Any() && actparent.Activities.FirstOrDefault().targetDivision != null)
+                                    else if (actparent.Activities.Count != 0 && actparent.Activities.FirstOrDefault().targetDivision != null)
                                     {
                                         List<PlanOcc> planoccPlan = new List<PlanOcc>();
                                         var Pocu = actparent.Activities.FirstOrDefault();
@@ -837,7 +837,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                             actparentlst.MeasurementUnit = Pocu.UnitOfMeasurement.Name;
                                             actparentlst.Begining = Pocu.Begining;
                                             var byQuarter = Pocu.ActivityTargetDivisions.OrderBy(x => x.Order).ToList();
-                                            if (!QuarterMonth.Any())
+                                            if (QuarterMonth.Count == 0)
                                             {
 
                                                 int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
@@ -949,7 +949,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                 taskLsts.Add(taskLst);
 
                             }
-                            else if (taskItems.Activities.Any() && taskItems.Activities.FirstOrDefault().ActivityTargetDivisions != null)
+                            else if (taskItems.Activities.Count != 0 && taskItems.Activities.FirstOrDefault().ActivityTargetDivisions != null)
                             {
 
                                 var Acti = taskItems.Activities.FirstOrDefault();
@@ -960,7 +960,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                     taskLst.Target = Acti.Goal;
                                     List<PlanOcc> planOccs = new List<PlanOcc>();
                                     var byQuarter = Acti.ActivityTargetDivisions.OrderBy(x => x.Order).ToList();
-                                    if (!QuarterMonth.Any())
+                                    if (QuarterMonth.Count == 0)
                                     {
 
                                         int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
@@ -1067,7 +1067,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                         plns.taskLsts = taskLsts;
                         plansLsts.Add(plns);
                     }
-                    else if (plansItems.Activities.Any() && plansItems.Activities.FirstOrDefault().ActivityTargetDivisions != null)
+                    else if (plansItems.Activities.Count != 0 && plansItems.Activities.FirstOrDefault().ActivityTargetDivisions != null)
                     {
 
                         List<PlanOcc> planoccPlan = new List<PlanOcc>();
@@ -1079,7 +1079,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                             plns.MeasurementUnit = Pocu.UnitOfMeasurement.Name;
                             plns.Begining = Pocu.Begining;
                             var byQuarter = Pocu.ActivityTargetDivisions.OrderBy(x => x.Order).ToList();
-                            if (!QuarterMonth.Any())
+                            if (QuarterMonth.Count == 0)
                             {
 
                                 int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
@@ -1235,7 +1235,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                         progressReport.planDuration = filterationCriteria.reporttype == reporttype.Quarter.ToString() ? 4 : 12;
 
                         //var  byQuarter = items.targetdivison.ToList().OrderBy(x => x.order);
-                        if (!QuarterMonth.Any())
+                        if (QuarterMonth.Count == 0)
                         {
 
                             int value = items.targetDivision == TargetDivision.Quarterly ? 4 : 12;
@@ -1445,7 +1445,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                     actes.Add(act);
                                 }
                             }
-                            else if (activityparent.Activities.Any() && activityparent.Activities.FirstOrDefault().targetDivision != null)
+                            else if (activityparent.Activities.Count != 0 && activityparent.Activities.FirstOrDefault().targetDivision != null)
                             {
                                 actes.Add(activityparent.Activities.FirstOrDefault());
 
@@ -1456,7 +1456,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
                     }
-                    else if (task.Activities.Any() && task.Activities.FirstOrDefault().ActivityTargetDivisions.Any())
+                    else if (task.Activities.Count != 0 && task.Activities.FirstOrDefault().ActivityTargetDivisions.Count != 0)
                     {
 
                         actes.Add(task.Activities.FirstOrDefault());
@@ -1469,7 +1469,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
 
-                    var allActivities = actes.Where(x => x.ActivityTargetDivisions.Any()).OrderBy(c => c.ShouldStat).ToList();
+                    var allActivities = actes.Where(x => x.ActivityTargetDivisions.Count != 0).OrderBy(c => c.ShouldStat).ToList();
                     if (filterationCriteria.budgetYear != null)
                     {
                         DateType = "Year of " + " " + filterationCriteria.budgetYear;
@@ -1483,7 +1483,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
                         //var  byQuarter = items.targetdivison.ToList().OrderBy(x => x.order);
-                        if (!QuarterMonth.Any())
+                        if (QuarterMonth.Count == 0)
                         {
 
                             int value = items.targetDivision == TargetDivision.Quarterly ? 4 : 12;
@@ -1694,7 +1694,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                             actes.Add(act);
                                         }
                                     }
-                                    else if (activityparent.Activities.Any() && activityparent.Activities.FirstOrDefault().targetDivision != null)
+                                    else if (activityparent.Activities.Count != 0 && activityparent.Activities.FirstOrDefault().targetDivision != null)
                                     {
                                         actes.Add(activityparent.Activities.FirstOrDefault());
 
@@ -1705,7 +1705,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
                             }
-                            else if (task.Activities.Any() && task.Activities.FirstOrDefault().targetDivision != null)
+                            else if (task.Activities.Count != 0 && task.Activities.FirstOrDefault().targetDivision != null)
                             {
 
                                 actes.Add(task.Activities.FirstOrDefault());
@@ -1714,7 +1714,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                             }
                         }
                     }
-                    else if (plan.Activities.Any() && plan.Activities.FirstOrDefault().targetDivision != null)
+                    else if (plan.Activities.Count != 0 && plan.Activities.FirstOrDefault().targetDivision != null)
                     {
                         actes.Add(plan.Activities.FirstOrDefault());
 
@@ -1739,7 +1739,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
                         //var  byQuarter = items.targetdivison.ToList().OrderBy(x => x.order);
-                        if (!QuarterMonth.Any())
+                        if (QuarterMonth.Count == 0)
                         {
 
                             int value = items.targetDivision == TargetDivision.Quarterly ? 4 : 12;
@@ -2034,7 +2034,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
 
-                                                if (!QuarterMonth.Any())
+                                                if (QuarterMonth.Count == 0)
                                                 {
 
                                                     int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
@@ -2154,7 +2154,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                             }
                                             actparent.activityLsts = activityLsts;
                                         }
-                                        else if (actparentItems.Activities.Any() && actparentItems.Activities.FirstOrDefault().targetDivision != null)
+                                        else if (actparentItems.Activities.Count != 0 && actparentItems.Activities.FirstOrDefault().targetDivision != null)
                                         {
                                             var TaskOcs = actparentItems.Activities.FirstOrDefault();
                                             if (TaskOcs != null)
@@ -2185,7 +2185,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                                 }
                                                 var byQuarter = TaskOcs.ActivityTargetDivisions.ToList().OrderBy(x => x.Order);
 
-                                                if (!QuarterMonth.Any())
+                                                if (QuarterMonth.Count == 0)
                                                 {
                                                     int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
                                                     if (ReportBy == reporttype.Quarter.ToString())
@@ -2265,7 +2265,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                                 if (ReportBy == reporttype.Quarter.ToString())
                                                 {
 
-                                                    if (planOq.Any())
+                                                    if (planOq.Count != 0)
                                                     {
                                                         for (int i = 0; i < 12; i += 3)
                                                         {
@@ -2292,7 +2292,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                     taskLst.ActParentLst = ActParentLst;
                                     taskLsts.Add(taskLst);
                                 }
-                                else if (taskItems.Activities.Any() && taskItems.Activities.FirstOrDefault().ActivityTargetDivisions.Any())
+                                else if (taskItems.Activities.Count != 0 && taskItems.Activities.FirstOrDefault().ActivityTargetDivisions.Count != 0)
                                 {
                                     var TaskOcs = taskItems.Activities.FirstOrDefault();
                                     if (TaskOcs != null)
@@ -2323,7 +2323,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                         }
                                         var byQuarter = TaskOcs.ActivityTargetDivisions.ToList().OrderBy(x => x.Order);
 
-                                        if (!QuarterMonth.Any())
+                                        if (QuarterMonth.Count == 0)
                                         {
                                             int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
                                             if (ReportBy == reporttype.Quarter.ToString())
@@ -2425,7 +2425,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                             plns.taskLsts = taskLsts;
                             progresseReportByStructure.plansLsts.Add(plns);
                         }
-                        else if (plansItems.Activities.Any() && plansItems.Activities.FirstOrDefault().ActivityTargetDivisions.Any())
+                        else if (plansItems.Activities.Count != 0 && plansItems.Activities.FirstOrDefault().ActivityTargetDivisions.Count != 0)
                         {
                             List<ActivityLst> activityLsts = new List<ActivityLst>();
                             var PlanDivOcs = plansItems.Activities.FirstOrDefault();
@@ -2456,7 +2456,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                     progresseReportByStructure.planDuration = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
                                 }
                                 var byQuarter = PlanDivOcs.ActivityTargetDivisions.ToList().OrderBy(x => x.Order);
-                                if (!QuarterMonth.Any())
+                                if (QuarterMonth.Count == 0)
                                 {
 
                                     int value = ReportBy == reporttype.Quarter.ToString() ? 4 : 12;
@@ -2874,7 +2874,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
             foreach (var item in plans)
             {
                 var estimatedCost = new EstimatedCostDto();
-                if (item.Activities.Any())
+                if (item.Activities.Count != 0)
                 {
                     estimatedCost.Description = item.Activities.First().ActivityDescription;
                     string[] GetP = GetPlanDateVariance(item.Activities.First().ShouldStat, item.Activities.First().ShouldEnd);
@@ -2897,12 +2897,12 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                 {
                     estimatedCost.Description = item.PlanName;
                     estimatedCost.Tasks = new List<EstimatedCostDto>();
-                    if (item.Tasks.Any())
+                    if (item.Tasks.Count != 0)
                     {
                         foreach (var taskItems in item.Tasks)
                         {
                             var taskestimatedCost = new EstimatedCostDto();
-                            if (taskItems.Activities.Any())
+                            if (taskItems.Activities.Count != 0)
                             {
                                 taskestimatedCost.Description = taskItems.Activities.First().ActivityDescription;
                                 string[] GetP = GetPlanDateVariance(taskItems.Activities.First().ShouldStat, taskItems.Activities.First().ShouldEnd);
@@ -2922,7 +2922,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                 estimatedCost.Tasks.Add(taskestimatedCost);
                             }
 
-                            else if (taskItems.ActivitiesParents.Any())
+                            else if (taskItems.ActivitiesParents.Count != 0)
                             {
                                 taskestimatedCost.Description = taskItems.TaskDescription;
                                 taskestimatedCost.Tasks = new List<EstimatedCostDto>();
@@ -3194,7 +3194,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                                 float BeginingPercent = 0;
                                 float ActualWorkedPercent = 0;
                                 float GoalPercent = 0;
-                                if (!Activities.Any())
+                                if (Activities.Count == 0)
                                 {
                                     Goal = Goal + planItems.PlanWeight;
                                 }
@@ -3220,7 +3220,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                             float BeginingPercent = 0;
                             float ActualWorkedPercent = 0;
                             float GoalPercent = 0;
-                            if (!Activities.Any())
+                            if (Activities.Count == 0)
                             {
                                 Goal = Goal + planItems.PlanWeight;
                             }
@@ -3245,7 +3245,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                     float BeginingPercent = 0;
                     float ActualWorkedPercent = 0;
                     float GoalPercent = 0;
-                    if (!Activities.Any())
+                    if (Activities.Count == 0)
                     {
                         Goal = Goal + planItems.PlanWeight;
                     }

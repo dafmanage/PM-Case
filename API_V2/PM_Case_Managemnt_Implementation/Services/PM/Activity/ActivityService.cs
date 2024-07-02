@@ -842,7 +842,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
                     var activityEmployees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == activityEmployee.ActivityId).ToListAsync();
 
-                    if (activityEmployees.Any())
+                    if (activityEmployees.Count != 0)
                     {
                         _dBContext.RemoveRange(activityEmployees);
                     }

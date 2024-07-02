@@ -99,7 +99,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
                                               }).ToListAsync();
 
 
-            if (!list.Any())
+            if (list.Count == 0)
             {
                 list = await (from x in _dBContext.OrganizationalStructures.Where(y => y.Id == branchId)
                               select new SelectListDto
@@ -218,7 +218,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             }
             List<DiagramDto> result = new List<DiagramDto>();
 
-            if (childs.Any())
+            if (childs.Count != 0)
             {
                 result.Add(childs[0]);
             }

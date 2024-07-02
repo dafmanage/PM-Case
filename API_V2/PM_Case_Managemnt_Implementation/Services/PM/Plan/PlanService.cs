@@ -6,22 +6,21 @@ using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
 
+//
+using Tasks = System.Threading.Tasks.Task;
+
 namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
 {
-    public class PlanService : IPlanService
+    public class PlanService(ApplicationDbContext context) : IPlanService
     {
 
-        private readonly ApplicationDbContext _dBContext;
-        public PlanService(ApplicationDbContext context)
-        {
-            _dBContext = context;
-        }
+        private readonly ApplicationDbContext _dBContext = context;
 
         public async Task<int> CreatePlan(PlanDto plan)
         {
             var budgetYear = await _dBContext.BudgetYears.FindAsync(plan.BudgetYearId);
 
-            var Plans = new PM_Case_Managemnt_Infrustructure.Models.PM.Plan
+            var newPlan = new PM_Case_Managemnt_Infrustructure.Models.PM.Plan
             {
                 Id = Guid.NewGuid(),
                 BudgetYearId = plan.BudgetYearId,
@@ -38,149 +37,137 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                 PeriodStartAt = budgetYear.FromDate,
                 PeriodEndAt = budgetYear.ToDate,
                 CreatedAt = DateTime.Now,
-
+                FinanceId = plan.FinanceId != Guid.Empty ? plan.FinanceId : (Guid?)null
             };
 
-
-
-
-
-            if (plan.FinanceId != Guid.Empty)
-            {
-                Plans.FinanceId = plan.FinanceId;
-            }
-            await _dBContext.AddAsync(Plans);
+            await _dBContext.AddAsync(newPlan);
             await _dBContext.SaveChangesAsync();
+
             return 1;
-
         }
 
-        public async Task<List<PlanViewDto>> GetPlans(Guid? programId, Guid SubOrgId)
+        public async Task<List<PlanViewDto>> GetPlans(Guid? programId, Guid subOrgId)
         {
+            var plans = _dBContext.Plans
+                .Include(x => x.Structure)
+                .Include(x => x.ProjectManager)
+                .Include(x => x.Finance)
+                .Where(x => programId != null ? x.ProgramId == programId : x.Structure.SubsidiaryOrganizationId == subOrgId);
 
-            var plans = programId != null ? _dBContext.Plans.Include(x => x.Structure).Include(x => x.ProjectManager).Include(x => x.Finance).Where(x => x.ProgramId == programId) :
-                _dBContext.Plans.Include(x => x.Structure).Include(x => x.ProjectManager).Include(x => x.Finance).Where(z => z.Structure.SubsidiaryOrganizationId == SubOrgId);
-
-
-            return await (from p in plans
-
-                          select new PlanViewDto
-                          {
-                              Id = p.Id,
-                              PlanName = p.PlanName,
-                              PlanWeight = p.PlanWeight,
-                              PlandBudget = p.PlandBudget,
-                              StructureName = p.Structure.StructureName,
-                              RemainingBudget = p.PlandBudget - _dBContext.Tasks.Where(x => x.PlanId == p.Id).Sum(x => x.PlanedBudget),
-                              ProjectManager = p.ProjectManager.FullName,
-                              FinanceManager = p.Finance.FullName,
-                              Director = _dBContext.Employees.Where(x => x.Position == Position.Director && x.OrganizationalStructureId == p.StructureId).FirstOrDefault().FullName,
-                              ProjectType = p.ProjectType.ToString(),
-                              NumberOfTask = _dBContext.Tasks.Count(x => x.PlanId == p.Id),
-                              NumberOfActivities = _dBContext.Activities.Include(x => x.ActivityParent.Task.Plan).Where(x => x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id).Count(),
-                              NumberOfTaskCompleted = _dBContext.Activities.Include(x => x.ActivityParent.Task.Plan).Where(x => x.Status == Status.Finalized && (x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id)).Count(),
-                              HasTask = p.HasTask,
-                              BudgetYearId = p.BudgetYearId,
-                              ProgramId = p.ProgramId,
-                              Remark = p.Remark,
-                              StructureId = p.StructureId,
-                              ProjectManagerId = p.ProjectManagerId,
-                              FinanceId = p.FinanceId,
-                              ProjectFunder = p.ProjectFunder,
-                              BranchId = p.Structure.OrganizationBranchId
-                          }).ToListAsync();
-
-
-
-
+            return await plans.Select(p => new PlanViewDto
+            {
+                Id = p.Id,
+                PlanName = p.PlanName,
+                PlanWeight = p.PlanWeight,
+                PlandBudget = p.PlandBudget,
+                StructureName = p.Structure.StructureName,
+                RemainingBudget = p.PlandBudget - _dBContext.Tasks.Where(x => x.PlanId == p.Id).Sum(x => x.PlanedBudget),
+                ProjectManager = p.ProjectManager.FullName,
+                FinanceManager = p.Finance.FullName,
+                Director = _dBContext.Employees
+                    .Where(x => x.Position == Position.Director && x.OrganizationalStructureId == p.StructureId)
+                    .Select(x => x.FullName)
+                    .FirstOrDefault(),
+                ProjectType = p.ProjectType.ToString(),
+                NumberOfTask = _dBContext.Tasks.Count(x => x.PlanId == p.Id),
+                NumberOfActivities = _dBContext.Activities
+                    .Include(x => x.ActivityParent.Task.Plan)
+                    .Count(x => x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id),
+                NumberOfTaskCompleted = _dBContext.Activities
+                    .Include(x => x.ActivityParent.Task.Plan)
+                    .Count(x => x.Status == Status.Finalized && (x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id)),
+                HasTask = p.HasTask,
+                BudgetYearId = p.BudgetYearId,
+                ProgramId = p.ProgramId,
+                Remark = p.Remark,
+                StructureId = p.StructureId,
+                ProjectManagerId = p.ProjectManagerId,
+                FinanceId = p.FinanceId,
+                ProjectFunder = p.ProjectFunder,
+                BranchId = p.Structure.OrganizationBranchId
+            }).ToListAsync();
         }
-
 
         public async Task<PlanSingleViewDto> GetSinglePlan(Guid planId)
         {
+            var plan = await _dBContext.Plans
+                .Where(x => x.Id == planId)
+                .Select(p => new PlanSingleViewDto
+                {
+                    Id = p.Id,
+                    PlanName = p.PlanName,
+                    PlanWeight = p.PlanWeight,
+                    PlannedBudget = p.PlandBudget,
+                    RemainingBudget = p.PlandBudget,
+                    EndDate = p.PeriodEndAt.ToString(),
+                    StartDate = p.PeriodStartAt.ToString()
+                })
+                .FirstOrDefaultAsync();
 
-            var plan = await (from p in _dBContext.Plans.Where(x => x.Id == planId)
-                              select new PlanSingleViewDto
-                              {
-                                  Id = p.Id,
-                                  PlanName = p.PlanName,
-                                  PlanWeight = p.PlanWeight,
-                                  PlannedBudget = p.PlandBudget,
-                                  RemainingBudget = p.PlandBudget,
-                                  //RemainingWeight = float.Parse((100.0 - taskweightSum).ToString()),
-                                  EndDate = p.PeriodEndAt.ToString(),
-                                  StartDate = p.PeriodStartAt.ToString(),
-                                  //Tasks = tasks
+            if (plan == null)
+            {
+                return null;
+            }
 
-                              }).FirstOrDefaultAsync();
+            var tasks = await _dBContext.Tasks
+                .Include(t => t.Plan)
+                .Where(t => t.PlanId == planId)
+                .Select(t => new TaskViewDto
+                {
+                    Id = t.Id,
+                    TaskName = t.TaskDescription,
+                    TaskWeight = t.Weight,
+                    FinishedActivitiesNo = 0,
+                    TerminatedActivitiesNo = 0,
+                    StartDate = t.ShouldStartPeriod ?? DateTime.Now,
+                    EndDate = t.ShouldEnd ?? DateTime.Now,
+                    HasActivity = t.HasActivityParent,
+                    PlannedBudget = t.PlanedBudget,
+                    RemainingWeight = (float)(plan.PlanWeight - _dBContext.Activities
+                        .Where(a => a.Task.PlanId == planId || a.ActivityParent.Task.PlanId == planId)
+                        .Sum(a => a.Weight)),
+                    NumberofActivities = _dBContext.Activities
+                        .Include(a => a.ActivityParent)
+                        .Count(a => a.TaskId == t.Id || a.ActivityParent.TaskId == t.Id),
+                    NumberOfFinalized = _dBContext.Activities
+                        .Include(a => a.ActivityParent)
+                        .Count(a => a.Status == Status.Finalized && (a.TaskId == t.Id || a.ActivityParent.TaskId == t.Id)),
+                    NumberOfTerminated = _dBContext.Activities
+                        .Include(a => a.ActivityParent)
+                        .Count(a => a.Status == Status.Terminated && (a.TaskId == t.Id || a.ActivityParent.TaskId == t.Id)),
+                    TaskMembers = _dBContext.Employees
+                        .Where(e => e.OrganizationalStructureId == t.Plan.StructureId)
+                        .Select(e => new SelectListDto
+                        {
+                            Id = e.Id,
+                            Name = e.FullName,
+                            Photo = e.Photo,
+                            EmployeeId = e.Id.ToString()
+                        })
+                        .ToList(),
+                    RemainingBudget = t.PlanedBudget - _dBContext.Activities
+                        .Where(a => a.ActivityParent.TaskId == t.Id)
+                        .Sum(a => a.PlanedBudget)
+                })
+                .ToListAsync();
 
-            var tasks = (from t in _dBContext.Tasks.Include(z => z.Plan).Where(x => x.PlanId == planId)
-                         select new TaskVIewDto
-                         {
-                             Id = t.Id,
-                             TaskName = t.TaskDescription,
-                             TaskWeight = t.Weight,
+            float taskBudgetSum = tasks.Sum(x => x.PlannedBudget);
+            float taskWeightSum = tasks.Sum(x => x.TaskWeight ?? 0);
 
-                             FinishedActivitiesNo = 0,
-                             TerminatedActivitiesNo = 0,
-                             StartDate = t.ShouldStartPeriod ?? DateTime.Now,
-                             EndDate = t.ShouldEnd ?? DateTime.Now,
-
-                             HasActivity = t.HasActivityParent,
-                             PlannedBudget = t.PlanedBudget,
-                             //NumberOfMembers = _dBContext.TaskMembers.Count(x=>x.TaskId == t.Id),
-
-                             RemianingWeight = (float)(plan.PlanWeight - _dBContext.Activities.Where(x => x.Task.PlanId == planId || x.ActivityParent.Task.PlanId == planId).Sum(x => x.Weight)),
-                             NumberofActivities = _dBContext.Activities.Include(x => x.ActivityParent).Count(x => x.TaskId == t.Id || x.ActivityParent.TaskId == t.Id),
-                             NumberOfFinalized = _dBContext.Activities.Include(x => x.ActivityParent).Count(x => x.Status == Status.Finalized && (x.TaskId == t.Id || x.ActivityParent.TaskId == t.Id)),
-                             NumberOfTerminated = _dBContext.Activities.Include(x => x.ActivityParent).Count(x => x.Status == Status.Terminated && (x.TaskId == t.Id || x.ActivityParent.TaskId == t.Id)),
-                             //TaskMembers = (from tm in _dBContext.TaskMembers.Include(x => x.Employee).Where(x => x.TaskId == t.Id)
-                             //               select new SelectListDto
-                             //               {
-                             //                   Id = tm.Id,
-                             //                   Name = tm.Employee.FullName,
-                             //                   Photo = tm.Employee.Photo,
-                             //                   EmployeeId = tm.EmployeeId.ToString()
-                             //               }).ToList(),
-                             TaskMembers = (from tm in _dBContext.Employees.Where(x => x.OrganizationalStructureId == t.Plan.StructureId)
-                                            select new SelectListDto
-                                            {
-                                                Id = tm.Id,
-                                                Name = tm.FullName,
-                                                Photo = tm.Photo,
-                                                EmployeeId = tm.Id.ToString()
-                                            }).ToList(),
-                             RemainingBudget = t.PlanedBudget - _dBContext.Activities.Where(x => x.ActivityParent.TaskId == t.Id)
-                       .Sum(x => x.PlanedBudget),
-
-
-
-                         }).ToList();
-
-            float taskBudgetsum = tasks.Sum(x => x.PlannedBudget);
-            float taskweightSum = tasks.Sum(x => x.TaskWeight ?? 0);
-
-            plan.RemainingBudget = plan.RemainingBudget - taskBudgetsum;
-            plan.RemainingWeight = float.Parse((plan.PlanWeight - taskweightSum).ToString());
+            plan.RemainingBudget -= taskBudgetSum;
+            plan.RemainingWeight = float.Parse((plan.PlanWeight - taskWeightSum).ToString());
             plan.Tasks = tasks;
-
-
 
             return plan;
         }
 
-
         public async Task<List<SelectListDto>> GetPlansSelectList(Guid ProgramId)
         {
-
-
             return await _dBContext.Plans.Where(x => x.ProgramId == ProgramId).Select(x => new SelectListDto
             {
                 Name = x.PlanName,
                 Id = x.Id
             }).ToListAsync();
-
-
         }
 
         public async Task<ResponseMessage> UpdatePlan(PlanDto plan)
@@ -192,7 +179,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
 
                 if (singlePlan != null)
                 {
-
                     singlePlan.HasTask = plan.HasTask;
                     singlePlan.BudgetYearId = plan.BudgetYearId;
                     singlePlan.PlanName = plan.PlanName;
@@ -207,7 +193,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                     singlePlan.PeriodStartAt = budgetYear.FromDate;
                     singlePlan.PeriodEndAt = budgetYear.ToDate;
 
-
                     if (plan.ProjectManagerId != Guid.Empty)
                     {
                         singlePlan.ProjectManagerId = plan.ProjectManagerId;
@@ -216,7 +201,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                     await _dBContext.SaveChangesAsync();
 
                 }
-
 
                 return new ResponseMessage
                 {
@@ -232,8 +216,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                     Message = ex.Message.ToString()
                 };
             }
-
         }
+
         public async Task<ResponseMessage> DeletePlan(Guid planId)
         {
             var plan = await _dBContext.Plans.FindAsync(planId);
@@ -242,7 +226,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
             {
                 return new ResponseMessage
                 {
-
                     Message = "Project Not Found!!!",
                     Success = false
                 };
@@ -250,183 +233,96 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
 
             try
             {
-
-
                 var tasks = await _dBContext.Tasks.Where(x => x.PlanId == planId).ToListAsync();
 
-                if (tasks.Any())
+                foreach (var task in tasks)
                 {
-                    foreach (var task in tasks)
-                    {
-                        var taskMemos = await _dBContext.TaskMemos.Where(x => x.TaskId == task.Id).ToListAsync();
-                        var taskMembers = await _dBContext.TaskMembers.Where(x => x.TaskId == task.Id).ToListAsync();
-
-                        if (taskMemos.Any())
-                        {
-                            _dBContext.TaskMemos.RemoveRange(taskMemos);
-                            await _dBContext.SaveChangesAsync();
-                        }
-                        if (taskMembers.Any())
-                        {
-                            _dBContext.TaskMembers.RemoveRange(taskMembers);
-                            await _dBContext.SaveChangesAsync();
-                        }
-
-                        var activityParents = await _dBContext.ActivityParents.Where(x => x.TaskId == task.Id).ToListAsync();
-
-                        if (activityParents.Any())
-                        {
-                            foreach (var actP in activityParents)
-                            {
-                                var actvities = await _dBContext.Activities.Where(x => x.ActivityParentId == actP.Id).ToListAsync();
-
-                                foreach (var act in actvities)
-                                {
-                                    var actProgress = await _dBContext.ActivityProgresses.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-                                    foreach (var actpro in actProgress)
-                                    {
-                                        var progAttachments = await _dBContext.ProgressAttachments.Where(x => x.ActivityProgressId == actpro.Id).ToListAsync();
-                                        if (progAttachments.Any())
-                                        {
-                                            _dBContext.ProgressAttachments.RemoveRange(progAttachments);
-                                            await _dBContext.SaveChangesAsync();
-                                        }
-
-                                    }
-
-                                    if (actProgress.Any())
-                                    {
-                                        _dBContext.ActivityProgresses.RemoveRange(actProgress);
-                                        await _dBContext.SaveChangesAsync();
-                                    }
-
-                                    var activityTargets = await _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                                    if (activityTargets.Any())
-                                    {
-                                        _dBContext.ActivityTargetDivisions.RemoveRange(activityTargets);
-                                        await _dBContext.SaveChangesAsync();
-                                    }
-
-
-                                    var employees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                                    if (activityTargets.Any())
-                                    {
-                                        _dBContext.EmployeesAssignedForActivities.RemoveRange(employees);
-                                        await _dBContext.SaveChangesAsync();
-                                    }
-
-
-
-
-
-
-                                }
-                            }
-
-                            _dBContext.ActivityParents.RemoveRange(activityParents);
-                            await _dBContext.SaveChangesAsync();
-
-                        }
-                        var actvities2 = await _dBContext.Activities.Where(x => x.TaskId == task.Id).ToListAsync();
-
-                        if (actvities2.Any())
-                        {
-                            foreach (var act in actvities2)
-                            {
-                                var actProgress = await _dBContext.ActivityProgresses.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-                                foreach (var actpro in actProgress)
-                                {
-                                    var progAttachments = await _dBContext.ProgressAttachments.Where(x => x.ActivityProgressId == actpro.Id).ToListAsync();
-                                    if (progAttachments.Any())
-                                    {
-                                        _dBContext.ProgressAttachments.RemoveRange(progAttachments);
-                                        await _dBContext.SaveChangesAsync();
-                                    }
-
-                                }
-
-                                if (actProgress.Any())
-                                {
-                                    _dBContext.ActivityProgresses.RemoveRange(actProgress);
-                                    await _dBContext.SaveChangesAsync();
-                                }
-
-                                var activityTargets = await _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                                if (activityTargets.Any())
-                                {
-                                    _dBContext.ActivityTargetDivisions.RemoveRange(activityTargets);
-                                    await _dBContext.SaveChangesAsync();
-                                }
-
-
-                                var employees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                                if (employees.Any())
-                                {
-                                    _dBContext.EmployeesAssignedForActivities.RemoveRange(employees);
-                                    await _dBContext.SaveChangesAsync();
-                                }
-
-                                if (activityParents.Any())
-                                {
-                                    _dBContext.ActivityParents.RemoveRange(activityParents);
-                                    await _dBContext.SaveChangesAsync();
-                                }
-
-
-
-                            }
-
-                            _dBContext.Activities.RemoveRange(actvities2);
-                            await _dBContext.SaveChangesAsync();
-                        }
-
-                    }
-                    _dBContext.Tasks.RemoveRange(tasks);
-                    await _dBContext.SaveChangesAsync();
-
-
-                    _dBContext.Plans.Remove(plan);
-                    await _dBContext.SaveChangesAsync();
+                    await RemoveTaskRelatedEntities(task.Id);
+                    _dBContext.Tasks.Remove(task);
                 }
 
-                else
-                {
-                    _dBContext.Plans.Remove(plan);
-                    await _dBContext.SaveChangesAsync();
-                }
+                _dBContext.Plans.Remove(plan);
+                await _dBContext.SaveChangesAsync();
 
                 return new ResponseMessage
                 {
-
                     Success = true,
                     Message = "Project Deleted Successfully !!!"
-
                 };
             }
             catch (Exception ex)
             {
                 return new ResponseMessage
                 {
-
                     Success = false,
                     Message = ex.Message
-
                 };
-
             }
-
         }
 
+        private async Tasks RemoveTaskRelatedEntities(Guid taskId)
+        {
+            var taskMemos = await _dBContext.TaskMemos.Where(x => x.TaskId == taskId).ToListAsync();
+            var taskMembers = await _dBContext.TaskMembers.Where(x => x.TaskId == taskId).ToListAsync();
+            var activityParents = await _dBContext.ActivityParents.Where(x => x.TaskId == taskId).ToListAsync();
+            var activities = await _dBContext.Activities.Where(x => x.TaskId == taskId).ToListAsync();
 
+            if (taskMemos.Count != 0)
+            {
+                _dBContext.TaskMemos.RemoveRange(taskMemos);
+            }
+
+            if (taskMembers.Count != 0)
+            {
+                _dBContext.TaskMembers.RemoveRange(taskMembers);
+            }
+
+            foreach (var activityParent in activityParents)
+            {
+                await RemoveActivityRelatedEntities(activityParent.Id);
+                _dBContext.ActivityParents.Remove(activityParent);
+            }
+
+            foreach (var activity in activities)
+            {
+                await RemoveActivityRelatedEntities(activity.Id);
+                _dBContext.Activities.Remove(activity);
+            }
+
+            await _dBContext.SaveChangesAsync();
+        }
+
+        private async Tasks RemoveActivityRelatedEntities(Guid activityId)
+        {
+            var activityProgresses = await _dBContext.ActivityProgresses.Where(x => x.ActivityId == activityId).ToListAsync();
+            var activityTargets = await _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == activityId).ToListAsync();
+            var employees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == activityId).ToListAsync();
+
+            foreach (var progress in activityProgresses)
+            {
+                var progressAttachments = await _dBContext.ProgressAttachments.Where(x => x.ActivityProgressId == progress.Id).ToListAsync();
+                if (progressAttachments.Count != 0)
+                {
+                    _dBContext.ProgressAttachments.RemoveRange(progressAttachments);
+                }
+            }
+
+            if (activityProgresses.Count != 0)
+            {
+                _dBContext.ActivityProgresses.RemoveRange(activityProgresses);
+            }
+
+            if (activityTargets.Count != 0)
+            {
+                _dBContext.ActivityTargetDivisions.RemoveRange(activityTargets);
+            }
+
+            if (employees.Count != 0)
+            {
+                _dBContext.EmployeesAssignedForActivities.RemoveRange(employees);
+            }
+
+            await _dBContext.SaveChangesAsync();
+      }
     }
-}
+ }

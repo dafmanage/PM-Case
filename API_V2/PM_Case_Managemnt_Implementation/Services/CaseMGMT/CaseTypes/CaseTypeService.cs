@@ -201,7 +201,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
 
             var childCases = _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId).OrderByDescending(x => x.OrderNumber).ToList();
 
-            if (!childCases.Any())
+            if (childCases.Count == 0)
                 return 1;
             else
                 return (int)childCases.FirstOrDefault().OrderNumber + 1;
