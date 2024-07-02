@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Archive;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -14,8 +16,10 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.ShelfService
             _dbContext = dbContext;
         }
 
-        public async Task Add(ShelfPostDto shelfPostDto)
+        public async Task<ResponseMessage<int>> Add(ShelfPostDto shelfPostDto)
         {
+            var response = new ResponseMessage<int>();
+            
             try
             {
                 Shelf newShelf = new()
@@ -31,29 +35,53 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.ShelfService
 
                 await _dbContext.Shelf.AddAsync(newShelf);
                 await _dbContext.SaveChangesAsync();
-            }
-            catch (Exception ex)
+
+                response.Message = "operation Successful.";
+                response.Success = true;
+                response.Data = 1;
+
+                return response;
+                
+            } catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+               
+                response.Message = $"{ex.Message}";
+                response.Data = -1;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
 
         }
 
 
-        public async Task<List<ShelfGetDto>> GetAll(Guid subOrgId)
+        public async Task<ResponseMessage<List<ShelfGetDto>>> GetAll(Guid subOrgId)
         {
+            var response = new ResponseMessage<List<ShelfGetDto>>();
             try
             {
-                return (await _dbContext.Shelf.Where(x => x.SubsidiaryOrganizationId == subOrgId).Select(x => new ShelfGetDto()
+                List<ShelfGetDto> result = await _dbContext.Shelf.Where(x => x.SubsidiaryOrganizationId == subOrgId).Select(x => new ShelfGetDto()
                 {
-                    Id = x.Id,
-                    Remark = x.Remark,
+                    Id = x.Id, 
+                    Remark = x.Remark, 
                     ShelfNumber = x.ShelfNumber
-                }).ToListAsync());
+                }).ToListAsync();
+
+                response.Message = "Operation Successful.";
+                response.Data = result;
+                response.Success = true;
+
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
         }
     }

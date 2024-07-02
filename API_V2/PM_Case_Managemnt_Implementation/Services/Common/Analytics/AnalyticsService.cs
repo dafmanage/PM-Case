@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Analytics;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
 
@@ -15,8 +16,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
             _dBContext = context;
         }
 
-        public async Task<SubOrgsPlannedandusedBudgetDtos> GetOverallBudget()
+         public async Task<ResponseMessage<SubOrgsPlannedandusedBudgetDtos>> GetOverallBudget()
         {
+
+            var response = new ResponseMessage<SubOrgsPlannedandusedBudgetDtos>();
+
             List<OverallBudgetDto> overallPlannedBudgetDtos = new List<OverallBudgetDto>();
 
             List<OverallBudgetDto> overallUsedBudgetDtos = new List<OverallBudgetDto>();
@@ -25,24 +29,24 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
             float planUsedBudget = 0;
             float programUsedBudget = 0;
             var subOrgs = await _dBContext.SubsidiaryOrganizations.Where(x => x.isMonitor == false).Select(e => new SelectListDto
-            {
-                Id = e.Id,
-                Name = e.OrganizationNameEnglish
+                                                                                {
+                                                                                    Id = e.Id,
+                                                                                    Name = e.OrganizationNameEnglish
 
-            }).ToListAsync();
+                                                                                }).ToListAsync();
 
-            foreach (var sub in subOrgs)
+            foreach(var sub in subOrgs)
             {
                 var programs = await _dBContext.Programs.Where(x => x.SubsidiaryOrganizationId == sub.Id).ToListAsync();
-                foreach (var program in programs)
+                foreach(var program in programs)
                 {
-                    var plans = await _dBContext.Plans.Where(x => x.ProgramId == program.Id).ToListAsync();
+                    var plans = await _dBContext.Plans.Where(x => x.ProgramId== program.Id).ToListAsync();
 
                     foreach (var plan in plans)
                     {
-                        var tasks = await _dBContext.Tasks.Where(x => x.PlanId == plan.Id).ToListAsync();
-
-                        foreach (var task in tasks)
+                        var tasks = await _dBContext.Tasks.Where(x => x.PlanId== plan.Id).ToListAsync();
+                        
+                        foreach( var task in tasks)
                         {
                             var activities = await _dBContext.ActivityParents.Where(x => x.TaskId == task.Id)
                                                         .Join(_dBContext.Activities,
@@ -63,8 +67,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
                 overallPlannedBudgetDtos.Add(new OverallBudgetDto
                 {
                     SubOrganiztionName = sub.Name,
-                    SubOrganizationBudget = programs.Select(x => x.ProgramPlannedBudget).Sum(),
-
+                    SubOrganizationBudget= programs.Select(x => x.ProgramPlannedBudget).Sum(),
+                   
                 });
 
                 overallUsedBudgetDtos.Add(new OverallBudgetDto
@@ -75,11 +79,13 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
                 });
             }
 
-            return new SubOrgsPlannedandusedBudgetDtos
-            {
-                PlannedBudget = overallPlannedBudgetDtos,
-                Usedbudget = overallUsedBudgetDtos
-            };
+            SubOrgsPlannedandusedBudgetDtos result = new SubOrgsPlannedandusedBudgetDtos{ PlannedBudget = overallPlannedBudgetDtos, Usedbudget = overallPlannedBudgetDtos};
+
+            response.Message = "Operation Successfull.";
+            response.Data = result;
+            response.Success = true;
+
+            return response;
 
         }
 

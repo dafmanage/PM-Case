@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Archive;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -14,8 +16,10 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.RowService
             _dbContext = dbContext;
         }
 
-        public async Task Add(RowPostDto rowPost)
+        public async Task<ResponseMessage<int>> Add(RowPostDto rowPost)
         {
+            var response = new ResponseMessage<int>();
+            
             try
             {
                 Row currRow = new()
@@ -32,29 +36,52 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.RowService
 
                 await _dbContext.Rows.AddAsync(currRow);
                 await _dbContext.SaveChangesAsync();
-            }
-            catch (Exception ex)
+
+                response.Message = "Operation Successful.";
+                response.Data = 1;
+                response.Success = true;
+
+                return response;
+            } catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.Data = -1;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
         }
 
-        public async Task<List<RowGetDto>> GetAll(Guid shelfId)
+        public async Task<ResponseMessage<List<RowGetDto>>> GetAll( Guid shelfId)
         {
+            var response = new ResponseMessage<List<RowGetDto>>();
             try
             {
-                return (await _dbContext.Rows.Where(x => x.ShelfId == shelfId).Include(x => x.Shelf).Select(x => new RowGetDto()
+                List<RowGetDto> result =  await _dbContext.Rows.Where(x=>x.ShelfId == shelfId).Include(x => x.Shelf).Select(x => new RowGetDto()
                 {
                     Id = x.Id,
                     Remark = x.Remark,
                     RowNumber = x.RowNumber,
-                    ShelfId = x.ShelfId,
+                    ShelfId= x.ShelfId,
                     ShelfNumber = x.Shelf.ShelfNumber
-                }).ToListAsync());
+                }).ToListAsync();
+
+                response.Message = "Operation Successful.";
+                response.Data = result;
+                response.Success = true;
+
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                
+                response.Message = $"{ex.Message}";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
         }
     }
