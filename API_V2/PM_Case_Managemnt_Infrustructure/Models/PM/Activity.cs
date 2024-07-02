@@ -17,7 +17,7 @@ namespace PM_Case_Managemnt_Infrustructure.Models.PM
 
         public string ActivityDescription { get; set; } = null!;
 
-        public DateTime ShouldStat { get; set; }
+        public DateTime ShouldStart { get; set; }
 
         public DateTime ShouldEnd { get; set; }
 
