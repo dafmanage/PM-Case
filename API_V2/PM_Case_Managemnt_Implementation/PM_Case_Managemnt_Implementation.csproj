@@ -25,4 +25,8 @@
     <ProjectReference Include="..\PM_Case_Managemnt_Infrustructure\PM_Case_Managemnt_Infrustructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Helpers\ResponseMessage.cs" />
+  </ItemGroup>
+
 </Project>

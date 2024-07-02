@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -15,12 +17,22 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
             _dbContext = dbContext;
         }
 
-        public async Task Add(CaseHistoryPostDto caseHistoryPostDto)
+        public async Task<ResponseMessage<int>> Add(CaseHistoryPostDto caseHistoryPostDto)
         {
+            var response = new ResponseMessage<int>();
             try
             {
-                Case currCase = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseHistoryPostDto.CaseId));
+                Case? currCase = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseHistoryPostDto.CaseId));
 
+                if (currCase == null){
+
+                    response.Message = "Case Not found";
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+                    response.Data = 0;
+
+                    return response;
+                }
 
                 if (currCase == null)
                     throw new Exception("Case Not found");
@@ -59,47 +71,95 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
 
                 await _dbContext.CaseHistories.AddAsync(history);
                 await _dbContext.SaveChangesAsync();
+                response.Message = "Operation Successfull";
+                response.Success = true;
+                response.Data = 1;
+
+                return response;
 
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+                response.Data = 0;
+
+                return response;
             }
         }
 
-        public async Task SetCaseSeen(CaseHistorySeenDto seenDto)
+        public async Task<ResponseMessage<int>> SetCaseSeen(CaseHistorySeenDto seenDto)
         {
+            var response = new ResponseMessage<int>();
             try
             {
-                CaseHistory history = await CheckHistoryOwner(seenDto.CaseId, seenDto.SeenBy);
+                ResponseMessage<CaseHistory> history_checker = await CheckHistoryOwner(seenDto.CaseId, seenDto.SeenBy);
+                CaseHistory? history = history_checker.Data;
 
+                if (history == null){
+                    response.Message = history_checker.Message;
+                    response.Success = false;
+                    response.ErrorCode = history_checker.ErrorCode;
+                    response.Data = 0;
+
+                    return response;
+                }
+                
                 history.SeenDateTime = DateTime.UtcNow;
 
                 _dbContext.Entry(history).Property(history => history.SeenDateTime).IsModified = true;
 
                 await _dbContext.SaveChangesAsync();
+                response.Message = "Operation Successfull.";
+                response.Data = 1;
+                response.Success = true;
 
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+                response.Data = 0;
+
+                return response;
             }
         }
 
-        public async Task CompleteCase(CaseHistoryCompleteDto completeDto)
+        public async Task<ResponseMessage<int>> CompleteCase(CaseHistoryCompleteDto completeDto)
         {
+            var response = new ResponseMessage<int>();
             try
             {
-                CaseHistory history = await CheckHistoryOwner(completeDto.CaseId, completeDto.CompleatedBy);
+                ResponseMessage<CaseHistory> going_to_be_used_below = await CheckHistoryOwner(completeDto.CaseId, completeDto.CompleatedBy);
+                CaseHistory? history = going_to_be_used_below.Data;
+
+                if (history == null){
+                    response.Message = going_to_be_used_below.Message;
+                    response.Success = false;
+                    response.ErrorCode = going_to_be_used_below.ErrorCode;
+                    response.Data = 0;
+
+                    return response;
+                    
+                }
                 history.CompletedDateTime = DateTime.UtcNow;
                 history.AffairHistoryStatus = AffairHistoryStatus.Completed;
 
                 _dbContext.Entry(history).Property(history => history.CompletedDateTime).IsModified = true;
 
-                Case currCase = await _dbContext.Cases.FindAsync(completeDto.CaseId);
+                Case? currCase = await _dbContext.Cases.FindAsync(completeDto.CaseId);
+                if (currCase == null){
 
-                if (currCase == null)
-                    throw new Exception("No Case with the given Id.");
+                    response.Message = "No Case with the given Id.";
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+                    response.Data = 0;
+
+                    return response;
+                }
                 currCase.AffairStatus = AffairStatus.Completed;
                 currCase.CompletedAt = DateTime.Now;
 
@@ -107,39 +167,83 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                 _dbContext.Entry(currCase).Property(history => history.CompletedAt).IsModified = true;
 
                 await _dbContext.SaveChangesAsync();
+                
+                response.Message = "Operation Successfull.";
+                response.Data = 1;
+                response.Success = true;
+
+                return response;
 
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+                response.Data = 0;
+
+                return response;
             }
         }
 
-        private async Task<CaseHistory> CheckHistoryOwner(Guid CaseId, Guid EmpId)
+        private async Task<ResponseMessage<CaseHistory>> CheckHistoryOwner(Guid CaseId, Guid EmpId)
         {
+            var response = new ResponseMessage<CaseHistory>();
             try
             {
-                CaseHistory history = await _dbContext.CaseHistories.SingleOrDefaultAsync(history => history.CaseId.Equals(CaseId));
+                CaseHistory? history = await _dbContext.CaseHistories.SingleOrDefaultAsync(history => history.CaseId.Equals(CaseId));
 
-                if (history == null)
-                    throw new Exception("No history found for the given Case.");
+                if (history == null){
+                    response.Message = "NO history found for the given Case.";
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
+                    response.Data = null;
+
+                    return response;
+                }
 
                 if (EmpId != history.ToEmployeeId)
-                    throw new Exception("Error! You can only alter Cases addressed to you.");
+                {
+                    response.Message = "Error! you can only alter Cases addressed to you.";
+                    response.ErrorCode = HttpStatusCode.Forbidden.ToString();
+                    response.Success = false;
+                    response.Data = null;
 
-                return history;
+                    return response;
+                }
+
+               
+                response.Message = "Operation Successfull";
+                response.Data = history;
+                response.Success = true;
+
+                return response;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                response.Message = $"{ex.Message}";
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.Success = false;
+                response.Data = null;
+
+                return response;
             }
         }
 
 
-        public async Task<List<CaseEncodeGetDto>> GetCaseHistory(Guid EmployeeId, Guid CaseHistoryId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetCaseHistory(Guid EmployeeId, Guid CaseHistoryId)
         {
-            Employee user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == EmployeeId).FirstOrDefault();
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
+            Employee? user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == EmployeeId).FirstOrDefault();
 
+            if (user == null){
+                response.Message = "User Not Found";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                return response;
+            }
 
             var caseHistory = _dbContext.CaseHistories.Find(CaseHistoryId);
             var affair = _dbContext.Cases.Include(x => x.CaseType).Where(x => x.Id == caseHistory.CaseId).FirstOrDefault();
@@ -186,7 +290,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                 }).ToListAsync();
 
 
-            return affairHistories;
+            response.Message = "Operation Successfull.";
+            response.Data = affairHistories;
+            response.Success = true;
+            
+            return response;
         }
     }
 }
