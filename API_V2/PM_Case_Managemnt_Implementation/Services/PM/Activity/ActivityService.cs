@@ -1,12 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
+
+// 
 using PMActivity = PM_Case_Managemnt_Infrustructure.Models.PM;
 using Task = PM_Case_Managemnt_Infrustructure.Models.PM.Task;
+using Tasks = System.Threading.Tasks.Task;
+{
+    
+}
 
 namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 {
@@ -894,7 +901,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             }
             else
             {
-                await UpdateActivityDetails(activityDetail);
+                await UpdateActivityDetail(activityDetail);
             }
 
             return new ResponseMessage
@@ -904,7 +911,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             };
         }
 
-        private async Task UpdateActivityParentDetails(SubActivityDetailDto activityDetail)
+        private async Tasks UpdateActivityParentDetails(SubActivityDetailDto activityDetail)
         {
             var activity = await _dBContext.ActivityParents.FindAsync(activityDetail.Id);
 
@@ -930,7 +937,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             await UpdateTaskAndPlanDetails(activityDetail.TaskId, activity.ShouldStartPeriod, activity.ShouldEnd, activity.Weight);
         }
 
-        private async Task UpdateActivityDetails(SubActivityDetailDto activityDetail)
+        private async Tasks UpdateActivityDetail(SubActivityDetailDto activityDetail)
         {
             var activity = await _dBContext.Activities.FindAsync(activityDetail.Id);
 
@@ -960,11 +967,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             }
 
             await _dBContext.SaveChangesAsync();
-            await UpdateActivityAssignments(activityDetail.Employees, activity);
+            await UpdateActivityAssignments([.. activityDetail.Employees], activity);
             await UpdateTaskAndPlanDetails(activityDetail.PlanId, activity.ShouldStart, activity.ShouldEnd, activity.Weight);
         }
 
-        private async Task UpdateTaskAndPlanDetails(Guid? taskId, DateTime? start, DateTime? end, float weight)
+        private async Tasks UpdateTaskAndPlanDetails(Guid? taskId, DateTime? start, DateTime? end, float weight)
         {
             if (taskId == null || taskId == Guid.Empty) return;
 
@@ -985,7 +992,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             await _dBContext.SaveChangesAsync();
         }
 
-        private async Task UpdateActivityAssignments(List<string> employees, PMActivity.Activity activity)
+        private async Tasks UpdateActivityAssignments(List<string> employees, PMActivity.Activity activity)
         {
             if (employees == null) return;
 
@@ -1029,185 +1036,73 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             }
         }
 
-
-
         public async Task<ResponseMessage> DeleteActivity(Guid activityId, Guid taskId)
+    {
+        try
         {
-            try
+            // Get activities and their related data
+            var activityParents = await _dBContext.ActivityParents.Where(x => x.Id == activityId).ToListAsync();
+            var activities = await _dBContext.Activities.Where(x => x.Id == activityId || activityParents.All(ap => ap.Id == x.ActivityParentId)).ToListAsync();
+            
+            // Collect related data for deletion
+            var activityProgresses = await _dBContext.ActivityProgresses.Where(x => activities.Select(a => a.Id).Contains(x.ActivityId)).ToListAsync();
+            var progressAttachments = await _dBContext.ProgressAttachments.Where(x => activityProgresses.Select(ap => ap.Id).Contains(x.ActivityProgressId)).ToListAsync();
+            var activityTargetDivisions = await _dBContext.ActivityTargetDivisions.Where(x => activities.Select(a => a.Id).Contains(x.ActivityId)).ToListAsync();
+            var employeesAssigned = await _dBContext.EmployeesAssignedForActivities.Where(x => activities.Select(a => a.Id).Contains(x.ActivityId)).ToListAsync();
+
+            // Remove related data
+            _dBContext.ProgressAttachments.RemoveRange(progressAttachments);
+            _dBContext.ActivityProgresses.RemoveRange(activityProgresses);
+            _dBContext.ActivityTargetDivisions.RemoveRange(activityTargetDivisions);
+            _dBContext.EmployeesAssignedForActivities.RemoveRange(employeesAssigned);
+            _dBContext.Activities.RemoveRange(activities);
+            _dBContext.ActivityParents.RemoveRange(activityParents);
+
+            // Save all changes
+            await _dBContext.SaveChangesAsync();
+
+            // Update task and plan information
+            var task = await _dBContext.Tasks.FirstOrDefaultAsync(x => x.Id.Equals(taskId));
+            if (task != null)
             {
-
-
-                var activityParents = await _dBContext.ActivityParents.Where(x => x.Id == activityId).ToListAsync();
-
-                if (activityParents.Any())
+                var plan = await _dBContext.Plans.FirstOrDefaultAsync(x => x.Id.Equals(task.PlanId));
+                if (plan != null)
                 {
-                    foreach (var actP in activityParents)
+                    var actParents = await _dBContext.ActivityParents.Where(x => x.TaskId == task.Id).ToListAsync();
+                    if (actParents.Count != 0)
                     {
-                        var actvities = await _dBContext.Activities.Where(x => x.ActivityParentId == actP.Id).ToListAsync();
-
-                        foreach (var act in actvities)
-                        {
-                            var actProgress = await _dBContext.ActivityProgresses.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-                            foreach (var actpro in actProgress)
-                            {
-                                var progAttachments = await _dBContext.ProgressAttachments.Where(x => x.ActivityProgressId == actpro.Id).ToListAsync();
-                                if (progAttachments.Any())
-                                {
-                                    _dBContext.ProgressAttachments.RemoveRange(progAttachments);
-                                    await _dBContext.SaveChangesAsync();
-                                }
-
-                            }
-
-                            if (actProgress.Any())
-                            {
-                                _dBContext.ActivityProgresses.RemoveRange(actProgress);
-                                await _dBContext.SaveChangesAsync();
-                            }
-
-                            var activityTargets = await _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                            if (activityTargets.Any())
-                            {
-                                _dBContext.ActivityTargetDivisions.RemoveRange(activityTargets);
-                                await _dBContext.SaveChangesAsync();
-                            }
-
-
-                            var employees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                            if (activityTargets.Any())
-                            {
-                                _dBContext.EmployeesAssignedForActivities.RemoveRange(employees);
-                                await _dBContext.SaveChangesAsync();
-                            }
-
-
-
-
-                        }
+                        task.ShouldStartPeriod = actParents.Min(x => x.ShouldStartPeriod);
+                        task.ShouldEnd = actParents.Max(x => x.ShouldEnd);
+                        task.Weight = actParents.Sum(x => x.Weight);
                     }
 
-                    _dBContext.ActivityParents.RemoveRange(activityParents);
-                    await _dBContext.SaveChangesAsync();
-
-                }
-
-                var actvities2 = await _dBContext.Activities.Where(x => x.Id == activityId).ToListAsync();
-
-                if (actvities2.Any())
-                {
-                    foreach (var act in actvities2)
+                    var tasks = await _dBContext.Tasks.Where(x => x.PlanId == plan.Id).ToListAsync();
+                    if (tasks.Count != 0)
                     {
-                        var actProgress = await _dBContext.ActivityProgresses.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-                        foreach (var actpro in actProgress)
-                        {
-                            var progAttachments = await _dBContext.ProgressAttachments.Where(x => x.ActivityProgressId == actpro.Id).ToListAsync();
-                            if (progAttachments.Any())
-                            {
-                                _dBContext.ProgressAttachments.RemoveRange(progAttachments);
-                                await _dBContext.SaveChangesAsync();
-                            }
-
-                        }
-
-                        if (actProgress.Any())
-                        {
-                            _dBContext.ActivityProgresses.RemoveRange(actProgress);
-                            await _dBContext.SaveChangesAsync();
-                        }
-
-                        var activityTargets = await _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                        if (activityTargets.Any())
-                        {
-                            _dBContext.ActivityTargetDivisions.RemoveRange(activityTargets);
-                            await _dBContext.SaveChangesAsync();
-                        }
-
-
-                        var employees = await _dBContext.EmployeesAssignedForActivities.Where(x => x.ActivityId == act.Id).ToListAsync();
-
-
-                        if (employees.Any())
-                        {
-                            _dBContext.EmployeesAssignedForActivities.RemoveRange(employees);
-                            await _dBContext.SaveChangesAsync();
-                        }
-
-                        if (activityParents.Any())
-                        {
-                            _dBContext.ActivityParents.RemoveRange(activityParents);
-                            await _dBContext.SaveChangesAsync();
-                        }
-
-
-
-
-                    }
-
-                    _dBContext.Activities.RemoveRange(actvities2);
-                    await _dBContext.SaveChangesAsync();
-                }
-                else
-                {
-
-                    return new ResponseMessage
-                    {
-                        Success = false,
-                        Message = "Activity Not Found"
-                    };
-
-                }
-                var Task = await _dBContext.Tasks.FirstOrDefaultAsync(x => x.Id.Equals(taskId));
-                if (Task != null)
-                {
-                    var plan = _dBContext.Plans.FirstOrDefaultAsync(x => x.Id.Equals(Task.PlanId)).Result;
-                    if (plan != null)
-                    {
-
-                        var ActParents = _dBContext.ActivityParents.Where(x => x.TaskId == Task.Id).ToList();
-                        if (Task != null && ActParents != null)
-                        {
-                            Task.ShouldStartPeriod = ActParents.Min(x => x.ShouldStartPeriod);
-                            Task.ShouldEnd = ActParents.Max(x => x.ShouldEnd);
-                            Task.Weight = ActParents.Sum(x => x.Weight);
-                            _dBContext.SaveChanges();
-                        }
-                        var tasks = _dBContext.Tasks.Where(x => x.PlanId == plan.Id).ToList();
                         plan.PeriodStartAt = tasks.Min(x => x.ShouldStartPeriod);
                         plan.PeriodEndAt = tasks.Max(x => x.ShouldEnd);
-                        _dBContext.SaveChanges();
                     }
+
+                    await _dBContext.SaveChangesAsync();
                 }
-
-
-
-
-                return new ResponseMessage
-                {
-                    Message = "Activity Deleted Successfully",
-                    Success = true
-                };
-
-
-
             }
-            catch (Exception ex)
+
+            return new ResponseMessage
             {
-                return new ResponseMessage
-                {
-                    Success = false,
-                    Message = ex.Message
-
-                };
-            }
+                Message = "Activity Deleted Successfully",
+                Success = true
+            };
         }
+        catch (Exception ex)
+        {
+            //TODO: Log the error
+            return new ResponseMessage
+            {
+                Success = false,
+                Message = ex.Message
+            };
+        }
+    }
 
     }
 }
