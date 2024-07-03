@@ -6,7 +6,6 @@
         public string ActivityDescription { get; set; } = null!;
         public bool HasActivity { get; set; }
         public Guid TaskId { get; set; }
-
         public Guid? CaseTypeId { get; set; }
         public Guid CreatedBy { get; set; }
         public List<SubActivityDetailDto>? ActivityDetails { get; set; }

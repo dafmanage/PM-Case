@@ -57,7 +57,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             return 1;
         }
 
-        public async Task<TaskVIewDto> GetSingleTask(Guid taskId)
+        public async Task<TaskViewDto> GetSingleTask(Guid taskId)
         {
 
             var task = await _dBContext.Tasks.Include(x => x.Plan).FirstOrDefaultAsync(x => x.Id == taskId);

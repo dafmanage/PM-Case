@@ -158,11 +158,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
                                        employess.FirstOrDefault(x => x.OrganizationalStructureId == parentStructure.Id && x.Position == Position.Director)?.FullName
 
                 },
-                label = parentStructure.StructureName,
-                expanded = true,
-                type = "organization",
-                styleClass = "bg-success text-white",
-                id = parentStructure.Id,
+                Label = parentStructure.StructureName,
+                Expanded = true,
+                Type = "organization",
+                StyleClass = "bg-success text-white",
+                Id = parentStructure.Id,
                 order = parentStructure.Order,
                 children = new List<DiagramDto>()
 
@@ -185,12 +185,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
                     },
 
-                    label = x.StructureName,
-                    expanded = true,
-                    type = "organization",
-                    styleClass = x.Order % 2 == 1 ? "bg-secondary text-white" : "bg-success text-white",
-                    id = x.Id,
-                    parentId = x.ParentStructureId,
+                    Label = x.StructureName,
+                    Expanded = true,
+                    Type = "organization",
+                    StyleClass = x.Order % 2 == 1 ? "bg-secondary text-white" : "bg-success text-white",
+                    Id = x.Id,
+                    ParentId = x.ParentStructureId,
                     order = x.Order,
                     children = new List<DiagramDto>()
                 }).ToList();
@@ -206,7 +206,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
                 foreach (var item in childList)
                 {
 
-                    var org = childs.FirstOrDefault(x => x.id == item.parentId);
+                    var org = childs.FirstOrDefault(x => x.Id == item.ParentId);
 
                     if (org != null)
                     {

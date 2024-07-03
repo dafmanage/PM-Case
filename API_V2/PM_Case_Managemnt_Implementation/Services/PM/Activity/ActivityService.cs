@@ -662,7 +662,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
         }
         public async Task<int> ApproveProgress(ApprovalProgressDto approvalProgressDto)
         {
-            var progress = _dBContext.ActivityProgresses.Find(approvalProgressDto.progressId);
+            var progress = _dBContext.ActivityProgresses.Find(approvalProgressDto.ProgressId);
             if (progress == null) return 0;
 
             UpdateApprovalStatus(progress, approvalProgressDto);
@@ -672,9 +672,9 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
         }
         private void UpdateApprovalStatus(ActivityProgress progress, ApprovalProgressDto approvalProgressDto)
         {
-          var approvalStatus = approvalProgressDto.actiontype == "Accept" ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
+          var approvalStatus = approvalProgressDto.Actiontype == "Accept" ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
 
-            switch (approvalProgressDto.userType)
+            switch (approvalProgressDto.UserType)
             {
                 case "Director":
                     progress.DirectorApprovalRemark = approvalProgressDto.Remark;
