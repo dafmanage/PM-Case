@@ -193,7 +193,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
         {
             try
             {
-                List<CaseEncodeGetDto> cases2 = new List<CaseEncodeGetDto>();
+                List<CaseEncodeGetDto> cases2 = [];
                 List<CaseEncodeGetDto> cases =
                     await _dbContext.Cases.Where(ca => ca.CreatedBy.Equals(userId) && ca.AffairStatus.Equals(AffairStatus.Encoded))
                     .Include(p => p.Employee)
@@ -335,7 +335,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
             Employee user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
 
-            List<CaseEncodeGetDto> notfications = new List<CaseEncodeGetDto>();
+            List<CaseEncodeGetDto> notfications = [];
 
             if (user.Position == Position.Secertary)
             {

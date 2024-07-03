@@ -3,7 +3,7 @@ using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
 
 
-namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
+namespace PM_Case_Managemnt_Implementation.Services.PM.Activityy
 {
     public interface IActivityService
     {

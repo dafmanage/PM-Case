@@ -87,7 +87,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             try
             {
                 List<CaseType> caseTypes = await _dbContext.CaseTypes.Include(p => p.ParentCaseType).Where(x => x.ParentCaseTypeId == null && x.SubsidiaryOrganizationId == subOrgId).ToListAsync();
-                List<CaseTypeGetDto> result = new();
+                List<CaseTypeGetDto> result = [];
 
                 foreach (CaseType caseType in caseTypes)
                 {
@@ -134,7 +134,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             try
             {
                 List<CaseType> caseTypes = await _dbContext.CaseTypes.Include(p => p.ParentCaseType).Where(x => x.CaseForm == Enum.Parse<CaseForm>(caseForm) && x.ParentCaseTypeId == null && x.SubsidiaryOrganizationId == subOrgId).ToListAsync();
-                List<SelectListDto> result = new();
+                List<SelectListDto> result = [];
 
                 foreach (CaseType caseType in caseTypes)
                 {

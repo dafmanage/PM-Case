@@ -2,7 +2,7 @@
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
-namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
+namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
 {
     public interface IPlanService
     {

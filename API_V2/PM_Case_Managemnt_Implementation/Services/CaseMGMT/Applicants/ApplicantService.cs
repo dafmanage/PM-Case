@@ -75,7 +75,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
             try
             {
                 List<Applicant> applicants = await _dbContext.Applicants.Where(x => x.SubsidiaryOrganizationId == subOrgId).ToListAsync();
-                List<ApplicantGetDto> result = new();
+                List<ApplicantGetDto> result = [];
 
                 foreach (Applicant applicant in applicants)
                 {
@@ -115,7 +115,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
             try
             {
                 List<Applicant> applicants = await _dbContext.Applicants.Where(x => x.SubsidiaryOrganizationId == subOrgId).OrderBy(x => x.ApplicantName).ToListAsync();
-                List<SelectListDto> result = new();
+                List<SelectListDto> result = [];
 
                 foreach (Applicant applicant in applicants)
                 {

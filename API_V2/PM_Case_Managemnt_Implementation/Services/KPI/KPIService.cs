@@ -269,7 +269,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 return new KPIGetDto();
             }
 
-            kpis.ActiveYears = kpis.ActiveYearsString?.Split(',').Select(int.Parse).ToList() ?? new List<int>();
+            kpis.ActiveYears = kpis.ActiveYearsString?.Split(',').Select(int.Parse).ToList() ?? [];
 
 
             if (kpis.HasSubsidiaryOrganization)

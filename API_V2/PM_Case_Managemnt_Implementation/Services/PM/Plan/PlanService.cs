@@ -9,7 +9,7 @@ using PM_Case_Managemnt_Infrustructure.Models.PM;
 //
 using Tasks = System.Threading.Tasks.Task;
 
-namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
+namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
 {
     public class PlanService(ApplicationDbContext context) : IPlanService
     {

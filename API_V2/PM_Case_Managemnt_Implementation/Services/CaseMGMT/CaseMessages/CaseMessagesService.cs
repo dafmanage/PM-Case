@@ -93,10 +93,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
                     {
                         Uri apiUri = new Uri(uri);
                         ByteArrayContent body = new ByteArrayContent(byteArray, 0, byteArray.Length);
-                        MultipartFormDataContent multiPartFormData = new MultipartFormDataContent
-                                {
+                        MultipartFormDataContent multiPartFormData =
+                                [
                                     body
-                                };
+                                ];
                         HttpResponseMessage result = await c.PostAsync(apiUri, multiPartFormData);
 
                         if (result.StatusCode == HttpStatusCode.OK)

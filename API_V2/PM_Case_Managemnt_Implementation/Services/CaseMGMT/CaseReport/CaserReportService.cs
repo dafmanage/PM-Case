@@ -118,14 +118,14 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             var Chart = new CaseReportChartDto();
 
-            Chart.labels = new List<string>();
-            Chart.datasets = new List<DataSets>();
+            Chart.labels = [];
+            Chart.datasets = [];
 
             var datas = new DataSets();
 
-            datas.data = new List<int>();
-            datas.hoverBackgroundColor = new List<string>();
-            datas.backgroundColor = new List<string>();
+            datas.data = [];
+            datas.hoverBackgroundColor = [];
+            datas.backgroundColor = [];
 
 
             foreach (var eachreport in report2)
@@ -205,14 +205,14 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
             var Chart = new CaseReportChartDto();
 
-            Chart.labels = new List<string>() { "Assigned", "completed", "Encoded", "Pend" };
-            Chart.datasets = new List<DataSets>();
+            Chart.labels = ["Assigned", "completed", "Encoded", "Pend"];
+            Chart.datasets = [];
 
             var datas = new DataSets();
 
-            datas.data = new List<int>() { assigned, completed, encoded, pend };
-            datas.hoverBackgroundColor = new List<string>() { "#5591f5", "#2cb436", "#dfd02f", "#fe5e2b" };
-            datas.backgroundColor = new List<string>() { "#5591f5", "#2cb436", "#dfd02f", "#fe5e2b" };
+            datas.data = [assigned, completed, encoded, pend];
+            datas.hoverBackgroundColor = ["#5591f5", "#2cb436", "#dfd02f", "#fe5e2b"];
+            datas.backgroundColor = ["#5591f5", "#2cb436", "#dfd02f", "#fe5e2b"];
 
             Chart.datasets.Add(datas);
 
@@ -223,8 +223,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         public async Task<List<EmployeePerformance>> GetCaseEmployeePerformace(Guid subOrgId, string key, string OrganizationName)
         {
 
-            List<Employee> employees = new List<Employee>();
-            List<CaseHistory> affairHistories = new List<CaseHistory>();
+            List<Employee> employees = [];
+            List<CaseHistory> affairHistories = [];
             EmployeePerformance eachPerformance = new EmployeePerformance();
             var empPerformance = new List<EmployeePerformance>();
 

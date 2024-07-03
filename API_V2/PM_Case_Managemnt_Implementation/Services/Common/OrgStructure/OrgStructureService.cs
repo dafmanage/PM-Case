@@ -216,7 +216,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
                 }
             }
-            List<DiagramDto> result = new List<DiagramDto>();
+            List<DiagramDto> result = [];
 
             if (childs.Count != 0)
             {

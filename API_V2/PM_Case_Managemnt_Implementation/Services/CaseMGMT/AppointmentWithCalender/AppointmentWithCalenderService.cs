@@ -73,7 +73,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
         {
             try
             {
-                List<AppointmentGetDto> Events = new List<AppointmentGetDto>();
+                List<AppointmentGetDto> Events = [];
 
                 var appointements = _dbContext.AppointementWithCalender.Where(x => x.EmployeeId == employeeId).Include(a => a.Case).ToList();
                 appointements.ForEach(a =>

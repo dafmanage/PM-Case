@@ -543,7 +543,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 {
                     caseState.CurrentState = childaffair.CaseTypeTitle;
 
-                    caseState.NeededDocuments = new List<string>();
+                    caseState.NeededDocuments = [];
 
                     var files = await _dbContext.FileSettings.Where(x => x.CaseTypeId == childaffair.Id).ToListAsync();
 

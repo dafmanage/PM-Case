@@ -17,9 +17,9 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
 
         public async Task<SubOrgsPlannedandusedBudgetDtos> GetOverallBudget()
         {
-            List<OverallBudgetDto> overallPlannedBudgetDtos = new List<OverallBudgetDto>();
+            List<OverallBudgetDto> overallPlannedBudgetDtos = [];
 
-            List<OverallBudgetDto> overallUsedBudgetDtos = new List<OverallBudgetDto>();
+            List<OverallBudgetDto> overallUsedBudgetDtos = [];
 
             float taskUsedBudget = 0;
             float planUsedBudget = 0;

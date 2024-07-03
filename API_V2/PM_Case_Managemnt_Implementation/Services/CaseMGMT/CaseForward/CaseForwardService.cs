@@ -18,7 +18,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseForwardService
         {
             try
             {
-                List<CaseForward> caseForwards = new List<CaseForward>();
+                List<CaseForward> caseForwards = [];
 
                 //foreach(Guid forwardToStructureId in caseForwardPostDto.ForwardedToStructureId)
                 //{

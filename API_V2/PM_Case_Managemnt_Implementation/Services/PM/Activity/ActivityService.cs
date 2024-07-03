@@ -15,7 +15,7 @@ using Tasks = System.Threading.Tasks.Task;
     
 }
 
-namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
+namespace PM_Case_Managemnt_Implementation.Services.PM.Activityy
 {
     public class ActivityService(ApplicationDbContext context) : IActivityService
     
@@ -657,7 +657,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             }
             catch (Exception ex)
             {
-                return new List<ActivityViewDto>();
+                return [];
             }
         }
         public async Task<int> ApproveProgress(ApprovalProgressDto approvalProgressDto)

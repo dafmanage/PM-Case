@@ -34,7 +34,7 @@ namespace PM_Case_Managemnt_Implementation.Helpers
 
     public class PagedDataResponse<T>
     {
-        public List<T> Data { get; set; } = new List<T>();
+        public List<T> Data { get; set; } = [];
         public object MetaData { get; set; } = new { };
 
         public PagedDataResponse(List<T> data, object metaData)

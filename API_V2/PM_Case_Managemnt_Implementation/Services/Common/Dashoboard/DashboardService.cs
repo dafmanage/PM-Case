@@ -13,12 +13,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
         private readonly ApplicationDbContext _dBContext;
         private Random rnd = new Random();
 
-        List<ProjectList> ProjectLists = new List<ProjectList>();
-        List<AboutToExpireProjects> aboutToExpireProjects = new List<AboutToExpireProjects>();
+        List<ProjectList> ProjectLists = [];
+        List<AboutToExpireProjects> aboutToExpireProjects = [];
 
         public BudgetYear budget = new BudgetYear();
         public Guid structureId = Guid.Empty;
-        List<progress_Strucure> ps = new List<progress_Strucure>();
+        List<progress_Strucure> ps = [];
         public DashboardService(ApplicationDbContext context)
         {
             _dBContext = context;
@@ -100,7 +100,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                 .Include(a => a.CaseHistories)
                 .Where(x => x.AffairStatus == AffairStatus.Completed && x.SubsidiaryOrganizationId == subOrgId).ToList();
 
-            report = new List<TopAffairsViewmodel>();
+            report = [];
             foreach (var affair in allAffairps.ToList())
             {
                 var eachReport = new TopAffairsViewmodel();
@@ -150,14 +150,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
             var Chart = new CaseReportChartDto();
 
-            Chart.labels = new List<string>() { "LateProgress", "completed" };
-            Chart.datasets = new List<DataSets>();
+            Chart.labels = ["LateProgress", "completed"];
+            Chart.datasets = [];
 
             var datas = new DataSets();
 
-            datas.data = new List<int>() { dashboard.pendingReports.Count(), dashboard.completedReports.Count() };
-            datas.hoverBackgroundColor = new List<string>() { "#fe5e2b", "#2cb436" };
-            datas.backgroundColor = new List<string>() { "#fe5e2b", "#2cb436" };
+            datas.data = [dashboard.pendingReports.Count(), dashboard.completedReports.Count()];
+            datas.hoverBackgroundColor = ["#fe5e2b", "#2cb436"];
+            datas.backgroundColor = ["#fe5e2b", "#2cb436"];
 
             Chart.datasets.Add(datas);
 
@@ -185,8 +185,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
 
             barChartDto barChart = new barChartDto();
-            barChart.labels = new List<string>() { "ጥር", "የካቲት", "መጋቢት", "ሚያዚያ", "ግንቦት", "ሰኔ", "ሃምሌ", "ነሃሴ", "መስከረም", "ጥቅምት", "ህዳር", "ታህሳስ" };
-            barChart.datasets = new List<barChartDetailDto>();
+            barChart.labels = ["ጥር", "የካቲት", "መጋቢት", "ሚያዚያ", "ግንቦት", "ሰኔ", "ሃምሌ", "ነሃሴ", "መስከረም", "ጥቅምት", "ህዳር", "ታህሳስ"];
+            barChart.datasets = [];
 
 
 
@@ -204,7 +204,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                     backgroundColor = String.Format("#{0:X6}", rnd.Next(0x1000000))
                 };
 
-                dataset.data = new List<int>();
+                dataset.data = [];
 
                 foreach (var month in monthList)
                 {
@@ -270,7 +270,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
         public float CommisionerPerformanceThisYear(Guid subOrgId)
         {
             float totalContribution = 0;
-            ps = new List<progress_Strucure>();
+            ps = [];
             if (structureId == Guid.Empty)
             {
                 var structu = _dBContext.OrganizationalStructures.Include(x => x.SubTask).Where(x => x.ParentStructureId == null).FirstOrDefault();
@@ -693,14 +693,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                 structureId = Structure_Hierarchy.Id;
             }
             PmDashboardBarchartDto bugetYears = new PmDashboardBarchartDto();
-            bugetYears.labels = new List<string>();
-            bugetYears.datasets = new List<PmDashboardBarchartDateset>();
+            bugetYears.labels = [];
+            bugetYears.datasets = [];
             var dataset1 = new PmDashboardBarchartDateset
             {
                 label = "budget year contributon graph",
-                data = new List<float>(),
-                backgroundColor = new List<string>(),
-                borderColor = new List<string>(),
+                data = [],
+                backgroundColor = [],
+                borderColor = [],
                 borderWidth = 1
 
             };
