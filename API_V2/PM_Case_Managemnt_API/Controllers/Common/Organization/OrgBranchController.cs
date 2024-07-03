@@ -46,8 +46,8 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
         {
 
 
-
-            return await _branchService.GetOrganizationBranches(SubOrgId);
+            var result = await _branchService.GetOrganizationBranches(SubOrgId);
+            return result.Data;
         }
 
         [HttpGet("branchlist")]
@@ -56,8 +56,8 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
         {
 
 
-
-            return await _branchService.getBranchSelectList(SubOrgId);
+            var result = await _branchService.getBranchSelectList(SubOrgId);
+            return result.Data;
         }
 
 

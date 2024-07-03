@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -16,9 +18,10 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             _dBContext = context;
         }
 
-        public async Task<int> AddActivityDetails(ActivityDetailDto activityDetail)
+        public async Task<ResponseMessage<int>> AddActivityDetails(ActivityDetailDto activityDetail)
         {
 
+            var response = new ResponseMessage<int>();
 
             //var actparent = _dBContext.ActivityParents.Where(x => x.TaskId == activityDetail.TaskId).FirstOrDefault();           
 
@@ -109,7 +112,15 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             {
                 var actParent = _dBContext.ActivityParents.Find(activityDetail.TaskId);
                 actParent.AssignedToBranch = true;
+                if (actParent == null)
+                {
+                    response.Message = "Paretn not found";
+                    response.Data = -1;
+                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.Success = false;
 
+                    return response;
+                }
                 _dBContext.SaveChangesAsync();
             }
 
@@ -144,13 +155,20 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             //        _dBContext.SaveChanges();
             //    }
             //}
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
         }
 
 
 
-        public async Task<int> AddSubActivity(SubActivityDetailDto activityDetail)
+        public async Task<ResponseMessage<int>> AddSubActivity(SubActivityDetailDto activityDetail)
         {
+
+            var response = new ResponseMessage<int>();
+
 
             if (activityDetail.IsClassfiedToBranch)
             {
@@ -318,7 +336,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
             }
 
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
         }
 
 
@@ -404,8 +426,10 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
 
-        public async Task<int> AddTargetActivities(ActivityTargetDivisionDto targetDivisions)
+        public async Task<ResponseMessage<int>> AddTargetActivities(ActivityTargetDivisionDto targetDivisions)
         {
+
+            var response = new ResponseMessage<int>();
 
             foreach (var target in targetDivisions.TargetDivisionDtos)
             {
@@ -430,12 +454,18 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
 
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
 
         }
 
-        public async Task<int> AddProgress(AddProgressActivityDto activityProgress)
+        public async Task<ResponseMessage<int>> AddProgress(AddProgressActivityDto activityProgress)
         {
+
+            var response = new ResponseMessage<int>();
 
             var activityProgress2 = new ActivityProgress
             {
@@ -494,12 +524,18 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
 
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
         }
 
 
-        public async Task<List<ProgressViewDto>> ViewProgress(Guid actId)
+        public async Task<ResponseMessage<List<ProgressViewDto>>> ViewProgress(Guid actId)
         {
+
+            var response = new ResponseMessage<List<ProgressViewDto>>();
 
 
             var progressView = await (from p in _dBContext.ActivityProgresses.Where(x => x.ActivityId == actId)
@@ -522,15 +558,21 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
                                       }).ToListAsync();
 
-            return progressView;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = progressView;
+
+            return response;
+
 
 
 
 
         }
 
-        public async Task<List<ActivityViewDto>> GetAssignedActivity(Guid employeeId)
+        public async Task<ResponseMessage<List<ActivityViewDto>>> GetAssignedActivity(Guid employeeId)
         {
+            var response = new ResponseMessage<List<ActivityViewDto>>();
 
             var employeeAssigned = _dBContext.EmployeesAssignedForActivities.Where(x => x.EmployeeId == employeeId).Select(x => x.ActivityId).ToList();
 
@@ -595,26 +637,37 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
 
-            return assignedActivities;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = assignedActivities;
+
+            return response;
         }
 
 
 
 
 
-        public async Task<int> GetAssignedActivityNumber(Guid employeeId)
+        public async Task<ResponseMessage<int>> GetAssignedActivityNumber(Guid employeeId)
         {
+            var response = new ResponseMessage<int>();
             var employeeAssignedCount = await _dBContext.EmployeesAssignedForActivities.CountAsync(x => x.EmployeeId == employeeId);
 
-            return employeeAssignedCount;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = employeeAssignedCount;
 
+            return response;
 
         }
 
 
 
-        public async Task<List<ActivityViewDto>> GetActivtiesForApproval(Guid employeeId)
+        public async Task<ResponseMessage<List<ActivityViewDto>>> GetActivtiesForApproval(Guid employeeId)
         {
+
+            var response = new ResponseMessage<List<ActivityViewDto>>();
+
 
 
             try
@@ -701,15 +754,29 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
                     actDtos.AddRange(activityViewDtos);
                 }
 
+                List<ActivityViewDto> result = actDtos.DistinctBy(x => x.Id).ToList();
 
+                response.Message = "Opertation Successful.";
+                response.Success = true;
+                response.Data = result;
 
-                return actDtos.DistinctBy(x => x.Id).ToList();
+                return response;
+
             }
             catch (Exception ex)
             {
+                response.Message = $"{ex.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
+                /*
+                 I didnt get the use of this code if u want it u can keep it.
                 List<ActivityViewDto> actDtos = new List<ActivityViewDto>();
 
                 return actDtos;
+                */
             }
 
 
@@ -717,8 +784,9 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
         }
 
 
-        public async Task<int> ApproveProgress(ApprovalProgressDto approvalProgressDto)
+        public async Task<ResponseMessage<int>> ApproveProgress(ApprovalProgressDto approvalProgressDto)
         {
+            var response = new ResponseMessage<int>();
             var progress = _dBContext.ActivityProgresses.Find(approvalProgressDto.progressId);
             if (progress != null)
             {
@@ -768,14 +836,21 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
                 _dBContext.SaveChanges();
 
             }
-            return 1;
+            response.Message = "Opertation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
         }
 
-        public async Task<List<ActivityAttachmentDto>> getAttachemnts(Guid taskId)
+        public async Task<ResponseMessage<List<ActivityAttachmentDto>>> getAttachemnts(Guid taskId)
         {
+            
+
+            var response = new ResponseMessage<List<ActivityAttachmentDto>>();
 
 
-            var response = await (from x in _dBContext.ProgressAttachments.Include(x => x.ActivityProgress.Activity.ActivityParent).
+            var result = await (from x in _dBContext.ProgressAttachments.Include(x => x.ActivityProgress.Activity.ActivityParent).
                                   Where(x => x.ActivityProgress.Activity.TaskId == taskId ||
                                          x.ActivityProgress.Activity.PlanId == taskId
                                   || x.ActivityProgress.Activity.ActivityParent.TaskId == taskId)
@@ -787,7 +862,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
                                   }).ToListAsync();
 
 
-            response.AddRange(
+            result.AddRange(
                 await (from x in _dBContext.ActivityProgresses.Include(x => x.Activity.ActivityParent).Where(x => x.Activity.TaskId == taskId || x.Activity.ActivityParent.TaskId == taskId)
                        select new ActivityAttachmentDto
                        {
@@ -797,12 +872,17 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
                        }).ToListAsync()
                        );
 
+            response.Message = "Opertation Successful.";
+            response.Success = true;
+            response.Data = result;
+
             return response;
 
         }
 
-        public async Task<ActivityViewDto> getActivityById(Guid actId)
+        public async Task<ResponseMessage<ActivityViewDto>> getActivityById(Guid actId)
         {
+            var response = new ResponseMessage<ActivityViewDto>();
             var activityProgress = _dBContext.ActivityProgresses;
             ActivityViewDto activityViewDtos = await (from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
                                                       where e.Id == actId
@@ -850,11 +930,16 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
                                                       }
                                  ).FirstOrDefaultAsync();
-            return activityViewDtos;
+            response.Message = "Opertation Successful.";
+            response.Success = true;
+            response.Data = activityViewDtos;
+
+            return response;
         }
 
-        public async Task<List<SelectListDto>> GetEmployeesInBranch(Guid branchId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetEmployeesInBranch(Guid branchId)
         {
+            var response = new ResponseMessage<List<SelectListDto>>();
             var employees = await _dBContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.OrganizationalStructure.OrganizationBranchId == branchId)
 
                 .Select(x => new SelectListDto
@@ -866,7 +951,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
                 .ToListAsync();
 
 
-            return employees;
+            response.Message = "Opertation Successful.";
+            response.Success = true;
+            response.Data = employees;
+
+            return response;
         }
 
 

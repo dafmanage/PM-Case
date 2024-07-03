@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -17,8 +19,10 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
         }
 
 
-        public async Task<List<DiagramDto>> GetDirectorLevelPerformance(Guid subOrgId, Guid? BranchId)
+        public async Task<ResponseMessage<List<DiagramDto>>> GetDirectorLevelPerformance(Guid subOrgId, Guid? BranchId)
         {
+
+            var response = new ResponseMessage<List<DiagramDto>>();
 
             var orgStructures = _dBContext.OrganizationalStructures.Where(x => x.SubsidiaryOrganizationId == subOrgId).Include(x => x.ParentStructure).ToList();
             var orgStructureIds = orgStructures.Select(x => x.Id).ToList();
@@ -115,15 +119,20 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
             {
                 result.Add(childs[0]);
             }
-            return result;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
+
+            return response;
 
 
 
         }
 
 
-        public async Task<PlanReportByProgramDto> PlanReportByProgram(Guid subOrgId, string BudgetYear, string ReportBy)
+        public async Task<ResponseMessage<PlanReportByProgramDto>> PlanReportByProgram(Guid subOrgId, string BudgetYear, string ReportBy)
         {
+            var response = new ResponseMessage<PlanReportByProgramDto>();
             PlanReportByProgramDto prbp = new PlanReportByProgramDto();
 
             List<ProgramViewModel> ProgramViewModelList = new List<ProgramViewModel>();
@@ -340,20 +349,30 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
 
-                return prbp;
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = prbp;
+
+                return response;
             }
             catch (Exception e)
             {
+                response.Message = $"{e.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
 
-                return prbp;
+                return response;
+                //return prbp; is this a mistake or on purpose?
             }
 
 
 
         }
 
-        public async Task<PlanReportDetailDto> StructureReportByProgram(string BudgetYear, string ProgramId, string ReportBy)
+        public async Task<ResponseMessage<PlanReportDetailDto>> StructureReportByProgram(string BudgetYear, string ProgramId, string ReportBy)
         {
+            var response = new ResponseMessage<PlanReportDetailDto>();
             PlanReportDetailDto planReportDetailDto = new PlanReportDetailDto();
             try
             {
@@ -637,21 +656,33 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                     planReportDetailDto.ProgramWithStructure = progWithStructure.ToList();
                 }
 
-                return planReportDetailDto;
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = planReportDetailDto;
+
+                return response;
 
 
 
             }
             catch (Exception e)
             {
-                return planReportDetailDto;
+                response.Message = $"{e.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
+                //return planReportDetailDto; is this on purpose or by mistake?
+                
             }
 
 
         }
 
-        public async Task<PlannedReport> PlanReports(string BudgetYea, Guid selectStructureId, string ReportBy)
+        public async Task<ResponseMessage<PlannedReport>> PlanReports(string BudgetYea, Guid selectStructureId, string ReportBy)
         {
+            var response = new ResponseMessage<PlannedReport>();
 
             PlannedReport plannedReport = new PlannedReport();
 
@@ -1189,18 +1220,30 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
                 plannedReport.PlansLst = plansLsts;
 
-                return plannedReport;
+                plannedReport.PlansLst = plansLsts;
+
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = plannedReport;
+
+                return response;
             }
             catch (Exception e)
             {
-                return plannedReport;
+                response.Message = $"{e.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
 
         }
 
 
-        public async Task<ProgresseReport> ProgresssReport(FilterationCriteria filterationCriteria)
+        public async Task<ResponseMessage<ProgresseReport>> ProgresssReport(FilterationCriteria filterationCriteria)
         {
+            var response = new ResponseMessage<ProgresseReport>();
 
             // ViewBag.programs = Db.Programs.ToList();
 
@@ -1929,18 +1972,32 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                 progressReport.reportMessage = ReportType + " the " + DateType;
                 progressReport.AllActivities.OrderByDescending(x => x.Progress).ToList();
 
-                return progressReport;
+                progressReport.reportMessage = ReportType + " the " + DateType;
+                progressReport.AllActivities.OrderByDescending(x => x.Progress).ToList();
+
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = progressReport;
+
+                return response;
             }
             catch (Exception e)
             {
-                return progressReport;
+                response.Message = $"{e.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+
+                return response;
             }
 
 
         }
 
-        public async Task<ProgresseReportByStructure> GetProgressByStructure(int BudgetYea, Guid selectStructureId, string ReportBy)
+        public async Task<ResponseMessage<ProgresseReportByStructure>> GetProgressByStructure(int BudgetYea, Guid selectStructureId, string ReportBy)
         {
+            var response = new ResponseMessage<ProgresseReportByStructure>();
+
             ProgresseReportByStructure progresseReportByStructure = new ProgresseReportByStructure();
             progresseReportByStructure.plansLsts = new List<PlansLst>();
 
@@ -2577,19 +2634,29 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
                     //  progresseReportByStructure.plansLsts = plansLsts;
                 }
-                return progresseReportByStructure;
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = progresseReportByStructure;
+
+                return response;
             }
             catch (Exception e)
             {
 
-                return progresseReportByStructure;
+                response.Message = $"{e.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                return response;
             }
 
         }
 
 
-        public async Task<PerfomanceReport> PerformanceReports(FilterationCriteria filterationCriteria)
+        public async Task<ResponseMessage<PerfomanceReport>> PerformanceReports(FilterationCriteria filterationCriteria)
         {
+
+            var response = new ResponseMessage<PerfomanceReport>();
 
             var performanceReport = new PerfomanceReport();
 
@@ -2802,13 +2869,22 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                     performanceReport.performancePlan = performancePlans;
                 }
 
-                return performanceReport;
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = performanceReport;
+                
+
+                return response;
 
             }
             catch (Exception e)
             {
-
-                return performanceReport;
+                response.Message = $"{e.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                
+                return response;
             }
 
 
@@ -2816,8 +2892,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
         }
 
 
-        public async Task<List<ActivityProgressViewModel>> GetActivityProgress(Guid? activityId)
+        public async Task<ResponseMessage<List<ActivityProgressViewModel>>> GetActivityProgress(Guid? activityId)
         {
+
+            var response = new ResponseMessage<List<ActivityProgressViewModel>>();
+
 
             var allProgresses = new List<ActivityProgressViewModel>();
             try
@@ -2844,17 +2923,30 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
                      }).ToListAsync();
 
 
-                return allProgress;
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = allProgress;
+
+                return response;
             }
             catch (Exception e)
             {
-                return allProgresses;
+                response.Message = $"{e.Message}";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                
+                return response;
             }
         }
 
 
-        public async Task<List<EstimatedCostDto>> GetEstimatedCost(Guid structureId, int budegtYear)
+        public async Task<ResponseMessage<List<EstimatedCostDto>>>  GetEstimatedCost(Guid structureId, int budegtYear)
         {
+
+
+
+            var response = new ResponseMessage<List<EstimatedCostDto>>();
 
 
 
@@ -2990,7 +3082,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
 
 
 
-            return estimatedCosts;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = estimatedCosts;
+
+            return response;
 
 
         }

@@ -40,15 +40,16 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
 
         public async Task<List<OrgStructureDto>> GetStructures(Guid SubOrgId, Guid? BranchId)
         {
-            return await _orgStructureService.GetOrganizationStructures(SubOrgId, BranchId);
+            var result = await _orgStructureService.GetOrganizationStructures(SubOrgId,BranchId);
+            return result.Data;
         }
         [HttpGet("parentStructures")]
 
         public async Task<List<SelectListDto>> GetParentStructureList(string branchid)
         {
 
-            return await _orgStructureService.getParentStrucctureSelectList(Guid.Parse(branchid));
-
+            var result = await _orgStructureService.getParentStrucctureSelectList(Guid.Parse(branchid));
+            return result.Data;
         }
 
 

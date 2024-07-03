@@ -74,8 +74,8 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
         {
 
 
-
-            return await _employeeService.GetEmployees(subOrgId);
+            var result = await _employeeService.GetEmployees(subOrgId);
+            return result.Data;
         }
 
         [HttpGet("selectlistNoUser")]
@@ -83,14 +83,15 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
         public async Task<List<SelectListDto>> GetEmployeesNoUserSelectList(Guid subOrgId)
         {
 
-            return await _employeeService.GetEmployeesNoUserSelectList(subOrgId);
+            var result = await _employeeService.GetEmployeesNoUserSelectList(subOrgId);
+            return result.Data;
         }
         [HttpGet("selectlist")]
 
         public async Task<List<SelectListDto>> GetEmployeesSelectList(Guid subOrgId)
         {
-
-            return await _employeeService.GetEmployeesSelectList(subOrgId);
+            var result = await _employeeService.GetEmployeesSelectList(subOrgId);
+            return result.Data;
         }
 
 

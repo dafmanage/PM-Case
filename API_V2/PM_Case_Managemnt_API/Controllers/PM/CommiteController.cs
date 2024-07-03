@@ -52,7 +52,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         public async Task<List<CommiteListDto>> GetCommiteLists(Guid subOrgId)
         {
             var response = await _commiteService.GetCommiteLists(subOrgId);
-            return response;
+            return response.Data;
         }
 
         [HttpGet("getNotIncludedEmployees")]
@@ -60,7 +60,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
             var response = await _commiteService.GetNotIncludedEmployees(commiteId, subOrgId);
 
-            return response;
+            return response.Data;
         }
         [HttpGet("getSelectListCommittee")]
 
@@ -68,7 +68,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
 
             var response = await _commiteService.GetSelectListCommittee(subOrgId);
-            return response;
+            return response.Data;
         }
 
         [HttpGet("GetCommiteeEmployees")]
@@ -77,7 +77,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
             var response = await _commiteService.GetCommiteeEmployees(commiteId);
 
-            return response;
+            return response.Data;
 
         }
 

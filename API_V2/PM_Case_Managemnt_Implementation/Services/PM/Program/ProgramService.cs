@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.PM.Plan;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -21,8 +23,10 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
             this.planService = planService;
         }
 
-        public async Task<int> CreateProgram(Programs program)
+        public async Task<ResponseMessage<int>> CreateProgram(Programs program)
         {
+
+            var response = new ResponseMessage<int>();
 
             program.Id = Guid.NewGuid();
 
@@ -33,15 +37,21 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
 
 
 
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
 
         }
 
-        public async Task<List<ProgramDto>> GetPrograms(Guid subOrgId)
+        public async Task<ResponseMessage<List<ProgramDto>>> GetPrograms(Guid subOrgId)
         {
 
+            var response = new ResponseMessage<List<ProgramDto>>();
 
-            return await (from p in _dBContext.Programs.Where(x => x.SubsidiaryOrganizationId == subOrgId).Include(x => x.ProgramBudgetYear)
+
+            List<ProgramDto> result = await (from p in _dBContext.Programs.Where(x => x.SubsidiaryOrganizationId == subOrgId).Include(x => x.ProgramBudgetYear)
                           select new ProgramDto
                           {
                               Id = p.Id,
@@ -70,28 +80,50 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
 
                           }).ToListAsync();
 
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
 
+            return response;
 
         }
 
-        public async Task<List<SelectListDto>> GetProgramsSelectList(Guid subOrgId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetProgramsSelectList(Guid subOrgId)
         {
 
+            var response = new ResponseMessage<List<SelectListDto>>();
 
-            return await (from p in _dBContext.Programs.Where(n => n.SubsidiaryOrganizationId == subOrgId)
+
+            List<SelectListDto> result = await (from p in _dBContext.Programs.Where(n => n.SubsidiaryOrganizationId == subOrgId)
                           select new SelectListDto
                           {
                               Id = p.Id,
                               Name = p.ProgramName
 
                           }).ToListAsync();
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
 
+            return response;
         }
 
-        public async Task<ProgramDto> GetProgramsById(Guid programId)
+        public async Task<ResponseMessage<ProgramDto>> GetProgramsById(Guid programId)
         {
+            var response = new ResponseMessage<ProgramDto>();
 
             var program = _dBContext.Programs.Include(x => x.ProgramBudgetYear).Where(x => x.Id == programId).FirstOrDefault();
+           
+            if (program == null)
+            {
+                response.Message = "Program not found.";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                return response;
+            }
+            
             var programDto = new ProgramDto
             {
                 ProgramName = program.ProgramName,
@@ -104,8 +136,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
                 Remark = program.Remark
             };
 
-            return programDto;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = programDto;
 
+            return response; 
 
         }
 

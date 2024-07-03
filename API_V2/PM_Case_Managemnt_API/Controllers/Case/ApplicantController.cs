@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants;
 
@@ -9,9 +10,9 @@ namespace PM_Case_Managemnt_API.Controllers.Case
     public class ApplicantController : ControllerBase
     {
 
-        private readonly IApplicantService _applicantService;
+        private readonly IApplicantServices _applicantService;
 
-        public ApplicantController(IApplicantService applicantService)
+        public ApplicantController(IApplicantServices applicantService)
         {
             _applicantService = applicantService;
         }

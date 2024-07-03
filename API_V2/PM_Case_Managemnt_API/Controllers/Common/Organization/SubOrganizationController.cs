@@ -37,14 +37,16 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
 
         public async Task<List<SubsidiaryOrganization>> getSubsidiaryOrganization()
         {
-            return await _subOrganizationService.GetSubsidiaryOrganization();
+            var result = await _subOrganizationService.GetSubsidiaryOrganization();
+            return result.Data;
         }
 
         [HttpGet("ById")]
 
         public async Task<SubsidiaryOrganization> getSubsidiaryOrganizationById(Guid subOrgId)
         {
-            return await _subOrganizationService.GetSubsidiaryOrganizationById(subOrgId);
+            var result = await _subOrganizationService.GetSubsidiaryOrganizationById(subOrgId);
+            return result.Data;
         }
 
         [HttpPut, DisableRequestSizeLimit]
@@ -80,7 +82,8 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
         public async Task<List<SelectListDto>> GetSubsidiaryOrganizationSelectList()
         {
 
-            return await _subOrganizationService.GetSubOrgSelectList();
+            var result = await _subOrganizationService.GetSubOrgSelectList();
+            return result.Data;
         }
 
     }

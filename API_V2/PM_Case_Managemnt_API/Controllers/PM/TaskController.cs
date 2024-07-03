@@ -35,7 +35,8 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         public async Task<TaskVIewDto> GetSingleTask(Guid taskId)
         {
 
-            return await _taskService.GetSingleTask(taskId);
+            var result = await _taskService.GetSingleTask(taskId);
+            return result.Data;
 
 
         }
@@ -44,7 +45,8 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         public async Task<List<ActivityViewDto>> GetSingleActivityParent(Guid actParentId)
         {
 
-            return await _taskService.GetSingleActivityParent(actParentId);
+            var result = await _taskService.GetSingleActivityParent(actParentId);
+            return result.Data;
 
 
         }
@@ -84,8 +86,8 @@ namespace PM_Case_Managemnt_API.Controllers.PM
 
         public async Task<List<SelectListDto>> GetEmployeesNoTaskMembers(Guid taskId, Guid subOrgId)
         {
-
-            return await _taskService.GetEmployeesNoTaskMembersSelectList(taskId, subOrgId);
+            var result = await _taskService.GetEmployeesNoTaskMembersSelectList(taskId, subOrgId);
+            return result.Data;
         }
 
 

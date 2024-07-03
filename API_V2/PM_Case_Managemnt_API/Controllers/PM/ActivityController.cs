@@ -173,32 +173,38 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         [HttpGet("viewProgress")]
         public async Task<List<ProgressViewDto>> ViewActivityProgress(Guid actId)
         {
-            return await _activityService.ViewProgress(actId);
+            var result = await _activityService.ViewProgress(actId);
+            return result.Data;
         }
 
         [HttpGet("getEmployeesFromBranch")]
         public async Task<List<SelectListDto>> GetEmployeesFromBranch(Guid branchId)
         {
-            return await _activityService.GetEmployeesInBranch(branchId);
+            var result = await _activityService.GetEmployeesInBranch(branchId);
+            return result.Data;
+            
         }
 
         [HttpGet("getAssignedActivties")]
         public async Task<List<ActivityViewDto>> GetAssignedActivity(Guid employeeId)
         {
-            return await _activityService.GetAssignedActivity(employeeId);
+            var result = await _activityService.GetAssignedActivity(employeeId);
+            return result.Data;
         }
 
         [HttpGet("getAssignedActivtiesNumber")]
         public async Task<int> GetAssignedActivityNumber(Guid employeeId)
         {
-            return await _activityService.GetAssignedActivityNumber(employeeId);
+            var result = await _activityService.GetAssignedActivityNumber(employeeId);
+            return result.Data;
         }
 
 
         [HttpGet("forApproval")]
         public async Task<List<ActivityViewDto>> forApproval(Guid employeeId)
         {
-            return await _activityService.GetActivtiesForApproval(employeeId);
+            var result = await _activityService.GetActivtiesForApproval(employeeId);
+            return result.Data;
         }
 
         [HttpPost("approve")]
@@ -219,7 +225,8 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         public async Task<List<ActivityAttachmentDto>> GetActivityAtachments(Guid taskId)
         {
 
-            return await _activityService.getAttachemnts(taskId);
+            var result = await _activityService.getAttachemnts(taskId);
+            return result.Data;
 
 
         }
@@ -227,7 +234,8 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         [HttpGet("byActivityId")]
         public async Task<ActivityViewDto> getActivityById(Guid actId)
         {
-            return await _activityService.getActivityById(actId);
+            var result = await _activityService.getActivityById(actId);
+            return result.Data;
         }
         [HttpPost("AssignEmployee")]
 

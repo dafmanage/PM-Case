@@ -2,6 +2,7 @@
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
 
@@ -16,8 +17,9 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             _dBContext = context;
         }
 
-        public async Task<int> CreateTask(TaskDto task)
+        public async Task<ResponseMessage<int>> CreateTask(TaskDto task)
         {
+            var response = new ResponseMessage<int>();
 
             var task1 = new PM_Case_Managemnt_Infrustructure.Models.PM.Task
             {
@@ -31,12 +33,17 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             };
             await _dBContext.AddAsync(task1);
             await _dBContext.SaveChangesAsync();
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
 
         }
 
-        public async Task<int> AddTaskMemo(TaskMemoRequestDto taskMemo)
+        public async Task<ResponseMessage<int>> AddTaskMemo(TaskMemoRequestDto taskMemo)
         {
+            var response = new ResponseMessage<int>();
             var taskMemo1 = new TaskMemo
             {
                 Id = Guid.NewGuid(),
@@ -54,11 +61,16 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             }
             await _dBContext.AddAsync(taskMemo1);
             await _dBContext.SaveChangesAsync();
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
         }
 
-        public async Task<TaskVIewDto> GetSingleTask(Guid taskId)
+        public async Task<ResponseMessage<TaskVIewDto>> GetSingleTask(Guid taskId)
         {
+            var response = new ResponseMessage<TaskVIewDto>();
 
             var task = await _dBContext.Tasks.Include(x => x.Plan).FirstOrDefaultAsync(x => x.Id == taskId);
 
@@ -206,7 +218,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
 
 
-                return new TaskVIewDto
+                var result = new TaskVIewDto
                 {
 
                     Id = task.Id,
@@ -220,6 +232,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                     RemianingWeight = 100 - activityViewDtos.Sum(x => x.Weight),
                     NumberofActivities = _dBContext.Activities.Include(x => x.ActivityParent).Count(x => x.TaskId == task.Id || x.ActivityParent.TaskId == task.Id)
                 };
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = result;
+
+                return response;
             }
             else
             {
@@ -305,7 +322,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                             }
                                             ).ToList();
 
-                    return new TaskVIewDto
+                    var result =  new TaskVIewDto
                     {
 
                         Id = plan.Id,
@@ -320,15 +337,25 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                         NumberofActivities = activityViewDtos.Count(),
 
                     };
+                    response.Message = "Operation Successful.";
+                    response.Success = true;
+                    response.Data = result;
+
+                    return response;
                 }
 
             }
-            return new TaskVIewDto();
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = new TaskVIewDto();
+
+            return response;
 
         }
 
-        public async Task<List<ActivityViewDto>> GetSingleActivityParent(Guid actParentId)
+        public async Task<ResponseMessage<List<ActivityViewDto>>> GetSingleActivityParent(Guid actParentId)
         {
+            var response = new ResponseMessage<List<ActivityViewDto>>();
             var activityViewDtos = new List<ActivityViewDto>();
             var activityProgress = _dBContext.ActivityProgresses.Where(x => x.Activity.ActivityParentId == actParentId);
             activityViewDtos.AddRange((from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
@@ -380,13 +407,19 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                        }
                                             ).ToList());
 
-            return activityViewDtos;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = activityViewDtos;
+
+            return response;
+
 
 
 
         }
-        public async Task<int> AddTaskMemebers(TaskMembersDto taskMembers)
+        public async Task<ResponseMessage<int>> AddTaskMemebers(TaskMembersDto taskMembers)
         {
+            var response = new ResponseMessage<int>();
             if (taskMembers.RequestFrom == "PLAN")
             {
                 foreach (var e in taskMembers.Employee)
@@ -418,10 +451,15 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                 }
             }
 
-            return 1;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
         }
-        public async Task<List<SelectListDto>> GetEmployeesNoTaskMembersSelectList(Guid taskId, Guid subOrgId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetEmployeesNoTaskMembersSelectList(Guid taskId, Guid subOrgId)
         {
+            var response = new ResponseMessage<List<SelectListDto>>();
             var taskMembers = _dBContext.TaskMembers.Where(x =>
             (x.TaskId != Guid.Empty && x.TaskId == taskId) ||
             (x.PlanId != Guid.Empty && x.PlanId == taskId) ||
@@ -436,55 +474,89 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                 Name = e.FullName
                                             }).ToListAsync();
 
-            return EmployeeSelectList;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = EmployeeSelectList;
+
+            return response;
         }
 
-        public async Task<List<SelectListDto>> GetTasksSelectList(Guid PlanId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetTasksSelectList(Guid PlanId)
         {
 
-            return await _dBContext.Tasks.Where(x => x.PlanId == PlanId).
+            var response = new ResponseMessage<List<SelectListDto>>();
+
+            List<SelectListDto> result = await _dBContext.Tasks.Where(x => x.PlanId == PlanId).
                 Select(x => new SelectListDto { Id = x.Id, Name = x.TaskDescription }).ToListAsync();
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
+
+            return response;
         }
 
 
-        public async Task<List<SelectListDto>> GetActivitieParentsSelectList(Guid TaskId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetActivitieParentsSelectList(Guid TaskId)
         {
-            return await _dBContext.ActivityParents.Where(x => x.TaskId == TaskId).Select(x => new SelectListDto
+            var response = new ResponseMessage<List<SelectListDto>>();
+            List<SelectListDto> result =  await _dBContext.ActivityParents.Where(x => x.TaskId == TaskId).Select(x => new SelectListDto
             {
                 Id = x.Id,
                 Name = x.ActivityParentDescription
             }).ToListAsync();
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
+
+            return response;
         }
 
-        public async Task<List<SelectListDto>> GetActivitiesSelectList(Guid? planId, Guid? taskId, Guid? actParentId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetActivitiesSelectList(Guid? planId, Guid? taskId, Guid? actParentId)
         {
+
+            var response = new ResponseMessage<List<SelectListDto>>();
 
             if (planId != null)
             {
-                return await _dBContext.Activities.Where(x => x.PlanId == planId)
+                List<SelectListDto> result = await _dBContext.Activities.Where(x => x.PlanId == planId)
              .Select(x => new SelectListDto
              {
                  Id = x.Id,
                  Name = x.ActivityDescription
              }).ToListAsync();
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = result;
+
+                return response;
 
             }
             if (taskId != null)
             {
-                return await _dBContext.Activities.Where(x => x.TaskId == taskId)
+                List<SelectListDto>  result_null = await _dBContext.Activities.Where(x => x.TaskId == taskId)
              .Select(x => new SelectListDto
              {
                  Id = x.Id,
                  Name = x.ActivityDescription
              }).ToListAsync();
+                response.Message = "Operation Successful.";
+                response.Success = true;
+                response.Data = result_null;
+
+                return response;
 
             }
-            return await _dBContext.Activities.Where(x => x.ActivityParentId == actParentId)
+            List<SelectListDto> result_op = await _dBContext.Activities.Where(x => x.ActivityParentId == actParentId)
                 .Select(x => new SelectListDto
                 {
                     Id = x.Id,
                     Name = x.ActivityDescription
                 }).ToListAsync();
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result_op;
+
+            return response;
         }
 
 
