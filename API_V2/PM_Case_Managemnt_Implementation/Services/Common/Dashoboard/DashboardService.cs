@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Case;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -23,8 +25,10 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
         {
             _dBContext = context;
         }
-        public async Task<DashboardDto> GetPendingCase(Guid subOrgId, string startat, string endat)
+        public async Task<ResponseMessage<DashboardDto>> GetPendingCase(Guid subOrgId, string startat, string endat)
         {
+
+            var response = new ResponseMessage<DashboardDto>();
 
             var allAffairps = _dBContext.Cases
                  .Include(a => a.CaseType)
@@ -165,17 +169,22 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
             dashboard.chart = Chart;
 
 
+            response.Message = "Dashboard setup successfully";
+            response.Success = true;
+            response.Data = dashboard;
 
 
+            return response;
 
-            return dashboard;
 
         }
 
 
 
-        public async Task<barChartDto> GetMonthlyReport(Guid subOrgId, int year)
+        public async Task<ResponseMessage<barChartDto>> GetMonthlyReport(Guid subOrgId, int year)
         {
+
+            var response = new ResponseMessage<barChartDto>();
 
             var gerYear = EthiopicDateTime.GetGregorianDate(7, 7, year).Year;
 
@@ -219,13 +228,18 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
             }
 
-            return barChart;
+            response.Message = "Operation Successfull";
+            response.Data = barChart;
+            response.Success = true;
+
+            return response;
 
         }
 
 
-        public async Task<PMDashboardDto> GetPMDashboardDto(Guid empID, Guid subOrgId)
+        public async Task<ResponseMessage<PMDashboardDto>> GetPMDashboardDto(Guid empID, Guid subOrgId)
         {
+            var response = new ResponseMessage<PMDashboardDto>();
 
             var Employee = _dBContext.Employees.Find(empID);
             var Structure_Hierarchy = _dBContext.OrganizationalStructures.Single(x => x.Id == Employee.OrganizationalStructureId);
@@ -263,7 +277,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
             };
 
-            return pMDashboard;
+            response.Message = "Operation Successful";
+            response.Data = pMDashboard;
+            response.Success = true;
+
+            return response; 
 
 
         }
@@ -683,10 +701,23 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
 
 
-        public async Task<PmDashboardBarchartDto> BudgetYearVsContribution(Guid empID, Guid subOrgId)
+        public async Task<ResponseMessage<PmDashboardBarchartDto>> BudgetYearVsContribution(Guid empID, Guid subOrgId)
         {
 
+            var response = new ResponseMessage<PmDashboardBarchartDto>();
+
             var Employee = _dBContext.Employees.Find(empID);
+            
+            if (Employee == null)
+            {
+                response.Message = "Employee Not found";
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                response.Data = null;
+                response.Success = false;
+
+                return response;
+            }
+            
             var Structure_Hierarchy = _dBContext.OrganizationalStructures.Single(x => x.Id == Employee.OrganizationalStructureId);
             if (Structure_Hierarchy.ParentStructureId != null)
             {
@@ -797,7 +828,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
 
 
-            return bugetYears;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = bugetYears;
+
+            return response;
         }
         public class Structure
         {

@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_API.Models.KPI;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.KPI;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.KPI;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -82,16 +84,20 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
         }
 
 
-        public async Task<List<SelectListDto>> GetKpiGoalSelectList(Guid subOrgId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetKpiGoalSelectList(Guid subOrgId)
         {
+            var response = new ResponseMessage<List<SelectListDto>>();
             var kpiGoal = await _dbContext.KPIDetails.Where(x => x.KPI.SubsidiaryOrganizationId == subOrgId).Select(x => new SelectListDto
             {
 
                 Name = x.MainGoal,
                 Id = x.Id
             }).ToListAsync();
+            response.Message = "Operation Successful";
+            response.Data = kpiGoal;
+            response.Success = true;
 
-            return kpiGoal;
+            return response;
         }
 
         public async Task<ResponseMessage> AddKpiGoal(KPIGoalPostDto kpiGoalPost)
@@ -222,8 +228,9 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
         }
 
-        public async Task<List<KPIGetDto>> GetKPIs()
+        public async Task<ResponseMessage<List<KPIGetDto>>> GetKPIs()
         {
+            var response = new ResponseMessage<List<KPIGetDto>>();
             var kpis = await _dbContext.KPIs.Select(x => new KPIGetDto
             {
                 Title = x.Title,
@@ -232,19 +239,22 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 EncoderOrganizationName = x.EncoderOrganizationName,
                 EvaluatorOrganizationName = x.EvaluatorOrganizationName,
                 CreatedBy = x.CreatedBy,
-                AccessCode = x.AccessCode,
-                HasSubsidiaryOrganization = x.HasSubsidiaryOrganization,
-                SubsidiaryOrganizationId = x.SubsidiaryOrganizationId,
+                Url = x.Url,
                 Id = x.Id
-
+                
             }).ToListAsync();
 
-
-            return kpis;
+            response.Message = "Operation Successful.";
+            response.Data = kpis;
+            response.Success = true;
+            
+            return response;
         }
 
-        public async Task<KPIGetDto> GetKPIById(Guid id)
+        public async Task<ResponseMessage<KPIGetDto>> GetKPIById(Guid id)
         {
+            var response = new ResponseMessage<KPIGetDto>();
+            
             var kpis = await _dbContext.KPIs
                         .Where(x => x.Id == id || x.SubsidiaryOrganizationId == id)
                         .Select(x => new KPIGetDto
@@ -263,10 +273,14 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                         })
                         .FirstOrDefaultAsync();
-
+            
             if (kpis == null)
             {
-                return new KPIGetDto();
+                response.Message = "Error";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                return response;
             }
 
             kpis.ActiveYears = kpis.ActiveYearsString?.Split(',').Select(int.Parse).ToList() ?? new List<int>();
@@ -343,7 +357,11 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                                 }).ToList();
             }
 
-            return kpis;
+            response.Message = "Operation Successful.";
+            response.Data = kpis;
+            response.Success = true;
+            
+            return response;
         }
         public async Task<ResponseMessage> UpdateKPI(KPIGetDto kpiGet)
         {
@@ -413,21 +431,22 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
         }
 
-        public async Task<ResponseMessage> LoginKpiDataEncoding(string accessCode)
+        public async Task<ResponseMessage<string>> LoginKpiDataEncoding(string accessCode)
         {
 
             var kpiId = await _dbContext.KPIs.AsNoTracking().Where(x => x.AccessCode == accessCode).Select(x => x.Id).FirstOrDefaultAsync();
 
             if (kpiId == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<string>
                 {
+                    Data = "",
                     Success = false,
                     Message = "Access Code Is Invalid"
                 };
             }
 
-            return new ResponseMessage
+            return new ResponseMessage<string>
             {
                 Success = true,
                 Message = "Log In Successfull",
