@@ -7,14 +7,10 @@ using PM_Case_Managemnt_Infrustructure.Models.PM;
 
 namespace PM_Case_Managemnt_Implementation.Services.PM
 {
-    public class TaskService : ITaskService
+    public class TaskService(ApplicationDbContext context) : ITaskService
     {
 
-        private readonly ApplicationDbContext _dBContext;
-        public TaskService(ApplicationDbContext context)
-        {
-            _dBContext = context;
-        }
+        private readonly ApplicationDbContext _dBContext = context;
 
         public async Task<int> CreateTask(TaskDto task)
         {
@@ -29,6 +25,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                 PlanId = task.PlanId,
 
             };
+
             await _dBContext.AddAsync(task1);
             await _dBContext.SaveChangesAsync();
             return 1;
@@ -44,14 +41,17 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                 EmployeeId = taskMemo.EmployeeId,
                 Description = taskMemo.Description,
             };
+
             if (taskMemo.RequestFrom == "PLAN")
             {
                 taskMemo1.PlanId = taskMemo.TaskId;
             }
+
             else
             {
                 taskMemo1.TaskId = taskMemo.TaskId;
             }
+
             await _dBContext.AddAsync(taskMemo1);
             await _dBContext.SaveChangesAsync();
             return 1;
@@ -65,19 +65,9 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             if (task != null)
             {
 
-                //var taskMembers = (from t in _dBContext.TaskMembers.Include(x => x.Employee).Where(x => x.TaskId == task.Id)
-                //                   select new SelectListDto
-                //                   {
-                //                       Id = t.Id,
-                //                       Name = t.Employee.FullName,
-                //                       Photo = t.Employee.Photo,
-                //                       EmployeeId = t.EmployeeId.ToString()
-                //                   }).ToList();
-
                 var taskMembers = (from t in _dBContext.Employees.Where(x => x.OrganizationalStructureId == task.Plan.StructureId)
                                    select new SelectListDto
                                    {
-                                       //Id = t.Id,
                                        Name = t.FullName,
                                        Photo = t.Photo,
                                        EmployeeId = t.Id.ToString()
@@ -104,14 +94,13 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                 var activityViewDtos = new List<ActivityViewDto>();
 
 
-                activityViewDtos.AddRange((from e in _dBContext.ActivityParents.Include(x => x.UnitOfMeasurment).Where(x => x.TaskId == taskId)
+                activityViewDtos.AddRange([.. (from e in _dBContext.ActivityParents.Include(x => x.UnitOfMeasurment).Where(x => x.TaskId == taskId)
                                            select new ActivityViewDto
                                            {
                                                Id = e.Id,
                                                Name = e.ActivityParentDescription,
                                                PlannedBudget = e.PlanedBudget,
                                                AssignedToBranch = e.AssignedToBranch,
-                                               //ActivityType = e.ActivityType.ToString(),
                                                Weight = e.Weight,
                                                Begining = e.BaseLine,
                                                Target = e.Goal,
@@ -124,7 +113,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                Members = new List<SelectListDto>(),
                                                MonthPerformance = new List<MonthPerformanceViewDto>(),
                                                OverAllProgress = 0,
-                                               UsedBudget = activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByFinance == approvalStatus.approved).Sum(x => x.ActualBudget),
+                                               UsedBudget = activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByFinance == ApprovalStatus.Approved).Sum(x => x.ActualBudget),
 
                                                StartDateEth = e.ShouldStartPeriod != null
                                                     ? EthiopicDateTime.GetEthiopicDateUS(e.ShouldStartPeriod.Value.Day, e.ShouldStartPeriod.Value.Month, e.ShouldStartPeriod.Value.Year)
@@ -136,12 +125,12 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                FieldWork = 0,
 
                                            }
-                                        ).ToList());
+                                        )]);
 
 
                 activityViewDtos.AddRange((from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
                                            where e.TaskId == task.Id
-                                           // join ae in _dBContext.EmployeesAssignedForActivities.Include(x=>x.Employee) on e.Id equals ae.ActivityId
+        
                                            select new ActivityViewDto
                                            {
                                                Id = e.Id,
@@ -156,7 +145,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                OverAllPerformance = 0,
                                                HasKpiGoal = e.HasKpiGoal,
                                                KpiGoalId = e.KpiGoalId,
-                                               StartDate = e.ShouldStat.ToString(),
+                                               StartDate = e.ShouldStart.ToString(),
                                                EndDate = e.ShouldEnd.ToString(),
                                                IsClassfiedToBranch = false,
                                                BranchId = e.OrganizationalStructureId != null ? e.OrganizationalStructureId : null,
@@ -182,16 +171,16 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                    Order = y.Order,
                                                    Planned = y.Target,
                                                    Actual = activityProgress.Where(x => x.QuarterId == y.Id).Sum(x => x.ActualWorked),
-                                                   Percentage = y.Target != 0 ? (activityProgress.Where(x => x.QuarterId == y.Id && x.IsApprovedByDirector == approvalStatus.approved && x.IsApprovedByFinance == approvalStatus.approved && x.IsApprovedByManager == approvalStatus.approved).Sum(x => x.ActualWorked) / y.Target) * 100 : 0
+                                                   Percentage = y.Target != 0 ? activityProgress.Where(x => x.QuarterId == y.Id && x.IsApprovedByDirector == ApprovalStatus.Approved && x.IsApprovedByFinance == ApprovalStatus.Approved && x.IsApprovedByManager == ApprovalStatus.Approved).Sum(x => x.ActualWorked) / y.Target * 100 : 0
 
                                                }).ToList(),
-                                               OverAllProgress = e.Goal != 0 ? activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByDirector == approvalStatus.approved && x.IsApprovedByFinance == approvalStatus.approved && x.IsApprovedByManager == approvalStatus.approved).Sum(x => x.ActualWorked) * 100 / e.Goal : 0,
-                                               UsedBudget = activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByFinance == approvalStatus.approved).Sum(x => x.ActualBudget),
+                                               OverAllProgress = e.Goal != 0 ? activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByDirector == ApprovalStatus.Approved && x.IsApprovedByFinance == ApprovalStatus.Approved && x.IsApprovedByManager == ApprovalStatus.Approved).Sum(x => x.ActualWorked) * 100 / e.Goal : 0,
+                                               UsedBudget = activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByFinance == ApprovalStatus.Approved).Sum(x => x.ActualBudget),
                                                OfficeWork = e.OfficeWork,
                                                FieldWork = e.FieldWork,
                                                CommiteeId = e.CommiteeId,
-                                               StartDateEth = e.ShouldStat != null
-                                                       ? EthiopicDateTime.GetEthiopicDateUS(e.ShouldStat.Day, e.ShouldStat.Month, e.ShouldStat.Year)
+                                               StartDateEth = e.ShouldStart != null
+                                                       ? EthiopicDateTime.GetEthiopicDateUS(e.ShouldStart.Day, e.ShouldStart.Month, e.ShouldStart.Year)
                                                         : null,
                                                EndDateEth = e.ShouldEnd != null
                                                    ? EthiopicDateTime.GetEthiopicDateUS(e.ShouldEnd.Day, e.ShouldEnd.Month, e.ShouldEnd.Year)
@@ -206,7 +195,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
 
 
-                return new TaskVIewDto
+                return new TaskViewDto
                 {
 
                     Id = task.Id,
@@ -217,7 +206,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                     RemainingBudget = task.PlanedBudget - activityViewDtos.Sum(x => x.PlannedBudget),
                     ActivityViewDtos = activityViewDtos,
                     TaskWeight = activityViewDtos.Sum(x => x.Weight),
-                    RemianingWeight = 100 - activityViewDtos.Sum(x => x.Weight),
+                    RemainingWeight = 100 - activityViewDtos.Sum(x => x.Weight),
                     NumberofActivities = _dBContext.Activities.Include(x => x.ActivityParent).Count(x => x.TaskId == task.Id || x.ActivityParent.TaskId == task.Id)
                 };
             }
@@ -227,14 +216,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
                 if (plan != null)
                 {
-                    //var taskMembers = (from t in _dBContext.TaskMembers.Include(x => x.Employee).Where(x => x.PlanId == plan.Id)
-                    //                   select new SelectListDto
-                    //                   {
-                    //                       Id = t.Id,
-                    //                       Name = t.Employee.FullName,
-                    //                       Photo = t.Employee.Photo,
-                    //                       EmployeeId = t.EmployeeId.ToString()
-                    //                   }).ToList();
+
 
                     var taskMembers = (from t in _dBContext.Employees.Where(x => x.OrganizationalStructureId == plan.StructureId)
                                        select new SelectListDto
@@ -265,7 +247,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
                     var activityViewDtos = (from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
                                             where e.PlanId == plan.Id
-                                            // join ae in _dBContext.EmployeesAssignedForActivities.Include(x=>x.Employee) on e.Id equals ae.ActivityId
                                             select new ActivityViewDto
                                             {
                                                 Id = e.Id,
@@ -279,7 +260,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                 OverAllPerformance = 0,
                                                 HasKpiGoal = e.HasKpiGoal,
                                                 KpiGoalId = e.KpiGoalId,
-                                                StartDate = e.ShouldStat.ToString(),
+                                                StartDate = e.ShouldStart.ToString(),
                                                 EndDate = e.ShouldEnd.ToString(),
                                                 BranchId = e.OrganizationalStructureId != null ? e.OrganizationalStructureId : null,
                                                 Members = _dBContext.EmployeesAssignedForActivities.Include(x => x.Employee).Where(x => x.ActivityId == e.Id).Select(y => new SelectListDto
@@ -296,16 +277,16 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                     Order = y.Order,
                                                     Planned = y.Target,
                                                     Actual = activityProgress.Where(x => x.QuarterId == y.Id).Sum(x => x.ActualWorked),
-                                                    Percentage = y.Target != 0 ? (activityProgress.Where(x => x.QuarterId == y.Id && x.IsApprovedByDirector == approvalStatus.approved && x.IsApprovedByFinance == approvalStatus.approved && x.IsApprovedByManager == approvalStatus.approved).Sum(x => x.ActualWorked) / y.Target) * 100 : 0
+                                                    Percentage = y.Target != 0 ? activityProgress.Where(x => x.QuarterId == y.Id && x.IsApprovedByDirector == ApprovalStatus.Approved && x.IsApprovedByFinance == ApprovalStatus.Approved && x.IsApprovedByManager == ApprovalStatus.Approved).Sum(x => x.ActualWorked) / y.Target * 100 : 0
 
                                                 }).ToList(),
-                                                OverAllProgress = e.Goal != 0 ? activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByDirector == approvalStatus.approved && x.IsApprovedByFinance == approvalStatus.approved && x.IsApprovedByManager == approvalStatus.approved).Sum(x => x.ActualWorked) * 100 / e.Goal : 0,
-                                                UsedBudget = activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByFinance == approvalStatus.approved).Sum(x => x.ActualBudget)
+                                                OverAllProgress = e.Goal != 0 ? activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByDirector == ApprovalStatus.Approved && x.IsApprovedByFinance == ApprovalStatus.Approved && x.IsApprovedByManager == ApprovalStatus.Approved).Sum(x => x.ActualWorked) * 100 / e.Goal : 0,
+                                                UsedBudget = activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByFinance == ApprovalStatus.Approved).Sum(x => x.ActualBudget)
 
                                             }
                                             ).ToList();
 
-                    return new TaskVIewDto
+                    return new TaskViewDto
                     {
 
                         Id = plan.Id,
@@ -316,14 +297,14 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                         RemainingBudget = plan.PlandBudget - activityViewDtos.Sum(x => x.PlannedBudget),
                         ActivityViewDtos = activityViewDtos,
                         TaskWeight = activityViewDtos.Sum(x => x.Weight),
-                        RemianingWeight = 100 - activityViewDtos.Sum(x => x.Weight),
+                        RemainingWeight = 100 - activityViewDtos.Sum(x => x.Weight),
                         NumberofActivities = activityViewDtos.Count(),
 
                     };
                 }
 
             }
-            return new TaskVIewDto();
+            return new TaskViewDto();
 
         }
 
@@ -331,7 +312,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
         {
             var activityViewDtos = new List<ActivityViewDto>();
             var activityProgress = _dBContext.ActivityProgresses.Where(x => x.Activity.ActivityParentId == actParentId);
-            activityViewDtos.AddRange((from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
+            activityViewDtos.AddRange([.. (from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
                                        where e.ActivityParentId == actParentId
                                        // join ae in _dBContext.EmployeesAssignedForActivities.Include(x=>x.Employee) on e.Id equals ae.ActivityId
                                        select new ActivityViewDto
@@ -349,7 +330,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                            OverAllPerformance = 0,
                                            HasKpiGoal = e.HasKpiGoal,
                                            KpiGoalId = e.KpiGoalId,
-                                           StartDate = e.ShouldStat.ToString(),
+                                           StartDate = e.ShouldStart.ToString(),
                                            EndDate = e.ShouldEnd.ToString(),
                                            IsClassfiedToBranch = false,
                                            Members = e.CommiteeId == null ? _dBContext.EmployeesAssignedForActivities.Include(x => x.Employee).Where(x => x.ActivityId == e.Id).Select(y => new SelectListDto
@@ -372,13 +353,13 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                                Order = y.Order,
                                                Planned = y.Target,
                                                Actual = activityProgress.Where(x => x.QuarterId == y.Id).Sum(x => x.ActualWorked),
-                                               Percentage = y.Target != 0 ? (activityProgress.Where(x => x.QuarterId == y.Id && x.IsApprovedByDirector == approvalStatus.approved && x.IsApprovedByFinance == approvalStatus.approved && x.IsApprovedByManager == approvalStatus.approved).Sum(x => x.ActualWorked) / y.Target) * 100 : 0
+                                               Percentage = y.Target != 0 ? activityProgress.Where(x => x.QuarterId == y.Id && x.IsApprovedByDirector == ApprovalStatus.Approved && x.IsApprovedByFinance == ApprovalStatus.Approved && x.IsApprovedByManager == ApprovalStatus.Approved).Sum(x => x.ActualWorked) / y.Target * 100 : 0
                                            }).ToList(),
-                                           OverAllProgress = e.Goal != 0 ? activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByDirector == approvalStatus.approved && x.IsApprovedByFinance == approvalStatus.approved && x.IsApprovedByManager == approvalStatus.approved).Sum(x => x.ActualWorked) * 100 / e.Goal : 0,
+                                           OverAllProgress = e.Goal != 0 ? activityProgress.Where(x => x.ActivityId == e.Id && x.IsApprovedByDirector == ApprovalStatus.Approved && x.IsApprovedByFinance == ApprovalStatus.Approved && x.IsApprovedByManager == ApprovalStatus.Approved).Sum(x => x.ActualWorked) * 100 / e.Goal : 0,
 
 
                                        }
-                                            ).ToList());
+                                            )]);
 
             return activityViewDtos;
 
