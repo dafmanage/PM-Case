@@ -21,7 +21,7 @@ services:
     container_name: pm_case_management_database
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=Your_password123
+      - SA_PASSWORD=Password1!
     ports:
       - "1433:1433"
     volumes:

@@ -6,33 +6,31 @@ namespace PM_Case_Managemnt_Implementation.DTOS.PM
         public class EstimatedCostDto
         {
             public string Description { get; set; }
-
             public string BudgetHours { get; set; }
-
             public string ActualHours { get; set; }
-
             public string HourVariance { get; set; }
-
             public string PlannedBudjet { get; set; }
-
             public string ActualBudget { get; set; }
-
             public string BudgetVariance { get; set; }
-
             public List<EstimatedCostDto>? Tasks { get; set; }
+        }
+
+        public class PlannedReport
+        {
+            public List<PlansList> PlansLists { get; set; }
+            public int PMINT { get; set; }
+            public List<QuarterMonth> PlanDurationInQuarter { get; set; }
         }
 
         public class PlanReportByProgramDto
         {
             public List<ProgramViewModel> ProgramViewModels { get; set; }
-
             public List<FiscalPlanProgram> MonthCounts { get; set; }
         }
 
         public class ProgramViewModel
         {
             public string ProgramName { get; set; }
-
             public List<ProgramPlanViewModel> ProgramPlanViewModels { get; set; }
         }
 
@@ -59,68 +57,49 @@ namespace PM_Case_Managemnt_Implementation.DTOS.PM
         public class PlanReportDetailDto
         {
             public List<ProgramWithStructure> ProgramWithStructure { get; set; }
-
             public List<ActivityTargetDivisionReport> MonthCounts { get; set; }
         }
 
         public class ProgramWithStructure
         {
             public string StructureName { get; set; }
-
             public List<StructurePlan> StructurePlans { get; set; }
         }
 
         public class ActivityTargetDivisionReport
         {
             public int Order { get; set; }
-
             public string MonthName { get; set; }
-
             public float TargetValue { get; set; }
         }
 
         public class StructurePlan
         {
             public string PlanName { get; set; }
-
             public float? Weight { get; set; }
-
             public string UnitOfMeasurement { get; set; }
-
             public float? Target { get; set; }
-
             public List<PlanTask> PlanTasks { get; set; }
-
             public List<ActivityTargetDivisionReport> PlanTargetDivision { get; set; }
         }
 
         public class PlanTask
         {
             public string TaskName { get; set; }
-
             public float? Weight { get; set; }
-
             public string UnitOfMeasurement { get; set; }
-
             public float? Target { get; set; }
-
             public List<TaskActivity> TaskActivities { get; set; }
-
             public List<ActivityTargetDivisionReport> TaskTargetDivision { get; set; }
         }
 
         public class TaskActivity
         {
             public string ActivityName { get; set; }
-
             public float? Weight { get; set; }
-
             public string UnitOfMeasurement { get; set; }
-
             public float? Target { get; set; }
-
             public List<ActSubActivity> ActSubActivity { get; set; }
-
             public List<ActivityTargetDivisionReport> ActivityTargetDivision { get; set; }
 
         }
@@ -128,26 +107,18 @@ namespace PM_Case_Managemnt_Implementation.DTOS.PM
         public class ActSubActivity
         {
             public string SubActivityDescription { get; set; }
-
             public float Weight { get; set; }
-
             public string UnitOfMeasurement { get; set; }
-
             public float Target { get; set; }
-
             public List<ActivityTargetDivisionReport> subActivityTargetDivision { get; set; }
         }
 
         public class ProgressReport
         {
             public List<ProgressReportTable> AllActivities { get; set; }
-
             public string ReportMessage { get; set; }
-
             public int PlanDuration { get; set; }
-
             public List<QuarterMonth> PlanDurationInQuarter { get; set; }
-
         }
 
         public class QuarterMonth
@@ -193,39 +164,25 @@ namespace PM_Case_Managemnt_Implementation.DTOS.PM
         public class ProgresseReportByStructure
         {
             public List<PlansList> PlansLists { get; set; }
-
             public string PreviousBudgetYear { get; set; }
-
             public int PlanDuration { get; set; }
-
             public int PMINT { get; set; }
-
-            public List<QuarterMonth> planDuration2 { get; set; }
+            public List<QuarterMonth> PlanDurationInQuarter { get; set; }
 
         }
 
         public class PlansList
         {
             public string PlanName { get; set; }
-
             public float Weight { get; set; }
-
             public string PlRemark { get; set; }
-
             public bool HasTask { get; set; }
-
             public float? Begining { get; set; }
-
             public float? Target { get; set; }
-
             public float? ActualWorked { get; set; }
-
             public float? Progress { get; set; }
-
             public string MeasurementUnit { get; set; }
-
             public List<TaskList> TaskLists { get; set; }
-
             public List<PlanAchievement> PlanDivision { get; set; }
         }
 
@@ -317,8 +274,8 @@ namespace PM_Case_Managemnt_Implementation.DTOS.PM
         {
             public int BudgetYear { get; set; }
             public Guid? EmpId { get; set; }
-            public Guid? PlanId { get; set; }
-            public Guid? TaskId { get; set; }
+            public Guid PlanId { get; set; }
+            public Guid TaskId { get; set; }
             public Guid? ActParentId { get; set; }
             public Guid? ActId { get; set; }
             public Guid? StructureId { get; set; }

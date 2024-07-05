@@ -7,9 +7,9 @@ namespace PM_Case_Managemnt_Infrustructure.Models.PM
     {
         public ActivityParent()
         {
-            Activities = new HashSet<Activity>();
-            TaskMemos = new HashSet<TaskMemo>();
-            TaskMember = new HashSet<TaskMembers>();
+            Activities = [];
+            TaskMemos = [];
+            TaskMember = [];
         }
         public Guid? TaskId { get; set; }
         public virtual Task Task { get; set; }
