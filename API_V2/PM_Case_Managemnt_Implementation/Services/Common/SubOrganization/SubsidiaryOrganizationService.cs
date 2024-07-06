@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Organization;
@@ -33,8 +34,9 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
             _userManager = userManager;
         }
 
-        public async Task<int> CreateSubsidiaryOrganization(SubOrgDto subOrg)
+        public async Task<ResponseMessage<int>> CreateSubsidiaryOrganization(SubOrgDto subOrg)
         {
+            var response = new ResponseMessage<int>();
             try
             {
                 var OrganizationProfileId = _dBContext.OrganizationProfile.FirstOrDefault();
@@ -118,19 +120,32 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                 await _authService.PostApplicationUser(superadmin);
 
 
-                return 1;
+                response.Message = "Operation Successful.";
+                response.Data = 1;
+                response.Success = true;
+            
+                return response;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                return -1;
+                response.Message = $"{ex.Message}";
+                response.Data = -1;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+            
+                return response;
             }
 
         }
-        public async Task<List<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>> GetSubsidiaryOrganization()
+        public async Task<ResponseMessage<List<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>>> GetSubsidiaryOrganization()
         {
-
-            return await _dBContext.SubsidiaryOrganizations.Include(u => u.OrganizationProfile).Where(x => x.isMonitor == false).ToListAsync();
+            var response = new ResponseMessage<List<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>>();
+            List<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization> result = await _dBContext.SubsidiaryOrganizations.Include(u => u.OrganizationProfile).Where(x => x.isMonitor == false).ToListAsync();
+            response.Message = "Operation Successful.";
+            response.Data = result;
+            response.Success = true;
+            
+            return response;
         }
 
 
@@ -342,26 +357,38 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
             };
         }
 
-        public async Task<List<SelectListDto>> GetSubOrgSelectList()
+        public async Task<ResponseMessage<List<SelectListDto>>> GetSubOrgSelectList()
         {
-            var EmployeeSelectList = await (from e in _dBContext.SubsidiaryOrganizations.Where(x => x.isMonitor == false)
+            var response = new ResponseMessage<List<SelectListDto>>();
+            var EmployeeSelectList = await (from e in _dBContext.SubsidiaryOrganizations.Where( x => x.isMonitor == false)
 
-                                            select new SelectListDto
-                                            {
-                                                Id = e.Id,
-                                                Name = e.OrganizationNameEnglish
+                select new SelectListDto
+                {
+                    Id = e.Id,
+                    Name = e.OrganizationNameEnglish
 
-                                            }).ToListAsync();
+                }).ToListAsync();
+            
+            
 
-            return EmployeeSelectList;
+            response.Message = "Operation Successful.";
+            response.Data = EmployeeSelectList;
+            response.Success = true;
+            
+            return response;
 
 
 
         }
-        public async Task<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization> GetSubsidiaryOrganizationById(Guid subOrgId)
+        public async Task<ResponseMessage<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>> GetSubsidiaryOrganizationById(Guid subOrgId)
         {
-
-            return await _dBContext.SubsidiaryOrganizations.Where(x => x.Id == subOrgId).Include(u => u.OrganizationProfile).FirstOrDefaultAsync();
+            var response = new ResponseMessage<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>();
+            var result =  await _dBContext.SubsidiaryOrganizations.Where(x => x.Id == subOrgId).Include(u => u.OrganizationProfile).FirstOrDefaultAsync();
+            response.Message = "Operation Successful.";
+            response.Data = result;
+            response.Success = true;
+            
+            return response;
         }
 
     }

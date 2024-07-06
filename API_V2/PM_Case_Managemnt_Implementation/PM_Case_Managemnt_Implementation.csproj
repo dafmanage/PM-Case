@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <Compile Remove="Helpers\ResponseMessage.cs" />
+    <Compile Include="Helpers\responseMessage.cs" />
   </ItemGroup>
 
 </Project>

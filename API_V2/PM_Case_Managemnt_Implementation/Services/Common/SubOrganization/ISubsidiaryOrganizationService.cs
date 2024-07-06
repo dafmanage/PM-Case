@@ -6,13 +6,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubsidiaryOrganizatio
 {
     public interface ISubsidiaryOrganizationService
     {
-
-        Task<int> CreateSubsidiaryOrganization(SubOrgDto subOrg);
-        Task<List<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>> GetSubsidiaryOrganization();
         Task<ResponseMessage<int>> UpdateSubsidiaryOrganization(SubOrgDto subsidiaryOrganization);
         Task<ResponseMessage<int>> DeleteSubsidiaryOrganization(Guid suOrgId);
-        Task<List<SelectListDto>> GetSubOrgSelectList();
-        Task<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization> GetSubsidiaryOrganizationById(Guid subOrgId);
+        Task<ResponseMessage<int>> CreateSubsidiaryOrganization(SubOrgDto subOrg);
+        Task<ResponseMessage<List<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>>> GetSubsidiaryOrganization();
+        Task<ResponseMessage<List<SelectListDto>>> GetSubOrgSelectList();
+        Task<ResponseMessage<PM_Case_Managemnt_Infrustructure.Models.Common.Organization.SubsidiaryOrganization>> GetSubsidiaryOrganizationById(Guid subOrgId);
 
     }
 }

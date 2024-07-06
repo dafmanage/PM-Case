@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_API.Models.KPI;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.KPI;
@@ -82,16 +83,20 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
         }
 
 
-        public async Task<List<SelectListDto>> GetKpiGoalSelectList(Guid subOrgId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetKpiGoalSelectList(Guid subOrgId)
         {
+            var response = new ResponseMessage<List<SelectListDto>>();
             var kpiGoal = await _dbContext.KPIDetails.Where(x => x.KPI.SubsidiaryOrganizationId == subOrgId).Select(x => new SelectListDto
             {
 
                 Name = x.MainGoal,
                 Id = x.Id
             }).ToListAsync();
+            response.Message = "Operation Successful";
+            response.Data = kpiGoal;
+            response.Success = true;
 
-            return kpiGoal;
+            return response;
         }
 
         public async Task<ResponseMessage<int>> AddKpiGoal(KPIGoalPostDto kpiGoalPost)
@@ -222,8 +227,9 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
         }
 
-        public async Task<List<KPIGetDto>> GetKPIs()
+        public async Task<ResponseMessage<List<KPIGetDto>>> GetKPIs()
         {
+            var response = new ResponseMessage<List<KPIGetDto>>();
             var kpis = await _dbContext.KPIs.Select(x => new KPIGetDto
             {
                 Title = x.Title,
@@ -232,19 +238,22 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 EncoderOrganizationName = x.EncoderOrganizationName,
                 EvaluatorOrganizationName = x.EvaluatorOrganizationName,
                 CreatedBy = x.CreatedBy,
-                AccessCode = x.AccessCode,
-                HasSubsidiaryOrganization = x.HasSubsidiaryOrganization,
-                SubsidiaryOrganizationId = x.SubsidiaryOrganizationId,
+                Url = x.Url,
                 Id = x.Id
-
+                
             }).ToListAsync();
 
-
-            return kpis;
+            response.Message = "Operation Successful.";
+            response.Data = kpis;
+            response.Success = true;
+            
+            return response;
         }
 
-        public async Task<KPIGetDto> GetKPIById(Guid id)
+        public async Task<ResponseMessage<KPIGetDto>> GetKPIById(Guid id)
         {
+            var response = new ResponseMessage<KPIGetDto>();
+            
             var kpis = await _dbContext.KPIs
                         .Where(x => x.Id == id || x.SubsidiaryOrganizationId == id)
                         .Select(x => new KPIGetDto
@@ -263,10 +272,14 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                         })
                         .FirstOrDefaultAsync();
-
+            
             if (kpis == null)
             {
-                return new KPIGetDto();
+                response.Message = "Error";
+                response.Data = null;
+                response.Success = false;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                return response;
             }
 
             kpis.ActiveYears = kpis.ActiveYearsString?.Split(',').Select(int.Parse).ToList() ?? new List<int>();
@@ -343,7 +356,11 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                                 }).ToList();
             }
 
-            return kpis;
+            response.Message = "Operation Successful.";
+            response.Data = kpis;
+            response.Success = true;
+            
+            return response;
         }
         public async Task<ResponseMessage<int>> UpdateKPI(KPIGetDto kpiGet)
         {
@@ -422,6 +439,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             {
                 return new ResponseMessage<string>
                 {
+                    Data = "",
                     Success = false,
                     Message = "Access Code Is Invalid"
                 };
