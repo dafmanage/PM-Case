@@ -1,10 +1,10 @@
-﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
 {
@@ -22,11 +22,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
         {
 
             var response = new ResponseMessage<Guid>();
-        
+
             try
             {
-                
-            
+
+
                 Appointement appointment = new()
                 {
                     Id = Guid.NewGuid(),
@@ -47,8 +47,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
                 response.Data = appointment.Id;
 
                 return response;
-                
-            } catch (Exception ex)
+
+            }
+            catch (Exception ex)
             {
                 response.Success = false;
                 response.Message = "Wasnt not able to create appointment";
@@ -64,7 +65,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
             {
                 List<Appointement> appointments = await _dbContext.Appointements.Include(appointment => appointment.Employee).Include(appointment => appointment.Case).ToListAsync();
                 //List<AppointmentGetDto> result = new();
-                if (appointments == null){
+                if (appointments == null)
+                {
                     response.Message = "No available appointment";
                     response.Success = false;
                     response.ErrorCode = HttpStatusCode.NotFound.ToString();
@@ -85,7 +87,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
                 response.Success = true;
                 response.Data = appointments;
                 return response;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.Message = "Error while fetching";
                 response.Success = false;

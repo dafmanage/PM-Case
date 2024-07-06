@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -183,7 +183,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
 
         }
 
-        public async Task<ResponseMessage> UpdatePlan(PlanDto plan)
+        public async Task<ResponseMessage<int>> UpdatePlan(PlanDto plan)
         {
             try
             {
@@ -218,7 +218,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                 }
 
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "Project Updated Successfully"
@@ -226,7 +226,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = ex.Message.ToString()
@@ -234,13 +234,13 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
             }
 
         }
-        public async Task<ResponseMessage> DeletePlan(Guid planId)
+        public async Task<ResponseMessage<int>> DeletePlan(Guid planId)
         {
             var plan = await _dBContext.Plans.FindAsync(planId);
 
             if (plan == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
 
                     Message = "Project Not Found!!!",
@@ -405,7 +405,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                     await _dBContext.SaveChangesAsync();
                 }
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
 
                     Success = true,
@@ -415,7 +415,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
 
                     Success = false,

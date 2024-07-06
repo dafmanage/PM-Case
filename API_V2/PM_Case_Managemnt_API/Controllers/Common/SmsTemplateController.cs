@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate;
 using System.Net;
 
@@ -39,7 +39,6 @@ namespace PM_Case_Managemnt_API.Controllers.Common
         }
 
         [HttpPost("CreateSmsTemplate")]
-        [ProducesResponseType(typeof(ResponseMessage), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Create(SmsTemplatePostDto template)
         {
             if (ModelState.IsValid)
@@ -53,7 +52,7 @@ namespace PM_Case_Managemnt_API.Controllers.Common
         }
 
         [HttpPut("UpdateSmsTemplate")]
-        [ProducesResponseType(typeof(ResponseMessage), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseMessage<int>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Update(SmsTemplateGetDto template)
         {
             if (ModelState.IsValid)
@@ -67,7 +66,7 @@ namespace PM_Case_Managemnt_API.Controllers.Common
         }
 
         [HttpDelete("DeleteSmsTemplate")]
-        [ProducesResponseType(typeof(ResponseMessage), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ResponseMessage<int>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Delete(Guid id)
         {
             return Ok(await smsTemplateService.DeleteSmsTemplate(id));

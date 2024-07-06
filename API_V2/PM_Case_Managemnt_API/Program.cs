@@ -25,11 +25,25 @@ builder.Services.AddCors(policyBuilder =>
 
 builder.Services.AddCoreBusiness();
 
-builder.Services.AddControllers().AddJsonOptions(
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidateModelAttribute>();
+}).AddJsonOptions(
     options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = null;
+
     });
+
+
+
+
+// Add the exception handler
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+// Add HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"));
@@ -131,10 +145,13 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v2/swagger.json", "PM_Case"));
-    app.ApplyMigrations();
+    //app.ApplyMigrations();
 }
 
 app.UseHttpsRedirection();
+
+// Use the exception handler
+app.UseExceptionHandler();
 
 app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions

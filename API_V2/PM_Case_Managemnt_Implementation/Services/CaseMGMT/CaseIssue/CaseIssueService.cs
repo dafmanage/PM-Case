@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
@@ -8,6 +7,7 @@ using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.Case;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 {
@@ -45,7 +45,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
                 }).ToListAsync();
 
-                if (cases == null){
+                if (cases == null)
+                {
                     response.Message = "could not find not completed cases with the given Id.";
                     response.Success = false;
                     response.Data = null;
@@ -69,16 +70,17 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         }
 
 
-         public async Task<ResponseMessage<string>>  IssueCase(CaseIssueDto caseAssignDto)
+        public async Task<ResponseMessage<string>> IssueCase(CaseIssueDto caseAssignDto)
         {
             var response = new ResponseMessage<string>();
-            
+
             try
             {
                 var user = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault();
                 //Case caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
                 // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
-                if (user == null){
+                if (user == null)
+                {
                     response.Success = false;
                     response.Message = "Couldnt find target employee";
                     response.Data = null;
@@ -98,16 +100,17 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                     e =>
                         e.OrganizationalStructureId == caseAssignDto.ForwardedToStructureId &&
                         e.Position == Position.Director);
-                
-                if (toEmployeeCC_nullable == null){
+
+                if (toEmployeeCC_nullable == null)
+                {
                     response.Message = "Could not find employee";
                     response.Success = false;
                     response.Data = null;
                     response.ErrorCode = HttpStatusCode.NotFound.ToString();
                     return response;
                 }
-                
-                
+
+
                 var toEmployeeCC = toEmployeeCC_nullable.Id;
                 //Case currCase = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(caseAssignDto.CaseId));
                 //currCase.AffairStatus = AffairStatus.Assigned;
@@ -132,7 +135,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 };
                 _dbContext.CaseIssues.Add(issueCase);
                 _dbContext.SaveChanges();
-                
+
                 response.Success = true;
                 response.Message = "Issued Successfully";
                 response.Data = "OK";
@@ -152,7 +155,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         }
 
 
-       public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetAll(Guid? employeeId)
+        public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetAll(Guid? employeeId)
         {
             var response = new ResponseMessage<List<CaseEncodeGetDto>>();
             try
@@ -182,7 +185,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                         IssueAction = st.AssignedToEmployeeId == employeeId ? true : false,
 
                     }).ToListAsync();
-                if (cases == null){
+                if (cases == null)
+                {
                     response.Success = false;
                     response.Message = "No such cases";
                     response.ErrorCode = HttpStatusCode.NotFound.ToString();
@@ -201,20 +205,21 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Message = $"{ex.Message}";
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Data = null;
-                
+
                 return response;
             }
         }
 
 
-        public async Task<ResponseMessage<string>> TakeAction(CaseIssueActionDto  caseActionDto)
+        public async Task<ResponseMessage<string>> TakeAction(CaseIssueActionDto caseActionDto)
         {
             var response = new ResponseMessage<string>();
 
             try
             {
                 var issueCase = _dbContext.CaseIssues.Find(caseActionDto.issueCaseId);
-                if (issueCase == null){
+                if (issueCase == null)
+                {
                     response.Message = "Error while fetching.";
                     response.ErrorCode = HttpStatusCode.NotFound.ToString();
                     response.Data = null;

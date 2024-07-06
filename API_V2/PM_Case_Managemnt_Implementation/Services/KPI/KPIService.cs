@@ -2,7 +2,7 @@
 using PM_Case_Managemnt_API.Models.KPI;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.KPI;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.KPI;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -18,7 +18,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             _dbContext = dbContext;
         }
 
-        public async Task<ResponseMessage> AddKPI(KPIPostDto kpiPost)
+        public async Task<ResponseMessage<int>> AddKPI(KPIPostDto kpiPost)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 await _dbContext.KPIs.AddAsync(kpi);
                 await _dbContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "KPI Added Successfully"
@@ -73,7 +73,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = ex.Message,
@@ -94,7 +94,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             return kpiGoal;
         }
 
-        public async Task<ResponseMessage> AddKpiGoal(KPIGoalPostDto kpiGoalPost)
+        public async Task<ResponseMessage<int>> AddKpiGoal(KPIGoalPostDto kpiGoalPost)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 if (!Kpi)
                 {
-                    return new ResponseMessage { Success = false, Message = "KPI Not Found" };
+                    return new ResponseMessage<int> { Success = false, Message = "KPI Not Found" };
                 }
 
                 var kpiGoal = new KPIDetails
@@ -118,7 +118,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 await _dbContext.KPIDetails.AddAsync(kpiGoal);
                 await _dbContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "KPI Goal Added Successfully"
@@ -128,11 +128,11 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
             catch (Exception ex)
             {
-                return new ResponseMessage { Success = false, Message = ex.Message };
+                return new ResponseMessage<int> { Success = false, Message = ex.Message };
             }
         }
 
-        public async Task<ResponseMessage> AddKPIDetail(KPIDetailsPostDto kpiDetailsPost)
+        public async Task<ResponseMessage<int>> AddKPIDetail(KPIDetailsPostDto kpiDetailsPost)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 if (!Kpi)
                 {
-                    return new ResponseMessage { Success = false, Message = "KPI Not Found" };
+                    return new ResponseMessage<int> { Success = false, Message = "KPI Not Found" };
                 }
 
                 var kpiDetails = new List<KPIDetails>();
@@ -166,7 +166,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 await _dbContext.KPIDetails.AddRangeAsync(kpiDetails);
                 await _dbContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "KPI Details Added Successfully"
@@ -175,11 +175,11 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
             catch (Exception ex)
             {
-                return new ResponseMessage { Success = false, Message = ex.Message };
+                return new ResponseMessage<int> { Success = false, Message = ex.Message };
             }
         }
 
-        public async Task<ResponseMessage> AddKPIData(KPIDataPostDto kpiDataPost)
+        public async Task<ResponseMessage<int>> AddKPIData(KPIDataPostDto kpiDataPost)
         {
             try
             {
@@ -188,7 +188,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 if (KpiDetail == null)
                 {
-                    return new ResponseMessage { Success = false, Message = "KPI Detail Not Found" };
+                    return new ResponseMessage<int> { Success = false, Message = "KPI Detail Not Found" };
                 }
 
 
@@ -210,7 +210,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 await _dbContext.KPIDatas.AddAsync(kpiData);
                 await _dbContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "KPI Datas Added Successfully"
@@ -218,7 +218,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
             catch (Exception ex)
             {
-                return new ResponseMessage { Success = false, Message = ex.Message };
+                return new ResponseMessage<int> { Success = false, Message = ex.Message };
             }
         }
 
@@ -345,7 +345,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
             return kpis;
         }
-        public async Task<ResponseMessage> UpdateKPI(KPIGetDto kpiGet)
+        public async Task<ResponseMessage<int>> UpdateKPI(KPIGetDto kpiGet)
         {
             try
             {
@@ -353,7 +353,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 if (kpi == null)
                 {
-                    return new ResponseMessage { Success = false, Message = "KPI Not Found" };
+                    return new ResponseMessage<int> { Success = false, Message = "KPI Not Found" };
                 }
                 kpi.StartYear = kpiGet.StartYear;
                 kpi.Title = kpiGet.Title;
@@ -368,7 +368,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 await _dbContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "KPI Updated Successfully"
@@ -379,12 +379,12 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
             catch (Exception ex)
             {
-                return new ResponseMessage { Success = false, Message = ex.Message };
+                return new ResponseMessage<int> { Success = false, Message = ex.Message };
             }
 
         }
 
-        public async Task<ResponseMessage> UpdateKPIDetail(KPIDetailsGetDto kpiDetailsGet)
+        public async Task<ResponseMessage<int>> UpdateKPIDetail(KPIDetailsGetDto kpiDetailsGet)
         {
             try
             {
@@ -392,7 +392,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 if (kpiDetail == null)
                 {
-                    return new ResponseMessage { Success = false, Message = "KPI Detail Not Found" };
+                    return new ResponseMessage<int> { Success = false, Message = "KPI Detail Not Found" };
                 }
 
                 kpiDetail.Title = kpiDetailsGet.Title;
@@ -400,7 +400,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 await _dbContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "KPI Detail Updated Successfully"
@@ -409,25 +409,25 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
             }
             catch (Exception ex)
             {
-                return new ResponseMessage { Success = false, Message = ex.Message };
+                return new ResponseMessage<int> { Success = false, Message = ex.Message };
             }
         }
 
-        public async Task<ResponseMessage> LoginKpiDataEncoding(string accessCode)
+        public async Task<ResponseMessage<string>> LoginKpiDataEncoding(string accessCode)
         {
 
             var kpiId = await _dbContext.KPIs.AsNoTracking().Where(x => x.AccessCode == accessCode).Select(x => x.Id).FirstOrDefaultAsync();
 
             if (kpiId == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<string>
                 {
                     Success = false,
                     Message = "Access Code Is Invalid"
                 };
             }
 
-            return new ResponseMessage
+            return new ResponseMessage<string>
             {
                 Success = true,
                 Message = "Log In Successfull",

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -14,7 +15,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             _dBContext = context;
         }
 
-        public async Task<ResponseMessage> CreateProgramBudgetYear(ProgramBudgetYearDto programBudgetYear)
+        public async Task<ResponseMessage<int>> CreateProgramBudgetYear(ProgramBudgetYearDto programBudgetYear)
         {
             ProgramBudgetYear addProgramBudgetYear = new()
             {
@@ -30,7 +31,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             await _dBContext.AddAsync(addProgramBudgetYear);
             await _dBContext.SaveChangesAsync();
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Message = "Program Budget Year Created Successfully",
                 Success = true
@@ -38,13 +39,13 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
         }
 
-        public async Task<ResponseMessage> EditProgramBudgetYear(ProgramBudgetYearDto programBudgetYear)
+        public async Task<ResponseMessage<int>> EditProgramBudgetYear(ProgramBudgetYearDto programBudgetYear)
         {
             ProgramBudgetYear? editProgramBudgetYear = await _dBContext.ProgramBudgetYears.FindAsync(programBudgetYear.Id);
 
             if (editProgramBudgetYear == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "Program Budget Year Not Found",
                     Success = true
@@ -59,7 +60,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             await _dBContext.SaveChangesAsync();
 
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Message = "Program Budget Year Successfully Edited",
                 Success = true
@@ -67,13 +68,13 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
         }
 
-        public async Task<ResponseMessage> DeleteProgramBudgetYear(Guid programBudgetYeatId)
+        public async Task<ResponseMessage<int>> DeleteProgramBudgetYear(Guid programBudgetYeatId)
         {
             ProgramBudgetYear? editProgramBudgetYear = await _dBContext.ProgramBudgetYears.FindAsync(programBudgetYeatId);
 
             if (editProgramBudgetYear == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "Program Budget Year Not Found",
                     Success = true
@@ -83,7 +84,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             _dBContext.ProgramBudgetYears.Remove(editProgramBudgetYear);
             await _dBContext.SaveChangesAsync();
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Message = "Program Budget Year Deleted Successfully",
                 Success = true
@@ -112,7 +113,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
 
         //budget year
-        public async Task<ResponseMessage> CreateBudgetYear(BudgetYearDto BudgetYear)
+        public async Task<ResponseMessage<int>> CreateBudgetYear(BudgetYearDto BudgetYear)
         {
 
 
@@ -144,7 +145,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             await _dBContext.AddAsync(budgetYear);
             await _dBContext.SaveChangesAsync();
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Message = "Budget Year Created Successfully",
                 Success = true
@@ -152,14 +153,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
         }
 
-        public async Task<ResponseMessage> EditBudgetYear(BudgetYearDto BudgetYear)
+        public async Task<ResponseMessage<int>> EditBudgetYear(BudgetYearDto BudgetYear)
         {
             BudgetYear budgetYear = await _dBContext.BudgetYears.FindAsync(BudgetYear.Id);
 
 
             if (budgetYear == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "Budget Year Not Found",
                     Success = false
@@ -187,21 +188,21 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             await _dBContext.SaveChangesAsync();
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Message = "Budget Year Updated Successfully",
                 Success = true
             };
         }
 
-        public async Task<ResponseMessage> DeleteBudgetYear(Guid budgetYearId)
+        public async Task<ResponseMessage<int>> DeleteBudgetYear(Guid budgetYearId)
         {
 
             BudgetYear budgetYear = await _dBContext.BudgetYears.FindAsync(budgetYearId);
 
             if (budgetYear == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "Budget Year Not Found",
                     Success = false
@@ -212,7 +213,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             _dBContext.BudgetYears.Remove(budgetYear);
             await _dBContext.SaveChangesAsync();
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Message = "Budget Year Successfully Deleted",
                 Success = true

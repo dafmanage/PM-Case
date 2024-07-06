@@ -1,6 +1,6 @@
 ﻿using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 namespace PM_Case_Managemnt_Implementation.Services.PM
 {
     public interface ITaskService
@@ -24,8 +24,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
         public Task<List<SelectListDto>> GetActivitieParentsSelectList(Guid TaskId);
         public Task<List<SelectListDto>> GetActivitiesSelectList(Guid? planId, Guid? taskId, Guid? actParentId);
         public Task<List<ActivityViewDto>> GetSingleActivityParent(Guid actParentId);
-        public Task<ResponseMessage> UpdateTask(TaskDto updateTask);
-        public Task<ResponseMessage> DeleteTask(Guid taskId);
+        public Task<ResponseMessage<int>> UpdateTask(TaskDto updateTask);
+        public Task<ResponseMessage<int>> DeleteTask(Guid taskId);
 
 
 

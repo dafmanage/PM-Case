@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Case;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using System.Data;
-using Azure;
-using PM_Case_Managemnt_Implementation.Helpers.Response;
 using String = System.String;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
@@ -23,7 +22,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         public async Task<ResponseMessage<List<CaseReportDto>>> GetCaseReport(Guid subOrgId, string? startAt, string? endAt)
         {
             var response = new ResponseMessage<List<CaseReportDto>>();
-            
+
             var allAffairs = _dbContext.Cases.Where(x => x.SubsidiaryOrganizationId == subOrgId).Include(a => a.CaseType)
                .Include(a => a.CaseHistories).ToList();
 
@@ -99,7 +98,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         public async Task<ResponseMessage<CaseReportChartDto>> GetCasePieChart(Guid subOrgId, string? startAt, string? endAt)
         {
             var response = new ResponseMessage<CaseReportChartDto>();
-            
+
             var report = _dbContext.CaseTypes.Where(x => x.SubsidiaryOrganizationId == subOrgId).ToList();
             var report2 = (from q in report
                            join b in _dbContext.Cases on q.Id equals b.CaseTypeId
@@ -424,7 +423,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         {
 
             var response = new ResponseMessage<CaseProgressReportDto>();
-            
+
             var cases = _dbContext.Cases.Include(x => x.CaseType).Include(x => x.Employee).Include(x => x.Applicant).Where(x => x.Id == caseId);
             var casetype = _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == cases.FirstOrDefault().CaseTypeId).ToList();
             var result = await (from c in cases
@@ -480,7 +479,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         public async Task<ResponseMessage<List<CaseType>>> GetChildCaseTypes(Guid caseId)
         {
             var response = new ResponseMessage<List<CaseType>>();
-            
+
             var casse = await _dbContext.Cases.Where(x => x.Id == caseId).Select(x => x.CaseTypeId).FirstOrDefaultAsync();
             var caseTypes = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == casse).OrderBy(x => x.OrderNumber).ToListAsync();
 

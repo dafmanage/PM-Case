@@ -1,16 +1,16 @@
-﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
-using PM_Case_Managemnt_Implementation.Helpers.Response;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
 {
-    public class ApplicantService : IApplicantServices
+    public class ApplicantService : IApplicantService
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -30,7 +30,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                     CreatedAt = DateTime.Now,
                     CreatedBy = applicantPost.CreatedBy,
                     ApplicantName = applicantPost.ApplicantName,
-                    ApplicantType = Enum.Parse<ApplicantType>( applicantPost.ApplicantType),
+                    ApplicantType = Enum.Parse<ApplicantType>(applicantPost.ApplicantType),
                     CustomerIdentityNumber = applicantPost.CustomerIdentityNumber,
                     Email = applicantPost.Email,
                     PhoneNumber = applicantPost.PhoneNumber,
@@ -46,11 +46,12 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.Message = "Applicant added Successfully";
                 response.Data = applicant.Id;
                 return response;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.Success = false;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-                response.Message = "Error adding applicant";
+                response.Message = $"Error adding applicant - {ex.Message}";
                 response.Data = default(Guid);
                 return response;
             }
@@ -58,12 +59,13 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
 
         public async Task<ResponseMessage<Guid>> Update(ApplicantPostDto applicantPost)
         {
-            var response  = new ResponseMessage<Guid>();
+            var response = new ResponseMessage<Guid>();
             try
             {
                 var applicant = await _dbContext.Applicants.FindAsync(applicantPost.ApplicantId);
 
-                if (applicant == null){
+                if (applicant == null)
+                {
                     response.Success = false;
                     response.Message = "Can't find applicant with that ID";
                     response.ErrorCode = HttpStatusCode.NotFound.ToString();
@@ -91,7 +93,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.Data = default(Guid);
 
                 return response;
-                }
+            }
         }
 
         public async Task<ResponseMessage<List<ApplicantGetDto>>> GetAll(Guid subOrgId)
@@ -102,14 +104,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 List<Applicant> applicants = await _dbContext.Applicants.Where(x => x.SubsidiaryOrganizationId == subOrgId).ToListAsync();
                 List<ApplicantGetDto> result = new();
 
-                if (applicants == null || !applicants.Any()){
+                if (applicants == null || !applicants.Any())
+                {
                     response.Success = false;
                     response.Message = "No applicants with the given requirments";
                     response.ErrorCode = HttpStatusCode.NotFound.ToString();
                     response.Data = null;
                     return response;
                 }
-                foreach(Applicant applicant in applicants)
+                foreach (Applicant applicant in applicants)
                 {
                     result.Add(new ApplicantGetDto()
                     {
@@ -129,7 +132,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.Data = result;
                 return response;
 
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.Success = false;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
@@ -143,12 +147,13 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
         //dto fixed not sure so needs checking again
         public async Task<ResponseMessage<ApplicantGetDto>> GetApplicantById(Guid? applicantId)
         {
-            
-            //var response = new ResponseMessage<Applicant>();
+
+            //var response = new ResponseMessage<int><Applicant>();
             var response = new ResponseMessage<ApplicantGetDto>();
-            
+
             var applicant = await _dbContext.Applicants.FindAsync(applicantId);
-            if (applicant == null){
+            if (applicant == null)
+            {
                 response.Success = false;
                 response.Message = "Applicant Not found";
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
@@ -167,14 +172,14 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 Email = applicant.Email,
                 PhoneNumber = applicant.PhoneNumber,
                 RowStatus = applicant.RowStatus
-                
+
             };
             response.Success = true;
             response.Message = "Applicant found successfully";
             response.Data = applicantDto;
             return response;
         }
-       public async Task<ResponseMessage<List<SelectListDto>>> GetSelectList(Guid subOrgId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetSelectList(Guid subOrgId)
         {
             var response = new ResponseMessage<List<SelectListDto>>();
             try

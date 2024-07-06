@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT;
-using PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -97,7 +97,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                         if (history.Case.ApplicantId != null)
                         {
                             var applicant = _applicantService.GetApplicantById(history.Case.ApplicantId);
-                            applicantName = applicant.Result.ApplicantName; // replace with actual applicant name
+                            applicantName = applicant.Result.Data.ApplicantName; // replace with actual applicant name
 
                         }
                         else
@@ -205,7 +205,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                         if (history.Case.ApplicantId != null)
                         {
                             var applicant = _applicantService.GetApplicantById(history.Case.ApplicantId);
-                            applicantName = applicant.Result.ApplicantName; // replace with actual applicant name
+                            applicantName = applicant.Result.Data.ApplicantName; // replace with actual applicant name
 
                         }
                         else

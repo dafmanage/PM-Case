@@ -17,7 +17,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
         public Task<ResponseMessage<List<CaseEncodeGetDto>>> GetArchivedCases(Guid subOrgId);
 
-        
+
 
 
         public Task<ResponseMessage<List<CaseEncodeGetDto>>> SearchCases(string filter, Guid subOrgId);

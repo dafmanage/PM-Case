@@ -48,21 +48,9 @@ namespace PM_Case_Managemnt_API.Controllers
         //POST : /api/ApplicationUser/Login
         public async Task<IActionResult> Login(LoginModel model)
         {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    return Ok(await _authenticationService.Login(model));
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            return Ok(await _authenticationService.Login(model));
+
 
         }
 

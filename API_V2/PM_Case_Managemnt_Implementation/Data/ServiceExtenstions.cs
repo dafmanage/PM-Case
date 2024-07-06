@@ -60,7 +60,7 @@ namespace PM_Case_Managemnt_Implementation.Data
             services.AddScoped<IFileSettingsService, FileSettingService>();
             services.AddScoped<ICaseEncodeService, CaseEncodeService>();
             services.AddScoped<ICaseAttachementService, CaseAttachementService>();
-            services.AddScoped<IApplicantServices, ApplicantService>();
+            services.AddScoped<IApplicantService, ApplicantService>();
             services.AddScoped<ICaseHistoryService, CaseHistoryService>();
             services.AddScoped<ICaseForwardService, CaseForwardService>();
             services.AddScoped<ICaseMessagesService, CaseMessagesService>();

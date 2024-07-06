@@ -1,8 +1,8 @@
-﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
 {
@@ -26,7 +26,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                 response.Success = true;
                 response.Data = "OK";
                 return response;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.Message = "Error adding attachements";
                 response.Success = false;
@@ -47,7 +48,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                     attachemnts = await _dBContext.CaseAttachments.Where(x => x.Case.SubsidiaryOrganizationId == subOrgId).ToListAsync();
                 else
                     attachemnts = await _dBContext.CaseAttachments.Where(el => el.CaseId.Equals(Guid.Parse(CaseId))).ToListAsync();
-                if (attachemnts == null){
+                if (attachemnts == null)
+                {
                     response.Message = "Couldnt get any attachments with the given criteria.";
                     response.Success = false;
                     response.Data = null;
@@ -58,7 +60,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                 response.Success = true;
                 response.Data = attachemnts;
                 return response;
-            } catch(Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 response.Message = "Error Getting Attachments";
                 response.Success = false;
                 response.Data = null;
@@ -74,7 +78,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
             try
             {
                 var case1 = _dBContext.CaseAttachments.Find(attachmentId);
-                if (case1 == null){
+                if (case1 == null)
+                {
                     response.Message = "could not find attachment with the given attachmentID";
                     response.Success = false;
                     response.ErrorCode = HttpStatusCode.NotFound.ToString();

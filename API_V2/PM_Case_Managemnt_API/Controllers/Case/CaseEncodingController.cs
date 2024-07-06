@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
-using PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT.FileInformationService;
 using PM_Case_Managemnt_Implementation.Services.CaseService.Encode;
@@ -61,8 +62,8 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                     CreatedBy = Guid.Parse(Request.Form["CreatedBy"]),
                     SubsidiaryOrganizationId = Guid.Parse(Request.Form["SubsidiaryOrganizationId"])
                 };
-                string caseId = await _caseEncodeService.Add(caseEncodePostDto);
-                var result = new { CaseId = caseId, CaseData = caseEncodePostDto };
+                var caseId = await _caseEncodeService.Add(caseEncodePostDto);
+                var result = new { CaseId = caseId.Data, CaseData = caseEncodePostDto };
 
 
                 return Ok(result);
@@ -84,7 +85,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
             {
                 var caseId = Request.Form["CaseId"]/*.ToString().Split('_')[0]*/;
                 var Case = await _caseEncodeService.GetSingleCase(Guid.Parse(caseId));
-                var user = await _userManager.FindByIdAsync(Case.CreatedBy);
+                var user = await _userManager.FindByIdAsync(Case.Data.CreatedBy);
                 //var employeeId = Request.Form["CaseId"].ToString().Split('_')[1];
                 var employeeId = "";
                 if (user != null)
@@ -104,8 +105,8 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                         {
                             string folderName = Path.Combine("Assets", "CaseAttachments");
 
-                            var applicant = _applicantService.GetApplicantById(Guid.Parse(Case.ApplicantId));
-                            string applicantName = applicant.Result.ApplicantName; // replace with actual applicant name
+                            var applicant = _applicantService.GetApplicantById(Guid.Parse(Case.Data.ApplicantId));
+                            string applicantName = applicant.Result.Data.ApplicantName; // replace with actual applicant name
                             string applicantFolder = Path.Combine(folderName, applicantName);
 
 
@@ -130,7 +131,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                                 {
                                     Id = Guid.NewGuid(),
                                     CreatedAt = DateTime.Now,
-                                    CreatedBy = Guid.Parse(Case.CreatedBy),
+                                    CreatedBy = Guid.Parse(Case.Data.CreatedBy),
                                     RowStatus = RowStatus.Active,
                                     CaseId = Guid.Parse(caseId),
                                     FilePath = dbPath
@@ -171,7 +172,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                                 {
                                     Id = Guid.NewGuid(),
                                     CreatedAt = DateTime.Now,
-                                    CreatedBy = Guid.Parse(Case.CreatedBy),
+                                    CreatedBy = Guid.Parse(Case.Data.CreatedBy),
                                     RowStatus = RowStatus.Active,
                                     FilePath = dbPath,
                                     FileSettingId = Guid.Parse(fileName.Split(".")[0]),
@@ -221,7 +222,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                     Representative = Request.Form["Representative"],
                     CreatedBy = Guid.Parse(Request.Form["CreatedBy"]),
                 };
-                string caseId = await _caseEncodeService.Update(caseEncodePostDto);
+                var caseId = await _caseEncodeService.Update(caseEncodePostDto);
 
                 if (Request.Form.Files.Any())
                 {
@@ -235,7 +236,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                             string folderName = Path.Combine("Assets", "CaseAttachments");
 
                             var applicant = _applicantService.GetApplicantById(caseEncodePostDto.ApplicantId);
-                            string applicantName = applicant.Result.ApplicantName; // replace with actual applicant name
+                            string applicantName = applicant.Result.Data.ApplicantName; // replace with actual applicant name
                             string applicantFolder = Path.Combine(folderName, applicantName);
 
 
@@ -262,7 +263,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                                     CreatedAt = DateTime.Now,
                                     CreatedBy = caseEncodePostDto.CreatedBy,
                                     RowStatus = RowStatus.Active,
-                                    CaseId = Guid.Parse(caseId),
+                                    CaseId = Guid.Parse(caseId.Data),
                                     FilePath = dbPath
                                 };
                                 attachments.Add(attachment);
@@ -298,7 +299,7 @@ namespace PM_Case_Managemnt_API.Controllers.Case
                                     RowStatus = RowStatus.Active,
                                     FilePath = dbPath,
                                     FileSettingId = Guid.Parse(fileName.Split(".")[0]),
-                                    CaseId = Guid.Parse(caseId),
+                                    CaseId = Guid.Parse(caseId.Data),
                                     filetype = file.ContentType
                                 };
                                 fileInfos.Add(filesInformation);
@@ -352,13 +353,10 @@ namespace PM_Case_Managemnt_API.Controllers.Case
 
         [HttpGet("getCaseNumber")]
 
-        public async Task<string> GetCaseNumebr(Guid subOrgId)
+        public async Task<ResponseMessage<string>> GetCaseNumebr(Guid subOrgId)
         {
 
             return await _caseEncodeService.GetCaseNumber(subOrgId);
-
-
-
 
         }
         [HttpGet("getnotification")]

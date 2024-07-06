@@ -1,6 +1,6 @@
 ﻿using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 
 
 namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
@@ -36,8 +36,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
         public Task<ReponseMessage> AssignEmployees(ActivityEmployees activityEmployee);
 
-        public Task<ResponseMessage> UpdateActivityDetails(SubActivityDetailDto activityDetail);
-        public Task<ResponseMessage> DeleteActivity(Guid activityId, Guid taskId);
+        public Task<ResponseMessage<int>> UpdateActivityDetails(SubActivityDetailDto activityDetail);
+        public Task<ResponseMessage<int>> DeleteActivity(Guid activityId, Guid taskId);
 
 
     }

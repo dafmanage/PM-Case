@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -60,7 +60,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
             return templates;
         }
 
-        public async Task<ResponseMessage> CreateSmsTemplate(SmsTemplatePostDto smsTemplate)
+        public async Task<ResponseMessage<int>> CreateSmsTemplate(SmsTemplatePostDto smsTemplate)
         {
             try
             {
@@ -78,7 +78,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
                 await _dBContext.SmsTemplates.AddAsync(template);
                 await _dBContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "SMS Template Created Successfully"
@@ -87,7 +87,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = ex.Message
@@ -96,7 +96,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
 
         }
 
-        public async Task<ResponseMessage> UpdateSmsTemplate(SmsTemplateGetDto smsTemplate)
+        public async Task<ResponseMessage<int>> UpdateSmsTemplate(SmsTemplateGetDto smsTemplate)
         {
             try
             {
@@ -104,7 +104,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
 
                 if (template is null)
                 {
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Success = false,
                         Message = "SMS Template Not Found"
@@ -119,7 +119,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
                     //_dBContext.Entry(template).State = EntityState.Modified;
                     await _dBContext.SaveChangesAsync();
 
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Success = true,
                         Message = "SMS Template Updated Successfully"
@@ -128,7 +128,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = ex.Message
@@ -136,12 +136,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
             }
         }
 
-        public async Task<ResponseMessage> DeleteSmsTemplate(Guid id)
+        public async Task<ResponseMessage<int>> DeleteSmsTemplate(Guid id)
         {
             var template = await _dBContext.SmsTemplates.FindAsync(id);
             if (template is null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = "SMS Template Not Found"
@@ -151,7 +151,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
             {
                 _dBContext.SmsTemplates.Remove(template);
                 await _dBContext.SaveChangesAsync();
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "SMS Template Deleted Successfully"

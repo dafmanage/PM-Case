@@ -1,10 +1,9 @@
-﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
-using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
 {
@@ -35,7 +34,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
 
                 await _dbContext.AddAsync(fileSetting);
                 await _dbContext.SaveChangesAsync();
-                
+
                 response.Message = "file setting created succesfully.";
                 response.Success = true;
                 response.Data = 1;
@@ -69,10 +68,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
             }
             catch (Exception ex)
             {
-                return new ResponseMessage<int> {Data = 0, Success = false, Message = ex.ToString() };
+                return new ResponseMessage<int> { Data = 0, Success = false, Message = ex.ToString() };
             }
 
-            return new ResponseMessage<int> {Data = 1, Success = true, Message = "File Updated Successfully" };
+            return new ResponseMessage<int> { Data = 1, Success = true, Message = "File Updated Successfully" };
         }
 
 
@@ -89,17 +88,17 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                 }
                 else
                 {
-                    return new ResponseMessage<int> {Data = 0,Success = false, Message = "File Setting Not Found" };
+                    return new ResponseMessage<int> { Data = 0, Success = false, Message = "File Setting Not Found" };
                 }
 
 
             }
             catch (Exception ex)
             {
-                return new ResponseMessage<int> {Data = 0, Success = false, Message = ex.ToString() };
+                return new ResponseMessage<int> { Data = 0, Success = false, Message = ex.ToString() };
             }
 
-            return new ResponseMessage<int> {Data = 0, Success = true, Message = "File Setting Deleted Successfully" };
+            return new ResponseMessage<int> { Data = 0, Success = true, Message = "File Setting Deleted Successfully" };
 
         }
         public async Task<ResponseMessage<List<FileSettingGetDto>>> GetAll(Guid subOrgId)

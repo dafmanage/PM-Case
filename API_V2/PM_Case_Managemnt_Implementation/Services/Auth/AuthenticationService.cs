@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Auth;
@@ -96,30 +96,27 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         public async Task<IActionResult> Login(LoginModel model)
         {
 
-            try
+            var user = await _userManager.FindByNameAsync(model.UserName);
+            if (user == null)
+                throw new Exception("Username or password is incorrect.");
+            //{
+            //    StatusCode = 400
+            //};
+            Employee emp = _dbcontext.Employees.Find(user.EmployeesId);
+            string empPhoto = "";
+            if (emp != null)
+                empPhoto = emp.Photo;
+            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
+                //Get role assigned to the user
+                var role = await _userManager.GetRolesAsync(user);
+                var str = String.Join(",", role);
+                IdentityOptions _options = new IdentityOptions();
 
-                var user = await _userManager.FindByNameAsync(model.UserName);
-                if (user == null)
-                    throw new Exception("Username or password is incorrect.");
-                //{
-                //    StatusCode = 400
-                //};
-                Employee emp = _dbcontext.Employees.Find(user.EmployeesId);
-                string empPhoto = "";
-                if (emp != null)
-                    empPhoto = emp.Photo;
-                if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+                var tokenDescriptor = new SecurityTokenDescriptor
                 {
-                    //Get role assigned to the user
-                    var role = await _userManager.GetRolesAsync(user);
-                    var str = String.Join(",", role);
-                    IdentityOptions _options = new IdentityOptions();
-
-                    var tokenDescriptor = new SecurityTokenDescriptor
+                    Subject = new ClaimsIdentity(new Claim[]
                     {
-                        Subject = new ClaimsIdentity(new Claim[]
-                        {
                         new Claim("UserID",user.Id.ToString()),
                         new Claim("FullName",user.FullName),
                         new Claim("EmployeeId",user.EmployeesId.ToString()),
@@ -127,24 +124,20 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                         new Claim(_options.ClaimsIdentity.RoleClaimType,str),
                         new Claim("SubsidiaryOrganizationId",user.SubsidiaryOrganizationId.ToString()),
                         new Claim("StructureId",emp.OrganizationalStructureId.ToString())
-                        }),
-                        Expires = DateTime.UtcNow.AddDays(1),
-                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)
-                    };
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-                    var token = tokenHandler.WriteToken(securityToken);
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.JWT_Secret)), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+                var token = tokenHandler.WriteToken(securityToken);
 
-                    // await _encoderHub.Groups.AddToGroupAsync(Context.ConnectionId, user.EmployeesId);
-                    return new ObjectResult(new { token });
-                }
-                else
-                    throw new Exception("Username or password is incorrect.");
+                // await _encoderHub.Groups.AddToGroupAsync(Context.ConnectionId, user.EmployeesId);
+                return new ObjectResult(new { token });
             }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+            else
+                throw new Exception("Username or password is incorrect.");
+
         }
 
 
@@ -191,13 +184,13 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         }
 
 
-        public async Task<ResponseMessage> ChangePassword(ChangePasswordModel model)
+        public async Task<ResponseMessage<int>> ChangePassword(ChangePasswordModel model)
         {
             var user = await _userManager.FindByIdAsync(model.UserId);
 
             if (user == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "User not found.",
                     Success = false
@@ -208,14 +201,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
 
             if (!result.Succeeded)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = result.Errors.ToString()
                 };
             }
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Success = true,
                 Message = "Password Changed Successfully"
@@ -291,7 +284,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         }
 
 
-        public async Task<ResponseMessage> AssignRole(UserRoleDto userRole)
+        public async Task<ResponseMessage<int>> AssignRole(UserRoleDto userRole)
         {
             var currentUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userRole.UserId);
 
@@ -304,7 +297,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                 {
                     await _userManager.AddToRoleAsync(currentUser, userRole.RoleName);
 
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Success = true,
                         Message = "Successfully Added Roles."
@@ -312,7 +305,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                 }
                 else
                 {
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Success = false,
                         Message = "Role does not exist."
@@ -321,7 +314,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
             }
             else
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "User not found.",
                     Success = false
@@ -330,20 +323,20 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         }
 
 
-        public async Task<ResponseMessage> RevokeRole(UserRoleDto userRole)
+        public async Task<ResponseMessage<int>> RevokeRole(UserRoleDto userRole)
         {
             var curentUser = await _userManager.Users.FirstOrDefaultAsync(x => x.Id.Equals(userRole.UserId));
 
             if (curentUser != null)
             {
                 await _userManager.RemoveFromRoleAsync(curentUser, userRole.RoleName);
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "Succesfully Revoked Roles."
                 };
             }
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Message = "User not found.",
                 Success = false
@@ -355,13 +348,13 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
 
 
 
-        public async Task<ResponseMessage> ChangePasswordAdmin(ChangePasswordModel model)
+        public async Task<ResponseMessage<int>> ChangePasswordAdmin(ChangePasswordModel model)
         {
             var user = await _userManager.FindByIdAsync(model.UserId);
 
             if (user == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "User not found.",
                     Success = false
@@ -373,27 +366,27 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
 
             if (!result.Succeeded)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = result.Errors.ToString()
                 };
             }
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Success = true,
                 Message = "Password Changed Successfully."
             };
         }
 
-        public async Task<ResponseMessage> DeleteUser(string userId)
+        public async Task<ResponseMessage<int>> DeleteUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "User not found.",
                     Success = false
@@ -405,7 +398,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                 var result = await _userManager.DeleteAsync(user);
                 if (result.Succeeded)
                 {
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Message = "User deleted successfully.",
                         Success = true
@@ -413,7 +406,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                 }
                 else
                 {
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Message = result.Errors.ToString(),
                         Success = false

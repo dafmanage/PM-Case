@@ -1,21 +1,21 @@
 ﻿using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.KPI;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 
 namespace PM_Case_Managemnt_Implementation.Services.KPI
 {
     public interface IKPIService
     {
-        Task<ResponseMessage> AddKPI(KPIPostDto kpiPost);
-        Task<ResponseMessage> AddKPIDetail(KPIDetailsPostDto kpiDetailsPost);
-        Task<ResponseMessage> AddKPIData(KPIDataPostDto kpiDataPost);
+        Task<ResponseMessage<int>> AddKPI(KPIPostDto kpiPost);
+        Task<ResponseMessage<int>> AddKPIDetail(KPIDetailsPostDto kpiDetailsPost);
+        Task<ResponseMessage<int>> AddKPIData(KPIDataPostDto kpiDataPost);
         Task<List<KPIGetDto>> GetKPIs();
         Task<KPIGetDto> GetKPIById(Guid id);
-        Task<ResponseMessage> UpdateKPI(KPIGetDto kpiGet);
-        Task<ResponseMessage> UpdateKPIDetail(KPIDetailsGetDto kpiDetailsGet);
-        Task<ResponseMessage> LoginKpiDataEncoding(string accessCode);
+        Task<ResponseMessage<int>> UpdateKPI(KPIGetDto kpiGet);
+        Task<ResponseMessage<int>> UpdateKPIDetail(KPIDetailsGetDto kpiDetailsGet);
+        Task<ResponseMessage<string>> LoginKpiDataEncoding(string accessCode);
 
-        Task<ResponseMessage> AddKpiGoal(KPIGoalPostDto kpiGoalPost);
+        Task<ResponseMessage<int>> AddKpiGoal(KPIGoalPostDto kpiGoalPost);
         Task<List<SelectListDto>> GetKpiGoalSelectList(Guid subOrgId);
     }
 }

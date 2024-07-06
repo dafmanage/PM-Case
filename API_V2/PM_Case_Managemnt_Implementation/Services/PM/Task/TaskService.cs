@@ -2,6 +2,7 @@
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
 
@@ -488,7 +489,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
         }
 
 
-        public async Task<ResponseMessage> UpdateTask(TaskDto updateTask)
+        public async Task<ResponseMessage<int>> UpdateTask(TaskDto updateTask)
         {
             try
             {
@@ -503,13 +504,13 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
                     await _dBContext.SaveChangesAsync();
 
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Success = true,
                         Message = "Task Updated Successfully"
                     };
                 }
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = "Task Not Found"
@@ -517,7 +518,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = ex.Message.ToString()
@@ -525,7 +526,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             }
         }
 
-        public async Task<ResponseMessage> DeleteTask(Guid taskId)
+        public async Task<ResponseMessage<int>> DeleteTask(Guid taskId)
         {
             var task = await _dBContext.Tasks.FindAsync(taskId);
 
@@ -667,7 +668,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                 _dBContext.Tasks.Remove(task);
                 await _dBContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
 
                     Success = true,
@@ -676,7 +677,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                 };
 
             }
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
 
                 Success = false,

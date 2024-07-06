@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Organization;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.Auth;
 using PM_Case_Managemnt_Implementation.Services.Common.SubsidiaryOrganization;
 using PM_Case_Managemnt_Infrustructure.Data;
@@ -135,7 +135,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
 
 
-        public async Task<ResponseMessage> UpdateSubsidiaryOrganization(SubOrgDto subOrg)
+        public async Task<ResponseMessage<int>> UpdateSubsidiaryOrganization(SubOrgDto subOrg)
         {
             var subsidiaryOrganization = await _dBContext.SubsidiaryOrganizations.FindAsync(subOrg.Id);
             subsidiaryOrganization.OrganizationNameEnglish = subOrg.OrganizationNameEnglish;
@@ -150,7 +150,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
             _dBContext.Entry(subsidiaryOrganization).State = EntityState.Modified;
             await _dBContext.SaveChangesAsync();
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Success = true,
                 Message = "Subsidiary Organization Updated Successfully"
@@ -158,7 +158,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
         }
 
-        public async Task<ResponseMessage> DeleteSubsidiaryOrganization(Guid suOrgId)
+        public async Task<ResponseMessage<int>> DeleteSubsidiaryOrganization(Guid suOrgId)
         {
             var subOrg = await _dBContext.SubsidiaryOrganizations.FindAsync(suOrgId);
             var programs = await _dBContext.Programs.Where(x => x.SubsidiaryOrganizationId == suOrgId).ToListAsync();
@@ -335,7 +335,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
             _dBContext.SubsidiaryOrganizations.Remove(subOrg);
             await _dBContext.SaveChangesAsync();
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Success = true,
                 Message = "Subsidiary Organization Deleted Successfully"

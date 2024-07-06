@@ -1,11 +1,10 @@
 ﻿using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
-using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 
 namespace PM_Case_Managemnt_API.Services.CaseMGMT.Applicants
 {
-    public interface IApplicantServices
+    public interface IApplicantService
     {
         public Task<ResponseMessage<Guid>> Add(ApplicantPostDto applicant);
         public Task<ResponseMessage<List<ApplicantGetDto>>> GetAll(Guid subOrgId);

@@ -2,6 +2,7 @@
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -931,7 +932,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
         }
 
-        public async Task<ResponseMessage> UpdateActivityDetails(SubActivityDetailDto activityDetail)
+        public async Task<ResponseMessage<int>> UpdateActivityDetails(SubActivityDetailDto activityDetail)
         {
             if (activityDetail.IsClassfiedToBranch)
             {
@@ -1159,7 +1160,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
 
-            return new ResponseMessage
+            return new ResponseMessage<int>
             {
                 Success = true,
                 Message = "Activity Updated Successfully"
@@ -1167,7 +1168,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
         }
 
 
-        public async Task<ResponseMessage> DeleteActivity(Guid activityId, Guid taskId)
+        public async Task<ResponseMessage<int>> DeleteActivity(Guid activityId, Guid taskId)
         {
             try
             {
@@ -1293,7 +1294,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
                 else
                 {
 
-                    return new ResponseMessage
+                    return new ResponseMessage<int>
                     {
                         Success = false,
                         Message = "Activity Not Found"
@@ -1325,7 +1326,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Message = "Activity Deleted Successfully",
                     Success = true
@@ -1336,7 +1337,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = ex.Message

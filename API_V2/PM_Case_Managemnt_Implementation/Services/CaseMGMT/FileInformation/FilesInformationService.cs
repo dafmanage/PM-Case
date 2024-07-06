@@ -1,7 +1,7 @@
-﻿using System.Net;
-using PM_Case_Managemnt_Implementation.Helpers.Response;
+﻿using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.FileInformationService
 {
@@ -22,7 +22,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.FileInformationServ
             {
                 await _dbContext.FilesInformations.AddRangeAsync(fileInformations);
                 await _dbContext.SaveChangesAsync();
-                
+
                 response.Message = "operation Successfull.";
                 response.Success = true;
                 response.Data = 1;

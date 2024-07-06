@@ -1,11 +1,11 @@
-﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
 {
@@ -47,7 +47,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
 
                 await _dbContext.AddAsync(caseType);
                 await _dbContext.SaveChangesAsync();
-                
+
                 response.Data = 1;
                 response.Message = "Opertaion Successfull";
                 response.Success = true;
@@ -75,7 +75,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             try
             {
                 var caseType = await _dbContext.CaseTypes.FindAsync(caseTypeDto.Id);
-                if (caseType == null){
+                if (caseType == null)
+                {
 
                     response.Message = "Could not find matching case type.";
                     response.Data = 0;
@@ -212,13 +213,13 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
         {
             var response = new ResponseMessage<List<SelectListDto>>();
 
-            List<SelectListDto> result = await (from c in _dbContext.CaseTypes.Where(x => x.SubsidiaryOrganizationId==subOrgId)
-                select new SelectListDto
-                {
-                    Id = c.Id,
-                    Name = c.CaseTypeTitle
+            List<SelectListDto> result = await (from c in _dbContext.CaseTypes.Where(x => x.SubsidiaryOrganizationId == subOrgId)
+                                                select new SelectListDto
+                                                {
+                                                    Id = c.Id,
+                                                    Name = c.CaseTypeTitle
 
-                }).ToListAsync();
+                                                }).ToListAsync();
             response.Data = result;
             response.Message = "Operation Successfull.";
             response.Success = true;
@@ -228,17 +229,17 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
         }
         public async Task<ResponseMessage<List<SelectListDto>>> GetFileSettigs(Guid caseTypeId)
         {
-            
+
             var response = new ResponseMessage<List<SelectListDto>>();
 
-            List<SelectListDto> result =  await (from f in _dbContext.FileSettings.Where(x => x.CaseTypeId == caseTypeId)
-                select new SelectListDto
-                {
+            List<SelectListDto> result = await (from f in _dbContext.FileSettings.Where(x => x.CaseTypeId == caseTypeId)
+                                                select new SelectListDto
+                                                {
 
-                    Id = f.Id,
-                    Name = f.FileName
+                                                    Id = f.Id,
+                                                    Name = f.FileName
 
-                }).ToListAsync();
+                                                }).ToListAsync();
 
             response.Message = "Operation Successfull.";
             response.Data = result;
@@ -255,14 +256,14 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             var response = new ResponseMessage<List<SelectListDto>>();
             List<SelectListDto> result = await (from f in _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId)
                     .OrderBy(x => x.OrderNumber)
-                select new SelectListDto
-                {
+                                                select new SelectListDto
+                                                {
 
-                    Id = f.Id,
-                    Name = f.CaseTypeTitle
+                                                    Id = f.Id,
+                                                    Name = f.CaseTypeTitle
 
-                }).ToListAsync();
-            
+                                                }).ToListAsync();
+
             response.Message = "Operational Message.";
             response.Data = result;
             response.Success = true;
@@ -271,19 +272,19 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
         }
 
 
-        public ResponseMessage<int> GetChildOrder(Guid caseTypeId)
+        public async Task<ResponseMessage<int>> GetChildOrder(Guid caseTypeId)
         {
 
             var response = new ResponseMessage<int>();
 
-            var childCases = _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId).OrderByDescending(x => x.OrderNumber).ToList();
+            var childCases = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId).OrderByDescending(x => x.OrderNumber).ToListAsync();
             response.Message = "Operation Successfull.";
             response.Success = true;
             if (!childCases.Any())
                 response.Data = 1;
-            else 
-                response.Data = (int)childCases.FirstOrDefault().OrderNumber+1;
-            
+            else
+                response.Data = (int)childCases.FirstOrDefault().OrderNumber + 1;
+
             return response;
 
         }
@@ -315,9 +316,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             response.ErrorCode = HttpStatusCode.NotFound.ToString();
             response.Success = false;
 
-            return response;     
+            return response;
 
-;
+            ;
         }
 
 
@@ -350,7 +351,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 return response;
             }
 
-            catch (Exception ex){
+            catch (Exception ex)
+            {
 
                 response.Message = $"{ex.Message}";
                 response.Data = null;

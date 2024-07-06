@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.PM.Plan;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -109,7 +109,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
 
         }
 
-        public async Task<ResponseMessage> UpdateProgram(ProgramPostDto program)
+        public async Task<ResponseMessage<int>> UpdateProgram(ProgramPostDto program)
         {
             var prog = await _dBContext.Programs.FindAsync(program.Id);
             if (prog != null)
@@ -122,7 +122,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
 
                 await _dBContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "Program Updated Successfully"
@@ -131,7 +131,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
             }
             else
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = "Program Not Found"
@@ -141,12 +141,12 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
 
         }
 
-        public async Task<ResponseMessage> DeleteProgram(Guid programId)
+        public async Task<ResponseMessage<int>> DeleteProgram(Guid programId)
         {
             var prog = await _dBContext.Programs.FindAsync(programId);
             if (prog == null)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
 
                     Message = "Program Not Found!!!",
@@ -316,7 +316,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
                 _dBContext.Programs.Remove(prog);
                 await _dBContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "Program Deleted Successfully !!!"
@@ -324,7 +324,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
 
                     Success = false,

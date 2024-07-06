@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
@@ -11,6 +10,7 @@ using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Auth;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
+using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 {
@@ -33,7 +33,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
             var response = new ResponseMessage<string>();
             try
             {
-                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null){
+                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null)
+                {
 
                     response.Message = "Please Provide an Applicant ID or Employee ID";
                     response.Data = null;
@@ -70,7 +71,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                 CaseType? caseType = _dbContext.CaseTypes.Find(caseEncodePostDto.CaseTypeId);
 
-                if (caseType == null){
+                if (caseType == null)
+                {
                     response.Message = "Case type not found.";
                     response.Data = null;
                     response.Success = false;
@@ -95,8 +97,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                     try
                     {
                         var user = _userManager.Users.Where(x => x.EmployeesId == caseAssignDto.AssignedByEmployeeId).FirstOrDefault();
-                        
-                        if (user == null){
+
+                        if (user == null)
+                        {
 
                             response.Message = "User not found.";
                             response.Data = null;
@@ -108,10 +111,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                         }
 
                         string userId = user.Id;
-                        
+
                         Case? caseToAssign = await _dbContext.Cases.SingleOrDefaultAsync(el => el.Id.Equals(newCase.Id));
                         // CaseHistory caseHistory = await _dbContext.CaseHistories.SingleOrDefaultAsync(el => el.CaseId.Equals(caseAssignDto.CaseId));
-                        if (caseToAssign == null){
+                        if (caseToAssign == null)
+                        {
 
                             response.Message = "Case to assign not found.";
                             response.Data = null;
@@ -189,7 +193,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                         return response;
                     }
-                    
+
                 }
 
                 response.Success = true;
@@ -215,8 +219,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
             var response = new ResponseMessage<string>();
             try
             {
-                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null){
-                    
+                if (caseEncodePostDto.EmployeeId == null && caseEncodePostDto.ApplicantId == null)
+                {
+
                     response.Message = "Please Provide an Applicant ID or Employee ID";
                     response.Data = null;
                     response.Success = false;
@@ -227,8 +232,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                 var case1 = _dbContext.Cases.Find(caseEncodePostDto.caseID);
 
-                if (case1 == null){
-                    
+                if (case1 == null)
+                {
+
                     response.Message = "Case not found.";
                     response.Data = null;
                     response.Success = false;
@@ -256,7 +262,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                 response.Message = "Operation Successfull";
                 response.Data = case1.Id.ToString();
                 response.Success = true;
-                
+
                 return response;
             }
             catch (Exception ex)
@@ -273,7 +279,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
         public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetAll(Guid userId)
         {
 
-            var response =  new ResponseMessage<List<CaseEncodeGetDto>>();
+            var response = new ResponseMessage<List<CaseEncodeGetDto>>();
             try
             {
                 List<CaseEncodeGetDto> cases2 = new List<CaseEncodeGetDto>();
@@ -366,7 +372,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
                     }).FirstOrDefaultAsync();
 
-                if (case1 == null){
+                if (case1 == null)
+                {
 
                     response.Message = "Case not found.";
                     response.Data = null;
@@ -386,7 +393,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
 
 
-                
+
                 response.Message = "Operation Successfull.";
                 response.Success = true;
                 response.Data = case1;
@@ -450,7 +457,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
             var response = new ResponseMessage<List<CaseEncodeGetDto>>();
 
             Employee? user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
-            if (user == null){
+            if (user == null)
+            {
 
                 response.Message = "User not found.";
                 response.Data = null;
@@ -532,8 +540,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
 
             var response = new ResponseMessage<List<CaseEncodeGetDto>>();
             Employee? user = _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == employeeId).FirstOrDefault();
-            
-            if (user == null){
+
+            if (user == null)
+            {
 
                 response.Message = "User not found.";
                 response.Data = null;
@@ -541,7 +550,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                 response.ErrorCode = HttpStatusCode.NotFound.ToString();
 
                 return response;
-                
+
             }
 
             if (user.Position == Position.Secertary)
@@ -632,7 +641,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                 return response;
 
             }
-            
+
         }
 
 
