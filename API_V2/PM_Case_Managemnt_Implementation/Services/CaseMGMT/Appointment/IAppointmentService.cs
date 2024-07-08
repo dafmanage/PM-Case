@@ -2,11 +2,11 @@
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 
-namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
+namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Appointment
 {
     public interface IAppointmentService
     {
         public Task<ResponseMessage<Guid>> Add(AppointmentPostDto appointmentPostDto);
-        public Task<ResponseMessage<List<Appointement>>> GetAll();
+        public Task<ResponseMessage<List<AppointmentGetDto>>> GetAll();
     }
 }

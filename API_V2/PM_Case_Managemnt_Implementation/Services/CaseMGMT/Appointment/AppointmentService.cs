@@ -6,27 +6,18 @@ using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using System.Net;
 
-namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
+namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Appointment
 {
-    public class AppointmentService : IAppointmentService
+    public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentService
     {
-        private readonly ApplicationDbContext _dbContext;
-
-        public AppointmentService(ApplicationDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
+        private readonly ApplicationDbContext _dbContext = dbContext;
 
         public async Task<ResponseMessage<Guid>> Add(AppointmentPostDto appointmentPostDto)
         {
-
             var response = new ResponseMessage<Guid>();
 
             try
             {
-
-
                 Appointement appointment = new()
                 {
                     Id = Guid.NewGuid(),
@@ -46,56 +37,54 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
                 response.Message = "Appointment added Succesfully";
                 response.Data = appointment.Id;
 
-                return response;
-
             }
             catch (Exception ex)
             {
                 response.Success = false;
                 response.Message = "Wasnt not able to create appointment";
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-                response.Data = default(Guid);
-                return response;
+                response.Data = Guid.Empty;
             }
+             return response;
         }
-        public async Task<ResponseMessage<List<Appointement>>> GetAll()
+        public async Task<ResponseMessage<List<AppointmentGetDto>>> GetAll()
         {
-            var response = new ResponseMessage<List<Appointement>>();
+            var response = new ResponseMessage<List<AppointmentGetDto>>();
             try
             {
-                List<Appointement> appointments = await _dbContext.Appointements.Include(appointment => appointment.Employee).Include(appointment => appointment.Case).ToListAsync();
-                //List<AppointmentGetDto> result = new();
-                if (appointments == null)
+                var appointments = await _dbContext.Appointements
+                    .Include(appointment => appointment.Employee)
+                    .Include(appointment => appointment.Case)
+                    .ToListAsync();
+        
+                if (!appointments.Any())
                 {
-                    response.Message = "No available appointment";
+                    response.Message = "No available appointments";
                     response.Success = false;
-                    response.ErrorCode = HttpStatusCode.NotFound.ToString();
+                    response.ErrorCode = nameof(HttpStatusCode.NotFound);
                     response.Data = null;
                     return response;
                 }
-                /*
-                foreach (Appointement appointement in appointments)
+        
+                var result = appointments.Select(appointment => new AppointmentGetDto
                 {
-                    result.Add(new AppointmentGetDto()
-                    {
-                        id = appointement.Id.ToString(),
-                        
-                    });
-                }
-                */
-                response.Message = "Appointments fetched Succesfully";
+                    Id = appointment.Id.ToString(),
+                    // Populate other properties as needed
+                }).ToList();
+        
+                response.Message = "Appointments fetched successfully";
                 response.Success = true;
-                response.Data = appointments;
-                return response;
+                response.Data = result;
             }
             catch (Exception ex)
             {
+                // Consider logging the exception here
                 response.Message = "Error while fetching";
                 response.Success = false;
-                response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
+                response.ErrorCode = nameof(HttpStatusCode.InternalServerError);
                 response.Data = null;
-                return response;
             }
+            return response;
         }
 
     }
