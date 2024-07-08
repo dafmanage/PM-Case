@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
@@ -11,9 +10,6 @@ using PM_Case_Managemnt_Infrustructure.Models.PM;
 using PMActivity = PM_Case_Managemnt_Infrustructure.Models.PM;
 using Task = PM_Case_Managemnt_Infrustructure.Models.PM.Task;
 using Tasks = System.Threading.Tasks.Task;
-{
-    
-}
 
 namespace PM_Case_Managemnt_Implementation.Services.PM.Activityy
 {
@@ -21,7 +17,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activityy
     
     {
         private readonly ApplicationDbContext _dBContext = context;
-        private static readonly string[] separator = new string[] { "/" };
+        private static readonly string[] separator = ["/"];
 
         public async Task<int> AddActivityDetails(ActivityDetailDto activityDetail)
     {

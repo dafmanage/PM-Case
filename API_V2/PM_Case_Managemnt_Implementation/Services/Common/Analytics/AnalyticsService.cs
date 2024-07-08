@@ -50,7 +50,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
                                                               a => a.ActivityParentId,
                                                             (p, a) => a).ToListAsync();
 
-                            var usedBudget = activities.Select(x => _dBContext.ActivityProgresses.Where(x => x.ActivityId == x.Id && x.IsApprovedByFinance == approvalStatus.approved).Sum(x => x.ActualBudget)).Sum();
+                            var usedBudget = activities.Select(x => _dBContext.ActivityProgresses.Where(x => x.ActivityId == x.Id && x.IsApprovedByFinance == ApprovalStatus.Approved).Sum(x => x.ActualBudget)).Sum();
 
                             taskUsedBudget += usedBudget;
                         }

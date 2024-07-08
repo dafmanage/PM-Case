@@ -25,11 +25,11 @@ using PM_Case_Managemnt_Implementation.Services.Common.SubOrganization;
 using PM_Case_Managemnt_Implementation.Services.Common.SubsidiaryOrganization;
 using PM_Case_Managemnt_Implementation.Services.KPI;
 using PM_Case_Managemnt_Implementation.Services.PM;
-using PM_Case_Managemnt_Implementation.Services.PM.Activity;
+using PM_Case_Managemnt_Implementation.Services.PM.Activityy;
 using PM_Case_Managemnt_Implementation.Services.PM.Commite;
-using PM_Case_Managemnt_Implementation.Services.PM.Plan;
+using PM_Case_Managemnt_Implementation.Services.PM.Plann;
 using PM_Case_Managemnt_Implementation.Services.PM.Program;
-using PM_Case_Managemnt_Implementation.Services.PM.ProgressReport;
+using PM_Case_Managemnt_Implementation.Services.PM.ProgresReport;
 
 namespace PM_Case_Managemnt_Implementation.Data
 {
