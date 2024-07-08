@@ -128,7 +128,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                                         )]);
 
 
-                activityViewDtos.AddRange((from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
+                activityViewDtos.AddRange([.. (from e in _dBContext.Activities.Include(x => x.UnitOfMeasurement)
                                            where e.TaskId == task.Id
         
                                            select new ActivityViewDto
@@ -189,7 +189,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
 
                                            }
-                                          ).ToList());
+                                          )]);
 
 
 
@@ -665,8 +665,5 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
             };
         }
-
-
-
     }
 }

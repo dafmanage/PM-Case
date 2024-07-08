@@ -105,8 +105,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     foreach (var taskItems in Tasks)
                     {
 
-
-                        if (taskItems.HasActivityParent)
+                       if (taskItems.HasActivityParent)
                         {
 
                             foreach (var actparent in taskItems.ActivitiesParents)
@@ -131,8 +130,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                                 ActualPlan += ActualWorkedPercent * taskItemsWeight / (float)taskItems.Weight;
                                 Goal += GoalPercent * taskItemsWeight / (float)taskItems.Weight;
                             }
-
-
 
                         }
                         else
@@ -336,28 +333,12 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                                 fsForPlan.Add(progs);
                             }
                             else
-                            {
+
+                            //TODO: check the logic
+                            {   
+                                if (existing.FinancialValue == 0 && existing.FiscalValue == 0){
                                 existing.FinancialValue += tarItems.TargetBudget;
                                 existing.FiscalValue += tarItems.Target * tarItems.Activity.Weight / _dBContext.Activities.Where(x => x.TaskId == tarItems.Activity.TaskId).Sum(x => x.Weight);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    var ParentActivities = _dBContext.ActivityParents.Where(x => x.TaskId == taskitems.Id).ToList();
-                    TotalBirr += ParentActivities.Sum(x => x.PlanedBudget);
-
-                    foreach (var pAct in ParentActivities)
-                    {
-                        foreach (var SubAct in pAct.Activities)
-                        {
-                            var TargetForTasks = _dBContext.ActivityTargetDivisions.Where(x => x.ActivityId == SubAct.Id).OrderBy(x => x.Order).ToList();
-
-                            foreach (var tarItems in TargetForTasks)
-                            {
-                                var existing = fsForPlan.FirstOrDefault(x => x.RowOrder == tarItems.Order);
-                                if (existing == null)
                                 {
                                     var progs = new FiscalPlanProgram
                                     {
@@ -367,13 +348,15 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                                     };
                                     progs.FiscalValue = (UInt32)Math.Round(progs.FiscalValue, 2);
                                     fsForPlan.Add(progs);
+                                 }
                                 }
-                                else
+                                 else
                                 {
                                     existing.FinancialValue += tarItems.TargetBudget;
                                     existing.FiscalValue += tarItems.Target * tarItems.Activity.Weight / (float)tarItems.Activity.ActivityParent.Task.Weight;
                                     existing.FiscalValue = (UInt32)Math.Round(existing.FiscalValue, 2);
                                 }
+                                
                             }
                         }
                     }
@@ -806,7 +789,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     var ActivityLists = CreateActivityLists(actparent, reportBy, ref quarterMonth, plannedReport);
                     actparentlst.ActivityLists = ActivityLists;
                 }
-                else if (actparent.Activities.Any() && actparent.Activities.FirstOrDefault().targetDivision != null)
+                else if (actparent.Activities.Any() && actparent.Activities.FirstOrDefault().TargetDivision != null)
                 {
                     var PlanAchievementPlan = CreatePlanAchievementList(actparent, reportBy, ref quarterMonth, plannedReport);
                     actparentlst.ActDivisions = PlanAchievementPlan;
@@ -1051,11 +1034,38 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
             catch (Exception e)
             {
                 //TODO; Handle exception (logging, rethrowing, etc.)
-      
+                throw new Exception(e.Message);
             }
 
             return progressReport;
 
+        }
+        private List<PlanAchievement> CalculatePlanAchievement(Activity items)
+        {
+            var byQuarter = _dBContext.ActivityTargetDivisions
+                .Where(x => x.ActivityId == items.Id)
+                .OrderBy(x => x.Order)
+                .ToList();
+
+            List<PlanAchievement> planAchievements = [];
+
+            foreach (var itemQ in byQuarter)
+            {
+                var progresslist = _dBContext.ActivityProgresses
+                    .Where(x => x.ActivityId == items.Id && x.QuarterId == itemQ.Id)
+                    .ToList();
+
+                PlanAchievement planO = new()
+                {
+                    Target = itemQ.Target,
+                    Actual = progresslist.Sum(x => x.ActualWorked),
+                    PercentageAchieved = itemQ.Target == 0 ? 0 : progresslist.Sum(x => x.ActualWorked) / itemQ.Target * 100
+                };
+
+                planAchievements.Add(planO);
+            }
+
+            return planAchievements;
         }
 
         private void SetPlanDurationAndQuarterMonths(ProgressReport progressReport, FilterationCriteria filterationCriteria, Activity items, List<QuarterMonth>  QuarterMonth)
@@ -1064,7 +1074,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
 
             if (QuarterMonth.Count == 0)
             {
-                int value = items.targetDivision == TargetDivision.Quarterly ? 4 : 12;
+                int value = items.TargetDivision == TargetDivision.Quarterly ? 4 : 12;
                 int period = filterationCriteria.ReportType == "Quarter" ? 4 : 12;
 
                 for (int i = 0; i < period; i++)
@@ -1145,12 +1155,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
             return quarterMonths;
         }
 
-        private List<PlanAchievement> CalculatePlanAchievement(Activity items)
+        private List<PlanAchievement> CalculatePlanAchievementProgressStructure(ActivityTargetDivision items, List<ActivityTargetDivision> byQuarter)
         {
-            var byQuarter = _dBContext.ActivityTargetDivisions
-                .Where(x => x.ActivityId == items.Id)
-                .OrderBy(x => x.Order)
-                .ToList();
 
             List<PlanAchievement> planAchievements = [];
 
@@ -1184,8 +1190,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     Target = planAchievements[i].Target + planAchievements[i + 1].Target + planAchievements[i + 2].Target,
                     Actual = planAchievements[i].Actual + planAchievements[i + 1].Actual + planAchievements[i + 2].Actual,
                     PercentageAchieved = (planAchievements[i].Target + planAchievements[i + 1].Target + planAchievements[i + 2].Target) == 0 ? 0 :
-                        (planAchievements[i].Actual + planAchievements[i + 1].Actual + planAchievements[i + 2].Actual) /
-                        (planAchievements[i].Target + planAchievements[i + 1].Target + planAchievements[i + 2].Target) * 100
+                        (float)Math.Round((planAchievements[i].Actual + planAchievements[i + 1].Actual + planAchievements[i + 2].Actual) /
+                        (planAchievements[i].Target + planAchievements[i + 1].Target + planAchievements[i + 2].Target) * 100, 2)
                 };
 
                 planAchievementss.Add(planOq);
@@ -1287,7 +1293,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     {
                         activities.AddRange(activityParent.Activities);
                     }
-                    else if (activityParent.Activities.Count != 0 && activityParent.Activities.First().targetDivision != null)
+                    else if (activityParent.Activities.Count != 0 && activityParent.Activities.First().TargetDivision != null)
                     {
                         activities.Add(activityParent.Activities.First());
                     }
@@ -1472,25 +1478,34 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
             }
         }
 
-        public Task<ProgresseReportByStructure> GetProgressByStructure(int budgetYear, Guid selectStructureId, string ReportBy){
+        public ProgresseReportByStructure GetProgressByStructure(int budgetYear, Guid selectStructureId, string ReportBy){
 
             ProgresseReportByStructure progresseReportByStructure = new()
             {
                 PlansLists = []
             };
 
+            try{
+
             if (selectStructureId != null){
+
+                var QuarterMonth = new List<QuarterMonth>();
 
                 var BudgetYear =  _dBContext.BudgetYears.Single(x => x.Year == budgetYear);
                 progresseReportByStructure.PreviousBudgetYear = (BudgetYear.Year - 1).ToString();
                 var allPlans = GetAllPlans(selectStructureId).Where(x => x.BudgetYearId == BudgetYear.Id).ToList();
-                var processedPlans = ProcessPlans(allPlans, progresseReportByStructure, ReportBy);
-                
+                var processedPlans = ProcessPlans(allPlans, progresseReportByStructure, ReportBy, ref QuarterMonth);
 
             }
+
+            }catch (Exception e){
+                 throw new Exception(e.Message);
+            }
+            
+            return progresseReportByStructure;
         }
 
-        private List<PlansList> ProcessPlans(List<Plan> allPlans, ProgresseReportByStructure progresseReportByStructure, string ReportBy)
+        private List<PlansList> ProcessPlans(List<Plan> allPlans, ProgresseReportByStructure progresseReportByStructure, string ReportBy, ref List<QuarterMonth> quarterMonths)
         {
             var plansList = new List<PlansList>();
 
@@ -1504,18 +1519,24 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     HasTask = plansItems.HasTask
                 };
 
+                var PlanDivOcs = plansItems.Activities.FirstOrDefault();
+
                 if (plansItems.HasTask)
                 {
-                    plns.TaskLists = ProcessTasks(plansItems.Tasks, progresseReportByStructure, ReportBy);
+                    plns.TaskLists = ProcessTasks(plansItems.Tasks, progresseReportByStructure, ReportBy, ref quarterMonths);
+                }
+                 else if (plansItems.Activities.Any() && plansItems.Activities.FirstOrDefault().ActivityTargetDivisions.Any())
+                {
+                    plns.PlanDivision = ProcessPlanAchievementList(PlanDivOcs, ref quarterMonths, ReportBy, progresseReportByStructure);
                 }
 
-                plansList.Add(plns);
+                 plansList.Add(plns);
             }
 
             return plansList;
         }
 
-        private List<TaskList> ProcessTasks(ICollection<Task> tasks, ProgresseReportByStructure progresseReportByStructure, string ReportBy)
+        private List<TaskList> ProcessTasks(ICollection<Task> tasks, ProgresseReportByStructure progresseReportByStructure, string ReportBy, ref List<QuarterMonth> quarterMonths)
         {
             var taskLsts = new List<TaskList>();
 
@@ -1529,9 +1550,15 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     HasActParent = taskItems.HasActivityParent
                 };
 
+                var TaskOcs = taskItems.Activities.FirstOrDefault();
+
                 if (taskItems.HasActivityParent)
                 {
-                    taskLst.ActParentLst = ProcessActivityParents(taskItems.ActivitiesParents, progresseReportByStructure, ReportBy);
+                    taskLst.ActParentLst = ProcessActivityParents(taskItems.ActivitiesParents, progresseReportByStructure, ReportBy, ref quarterMonths);
+                }
+                else if (taskItems.Activities.Count != 0 && TaskOcs.ActivityTargetDivisions.Any())
+                {
+                    taskLst.TaskDivisions = ProcessPlanAchievementList(TaskOcs, ref quarterMonths, ReportBy, progresseReportByStructure);
                 }
 
                 taskLsts.Add(taskLst);
@@ -1540,7 +1567,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
             return taskLsts;
         }
 
-        private List<ActParentLst> ProcessActivityParents(ICollection<ActivityParent> activitiesParents, ProgresseReportByStructure progresseReportByStructure, string ReportBy)
+        private List<ActParentLst> ProcessActivityParents(ICollection<ActivityParent> activitiesParents, ProgresseReportByStructure progresseReportByStructure, string ReportBy, ref List<QuarterMonth> quarterMonths)
         {
             var actParentLsts = new List<ActParentLst>();
 
@@ -1553,17 +1580,26 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     ActpRemark = actparentItems.Remark
                 };
 
+                var TaskOcs = actparentItems.Activities.FirstOrDefault();
+
                 if (actparentItems.HasActivity)
                 {
-                    actparent.ActivityLists = ProcessActivities(actparentItems.Activities, progresseReportByStructure, ReportBy);
+                    actparent.ActivityLists = ProcessActivities(actparentItems.Activities, progresseReportByStructure, ReportBy, quarterMonths);
                 }
 
+                else if (actparentItems.Activities.Count != 0 && TaskOcs.TargetDivision != null){
+                    //TODO: use generic method and interface to avoid redundant methods such as the one above
+                    
+                    actparent.ActDivisions =  ProcessPlanAchievementList(TaskOcs, ref quarterMonths, ReportBy, progresseReportByStructure);
+                }
+            
                 actParentLsts.Add(actparent);
             }
 
             return actParentLsts;
         }
 
+        
         //TODO: use generic method and interface to avoid redundant methods such as the one below
         private void InitializeQuarterMonth(string reportBy, ref List<QuarterMonth> quarterMonth, ProgresseReportByStructure progresseReportByStructure)
         {
@@ -1609,8 +1645,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
 
             progresseReportByStructure.PlanDurationInQuarter = quarterMonth;
         }
-
-        private List<ActivityList> ProcessActivities(ICollection<Activity> activities, ProgresseReportByStructure progresseReportByStructure, string ReportBy)
+            
+        private List<ActivityList> ProcessActivities(ICollection<Activity> activities, ProgresseReportByStructure progresseReportByStructure, string ReportBy, List<QuarterMonth> quarterMonths)
         {
             var activityLsts = new List<ActivityList>();
             
@@ -1627,7 +1663,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
                     Remark = ActItems.Remark,
                     ActualWorked = (float)Math.Round(ActItems.ActualWorked),
                     Progress = CalculateProgress(ActItems.ActualWorked, ActItems.Goal),
-                    Plans = CalculatePlanAchievement(ReportBy, ActItems.ActivityTargetDivisions);
+                    Plans = ProcessPlanAchievementList(ActItems, ref quarterMonths, ReportBy, progresseReportByStructure)
                 };
                 activityLsts.Add(lst);
             }
@@ -1644,105 +1680,46 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgresReport
             return 0;
         }
 
-        private List<PlanAchievement> ProcessPlanAchievements(ProgresseReportByStructure progresseReportByStructure, string ReportBy)
+        private List<PlanAchievement> ProcessPlanAchievementList(Activity items, ref List<QuarterMonth> quarterMonth, string reportBy, ProgresseReportByStructure progresseReportByStructure)
         {
             var PlanAchievements = new List<PlanAchievement>();
-            InitializeQuarterMonth(ReportBy, ref quarterMonth, progresseReportByStructure);
-                  
-        }
 
-        private List<PlanAchievement> CalculatePlanAchievement(string reportBy, List<ActivityTargetDivision> byQuarter)
-        {
-            List<PlanAchievement> planOq = [];
+            var byQuarter = _dBContext.ActivityTargetDivisions
+                .Where(x => x.ActivityId == items.Id)
+                .OrderBy(x => x.Order)
+                .ToList();
 
-            foreach (var itemQ in byQuarter)
+              if (quarterMonth.Count != 0)
             {
-                var progresslist = _dBContext.ActivityProgresses.Where(x => x.QuarterId == itemQ.Id && x.QuarterId == itemQ.Id).ToList();
-                PlanAchievement planO = new()
-                {
-                    Target = itemQ.Target,
-                    Actual = progresslist.Sum(x => x.ActualWorked),
-                    PercentageAchieved = itemQ.Target == 0 ? 0 : (float)Math.Round(planO.Actual / itemQ.Target * 100, 2)
-                };
-                planOq.Add(planO);
+                InitializeQuarterMonth(reportBy, ref quarterMonth, progresseReportByStructure);
             }
+
+            var planAchievements = new List<PlanAchievement>();
+
+            foreach (var item in byQuarter)
+            {
+                planAchievements = CalculatePlanAchievementProgressStructure(item, byQuarter);
+            }
+
+            var planAchieved = new List<PlanAchievement>();
 
             if (reportBy == "Quarter")
             {
-                List<PlanAchievement> PlanAchievements = [];
-                for (int i = 0; i < 12; i += 3)
+                planAchieved = AggregateQuarterlyAchievements(planAchievements);
+
+                foreach (var achievement in planAchieved)
                 {
-                    float targetSum = planOq[i].Target + planOq[i + 1].Target + planOq[i + 2].Target;
-                    float actualSum = planOq[i].Actual + planOq[i + 1].Actual + planOq[i + 2].Actual;
-                    PlanAchievement planO = new()
-                    {
-                        Target = targetSum,
-                        Actual = actualSum
-                    };
-                    planO.PercentageAchieved = planO.Target == 0 ? 0 : (float)Math.Round(planO.Actual / planO.Target * 100, 2);
-                    PlanAchievements.Add(planO);
+                    PlanAchievements.Add(achievement);
                 }
-                return PlanAchievements;
-            }
-            else
+
+            }else
             {
-                return planOq;
+                PlanAchievements = planAchieved;
             }
+
+            return PlanAchievements;
+                  
         }
-
-
-        // private void InitializeQuarterMonth(string reportBy, ref List<QuarterMonth> quarterMonth, ProgresseReportByStructure reportStructure)
-        // {
-        //     if (reportStructure.PlanDuration == 0)
-        //     {
-        //         reportStructure.PlanDuration = reportBy == reporttype.Quarter.ToString() ? 4 : 12;
-        //     }
-
-        //     if (!quarterMonth.Any())
-        //     {
-        //         int value = reportBy == reporttype.Quarter.ToString() ? 4 : 12;
-        //         if (reportBy == reporttype.Quarter.ToString())
-        //         {
-        //             for (int i = 0; i < 4; i++)
-        //             {
-        //                 var quar = _dBContext.QuarterSettings.Single(x => x.QuarterOrder == i);
-
-        //                 quar.StartMonth = quar.StartMonth > 4 ? quar.StartMonth - 4 : quar.StartMonth + 8;
-        //                 quar.EndMonth = quar.EndMonth > 4 ? quar.EndMonth - 4 : quar.EndMonth + 8;
-
-        //                 System.Globalization.DateTimeFormatInfo mfi = new System.Globalization.DateTimeFormatInfo();
-        //                 string fromG = mfi.GetMonthName(quar.StartMonth);
-        //                 string toG = mfi.GetMonthName(quar.EndMonth);
-
-        //                 QuarterMonth quarterMonths = new QuarterMonth
-        //                 {
-        //                     MonthName = "Quarter" + (i + 1)
-        //                 };
-        //                 quarterMonth.Add(quarterMonths);
-        //             }
-        //             reportStructure.PMINT = 4;
-        //         }
-        //         else
-        //         {
-        //             for (int i = 1; i <= 12; i++)
-        //             {
-        //                 int k = i >= 7 ? i - 6 : i + 6;
-
-        //                 System.Globalization.DateTimeFormatInfo mfi = new System.Globalization.DateTimeFormatInfo();
-        //                 string strMonthName = mfi.GetMonthName(k);
-
-        //                 QuarterMonth quarterMonths = new QuarterMonth
-        //                 {
-        //                     MonthName = strMonthName
-        //                 };
-        //                 quarterMonth.Add(quarterMonths);
-        //             }
-        //             reportStructure.PMINT = 12;
-        //         }
-        //         reportStructure.PlanDuration2 = quarterMonth;
-        //     }
-        // }
-
 
         private List<Plan> GetAllPlans(Guid selectStructureId){
 
