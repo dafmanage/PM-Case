@@ -5,16 +5,19 @@ using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
 {
     public class AppointmentService : IAppointmentService
     {
         private readonly ApplicationDbContext _dbContext;
-
-        public AppointmentService(ApplicationDbContext dbContext)
+        private readonly ILoggerManagerService _logger;
+        
+        public AppointmentService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
 
@@ -45,7 +48,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
                 response.Success = true;
                 response.Message = "Appointment added Succesfully";
                 response.Data = appointment.Id;
-
+                _logger.LogCreate("AppointmentService", appointmentPostDto.CreatedBy.ToString(), "Appointment added Successfully");
                 return response;
                 
             } catch (Exception ex)
@@ -54,6 +57,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService
                 response.Message = "Wasnt not able to create appointment";
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Data = default(Guid);
+                //_logger.LogException("AppointmentService", appointmentPostDto.CreatedBy.ToString(), $"Error adding appointment: {ex.Message}");
                 return response;
             }
         }

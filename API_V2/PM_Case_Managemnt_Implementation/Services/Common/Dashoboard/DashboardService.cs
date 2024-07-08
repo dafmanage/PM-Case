@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Case;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
@@ -13,6 +14,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
     {
 
         private readonly ApplicationDbContext _dBContext;
+        private readonly ILoggerManagerService _logger;
         private Random rnd = new Random();
 
         List<ProjectList> ProjectLists = new List<ProjectList>();
@@ -21,9 +23,10 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
         public BudgetYear budget = new BudgetYear();
         public Guid structureId = Guid.Empty;
         List<progress_Strucure> ps = new List<progress_Strucure>();
-        public DashboardService(ApplicationDbContext context)
+        public DashboardService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
         public async Task<ResponseMessage<DashboardDto>> GetPendingCase(Guid subOrgId, string startat, string endat)
         {

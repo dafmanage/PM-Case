@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.PM.Plan;
 using PM_Case_Managemnt_Infrustructure.Data;
@@ -15,11 +16,14 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
     {
 
         private readonly ApplicationDbContext _dBContext;
+        private readonly ILoggerManagerService _logger;
         private readonly IPlanService planService;
 
-        public ProgramService(ApplicationDbContext context, IPlanService planService)
+        public ProgramService(ApplicationDbContext context, IPlanService planService,
+            ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
             this.planService = planService;
         }
 
@@ -35,7 +39,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
             await _dBContext.AddAsync(program);
             await _dBContext.SaveChangesAsync();
 
-
+            _logger.LogCreate("ProgramService", program.CreatedBy.ToString(), "Program Created Successfully");
 
             response.Message = "Operation Successful.";
             response.Success = true;
@@ -156,7 +160,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
 
 
                 await _dBContext.SaveChangesAsync();
-
+                _logger.LogUpdate("ProgramService", program.Id.ToString(), "Program Updated Successfully");
                 return new ResponseMessage
                 {
                     Success = true,
@@ -350,7 +354,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
 
                 _dBContext.Programs.Remove(prog);
                 await _dBContext.SaveChangesAsync();
-
+                _logger.LogUpdate("ProgramService", programId.ToString(), "Program Deleted Successfully");
                 return new ResponseMessage
                 {
                     Success = true,

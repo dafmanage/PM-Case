@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Auth;
@@ -16,11 +17,12 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
-
-        public CaseIssueService(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager)
+        private readonly ILoggerManagerService _logger;
+        public CaseIssueService(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetNotCompletedCases(Guid subOrgId)
@@ -136,7 +138,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Success = true;
                 response.Message = "Issued Successfully";
                 response.Data = "OK";
-
+                _logger.LogCreate("CaseIssueService", caseAssignDto.AssignedByEmployeeId.ToString(), $"case issued to {caseAssignDto.AssignedToEmployeeId} Successfully");
                 return response;
 
 
@@ -227,6 +229,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Message = "Operation Successfull";
                 response.Success = true;
                 response.Data = "OK";
+                _logger.LogUpdate("CaseIssueService", caseActionDto.issueCaseId.ToString(), "Issue with the provided ID modified Successfully");
                 return response;
             }
 

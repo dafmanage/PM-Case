@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -12,9 +13,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     {
 
         private readonly ApplicationDbContext _dBContext;
-        public OrgBranchService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public OrgBranchService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> CreateOrganizationalBranch(OrgBranchDto organizationBranch)
@@ -42,7 +45,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-            
+            _logger.LogCreate("OrgBranchService", organizationBranch.Id.ToString(), "Organization Branch created Successfully");
             return response;
 
         }
@@ -123,7 +126,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             response.Message = "Operation Successful.";
             response.Data = 1;
             response.Success = true;
-            
+            _logger.LogCreate("OrgBranchService", organizationBranch.Id.ToString(), "Organization Branch updated Successfully");
             return response;
 
         }

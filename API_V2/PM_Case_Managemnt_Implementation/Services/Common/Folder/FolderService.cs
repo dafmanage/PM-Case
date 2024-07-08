@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Archive;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -11,10 +12,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.FolderService
     {
 
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILoggerManagerService _logger;
 
-        public FolderService(ApplicationDbContext dbContext)
+        public FolderService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> Add(FolderPostDto folderPostDto)
@@ -40,7 +43,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.FolderService
                 response.Message = "OPeration Successful";
                 response.Data = 1;
                 response.Success = true;
-
+                _logger.LogCreate("FolderService", folderPostDto.CreatedBy.ToString(), "Folder added Successfully");
                 return response;
             }
             catch (Exception ex)

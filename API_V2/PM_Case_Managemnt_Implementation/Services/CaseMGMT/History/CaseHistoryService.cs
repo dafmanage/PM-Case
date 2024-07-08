@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
@@ -11,10 +12,12 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
     public class CaseHistoryService : ICaseHistoryService
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILoggerManagerService _logger;
 
-        public CaseHistoryService(ApplicationDbContext dbContext)
+        public CaseHistoryService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> Add(CaseHistoryPostDto caseHistoryPostDto)
@@ -74,7 +77,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                 response.Message = "Operation Successfull";
                 response.Success = true;
                 response.Data = 1;
-
+                _logger.LogCreate("CaseHistoryService", caseHistoryPostDto.CreatedBy.ToString(), "Case History added Successfully");
                 return response;
 
             }
@@ -114,7 +117,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                 response.Message = "Operation Successfull.";
                 response.Data = 1;
                 response.Success = true;
-
+                _logger.LogUpdate("CaseHistoryService", seenDto.CaseId.ToString(), "Case added to seen Successfully");
                 return response;
             }
             catch (Exception ex)
@@ -171,7 +174,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                 response.Message = "Operation Successfull.";
                 response.Data = 1;
                 response.Success = true;
-
+                _logger.LogUpdate("CaseHistoryService", completeDto.CaseId.ToString(), "Case added to completed Successfully");
                 return response;
 
             }

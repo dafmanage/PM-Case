@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Infrustructure.Data;
@@ -19,13 +20,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
+        private readonly ILoggerManagerService _logger;
 
         public CaseEncodeService(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager,
-            IHubContext<EncoderHub, IEncoderHubInterface> encoderHub)
+            IHubContext<EncoderHub, IEncoderHubInterface> encoderHub, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _encoderHub = encoderHub;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<string>> Add(CaseEncodePostDto caseEncodePostDto)
@@ -195,7 +198,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                 response.Success = true;
                 response.Message = "Operation Successfull.";
                 response.Data = newCase.Id.ToString();
-
+                _logger.LogCreate("CaseEncodeService", caseEncodePostDto.CreatedBy.ToString(), "Case encode added Successfully");
                 return response;
             }
             catch (Exception ex)
@@ -256,7 +259,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
                 response.Message = "Operation Successfull";
                 response.Data = case1.Id.ToString();
                 response.Success = true;
-                
+                _logger.LogUpdate("CaseEncodeService", caseEncodePostDto.CreatedBy.ToString(), "Case Encode updated Successfully");
                 return response;
             }
             catch (Exception ex)

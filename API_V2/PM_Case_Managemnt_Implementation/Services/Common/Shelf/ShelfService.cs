@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Archive;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -10,10 +11,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.ShelfService
     public class ShelfService : IShelfService
     {
         private readonly ApplicationDbContext _dbContext;
-
-        public ShelfService(ApplicationDbContext dbContext)
+        private readonly ILoggerManagerService _logger;
+        public ShelfService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> Add(ShelfPostDto shelfPostDto)
@@ -39,7 +41,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.ShelfService
                 response.Message = "operation Successful.";
                 response.Success = true;
                 response.Data = 1;
-
+                _logger.LogCreate("ShelfService", shelfPostDto.CreatedBy.ToString(), "Shelf added Successfully");
                 return response;
                 
             } catch (Exception ex)

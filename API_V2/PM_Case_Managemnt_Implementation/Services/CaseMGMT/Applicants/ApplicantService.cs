@@ -7,16 +7,20 @@ using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
+
+
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
 {
     public class ApplicantService : IApplicantServices
     {
         private readonly ApplicationDbContext _dbContext;
-
-        public ApplicantService(ApplicationDbContext dbContext)
+        private readonly ILoggerManagerService _logger;
+        public ApplicantService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<Guid>> Add(ApplicantPostDto applicantPost)
@@ -45,6 +49,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.Success = true;
                 response.Message = "Applicant added Successfully";
                 response.Data = applicant.Id;
+                _logger.LogCreate("ApplicantService", applicantPost.CreatedBy.ToString(), "Applicant added Successfully");
                 return response;
             } catch (Exception ex)
             {
@@ -52,6 +57,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Message = "Error adding applicant";
                 response.Data = default(Guid);
+                //_logger.LogException("ApplicantService", applicantPost.CreatedBy.ToString(), $"Error adding applicant: {ex.Message}");
                 return response;
             }
         }
@@ -80,6 +86,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.Success = true;
                 response.Message = "Updated Successfully";
                 response.Data = applicant.Id;
+                
+                _logger.LogUpdate("ApplicantService", applicantPost.CreatedBy.ToString(), "Applicant updated Successfully");
                 return response;
 
             }

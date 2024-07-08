@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -13,9 +14,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
     public class ActivityService : IActivityService
     {
         private readonly ApplicationDbContext _dBContext;
-        public ActivityService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public ActivityService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> AddActivityDetails(ActivityDetailDto activityDetail)
@@ -158,7 +161,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("ActivityService", activityDetail.CreatedBy.ToString(), "Activity Details added Successfully");
             return response;
         }
 
@@ -339,7 +342,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("ActivityService", activityDetail.CreatedBy.ToString(), "SubActivity added Successfully");
             return response;
         }
 
@@ -393,7 +396,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
                     }
-
+                    //didnt know what to put as creator
+                    //_logger.LogCreate("ActivityService", branchTargetDtos.CreatedBy.ToString(), "Activity Details added Successfully");
                     return new ReponseMessage
                     {
                         Success = true,
@@ -457,7 +461,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("ActivityService", targetDivisions.CreatedBy.ToString(), "Target Activities added Successfully");
             return response;
 
         }
@@ -527,7 +531,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("ActivityService", activityProgress.CreatedBy.ToString(), "Activity Progress added Successfully");
             return response;
         }
 
@@ -839,7 +843,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             response.Message = "Opertation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogUpdate("ActivityService", approvalProgressDto.createdBy.ToString(), "Progress approved Successfully");
             return response;
         }
 
@@ -991,7 +995,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
                             await _dBContext.SaveChangesAsync();
                         }
                     }
-
+                    _logger.LogCreate("ActivityService", activityEmployee.CreatedBy.ToString(), "Employee Assigned Successfully");
                     return new ReponseMessage
                     {
                         Success = true,
@@ -1247,7 +1251,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
             }
 
 
-
+            _logger.LogUpdate("ActivityService", activityDetail.CreatedBy.ToString(), "Activity Details Updated Successfully");
             return new ResponseMessage
             {
                 Success = true,
@@ -1413,7 +1417,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Activity
 
 
 
-
+                _logger.LogUpdate("ActivityService", activityId.ToString(), "Activity Deleted Successfully");
                 return new ResponseMessage
                 {
                     Message = "Activity Deleted Successfully",

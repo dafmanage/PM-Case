@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_API.DTOS.Common.Organization;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -11,9 +12,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     {
 
         private readonly ApplicationDbContext _dBContext;
-        public OrganzationProfileService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public OrganzationProfileService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> CreateOrganizationalProfile(OrganizationProfile organizationProfile)
@@ -44,7 +47,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
                         response.Message = "Operation Successful";
                         response.Data = 1;
                         response.Success = true;
-                        
+                        _logger.LogCreate("OrganizationProfileService", organizationProfile.CreatedBy.ToString(), "Organization Profile created Successfully");
                         return response;
                     }
                     catch (Exception ex)
@@ -108,7 +111,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             //_dBContext.Entry(organizationProfile).State = EntityState.Modified;
             //await _dBContext.SaveChangesAsync();
-
+            _logger.LogUpdate("organizationProfileService", organizationProfile.CreatedBy.ToString(), "Organization Profile  updated Successfully");
             response.Message = "Operation Successful.";
             response.Data = 1;
             response.Success = true;

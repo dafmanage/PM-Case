@@ -6,6 +6,7 @@ using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using System.Data;
 using Azure;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using String = System.String;
 
@@ -13,12 +14,14 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
 {
     public class CaserReportService : ICaseReportService
     {
-
+        
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILoggerManagerService _logger;
         private Random rnd = new Random();
-        public CaserReportService(ApplicationDbContext dbContext)
+        public CaserReportService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
         public async Task<ResponseMessage<List<CaseReportDto>>> GetCaseReport(Guid subOrgId, string? startAt, string? endAt)
         {

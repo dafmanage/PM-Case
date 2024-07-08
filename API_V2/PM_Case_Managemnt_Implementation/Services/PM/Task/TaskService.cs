@@ -2,6 +2,7 @@
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -12,9 +13,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
     {
 
         private readonly ApplicationDbContext _dBContext;
-        public TaskService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public TaskService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> CreateTask(TaskDto task)
@@ -36,7 +39,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("TaskService", task.Id.ToString(), "Task Created Successfully");
             return response;
 
         }
@@ -64,7 +67,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("TaskService", taskMemo.TaskId.ToString(), "Task Memo Added Successfully");
             return response;
         }
 
@@ -454,7 +457,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("TaskService", taskMembers.TaskId.ToString(), "Task Members Added Successfully");
             return response;
         }
         public async Task<ResponseMessage<List<SelectListDto>>> GetEmployeesNoTaskMembersSelectList(Guid taskId, Guid subOrgId)
@@ -574,7 +577,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
                     task.PlanId = updateTask.PlanId;
 
                     await _dBContext.SaveChangesAsync();
-
+                    _logger.LogUpdate("TaskService", updateTask.Id.ToString(), "Task Updated Successfully");
                     return new ResponseMessage
                     {
                         Success = true,
@@ -738,7 +741,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM
 
                 _dBContext.Tasks.Remove(task);
                 await _dBContext.SaveChangesAsync();
-
+                _logger.LogUpdate("TaskService", taskId.ToString(), "Task Deleted Successfully");
                 return new ResponseMessage
                 {
 

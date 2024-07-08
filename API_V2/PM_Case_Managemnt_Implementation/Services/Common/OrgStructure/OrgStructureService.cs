@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -11,9 +12,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     public class OrgStructureService : IOrgStructureService
     {
         private readonly ApplicationDbContext _dBContext;
-        public OrgStructureService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public OrgStructureService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> CreateOrganizationalStructure(OrgStructureDto orgStructure)
@@ -58,7 +61,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             response.Message = "Operation Successful.";
             response.Data = 1;
             response.Success = true;
-
+            _logger.LogCreate("OrgStructureService", orgStructure.Id.ToString(), "Organizational structure created Successfully");
             return response;
 
         }
@@ -179,7 +182,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-            
+            _logger.LogUpdate("OrgStructureService", orgStructure.Id.ToString(), "Organizational structure updated Successfully");
             return response;
 
         }

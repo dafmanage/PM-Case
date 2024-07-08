@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -13,9 +14,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.ProgressReport
     {
 
         private readonly ApplicationDbContext _dBContext;
-        public ProgressReportService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public ProgressReportService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
 

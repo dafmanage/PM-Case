@@ -5,6 +5,7 @@ using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
 using System.Collections.Immutable;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 
 namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
@@ -12,9 +13,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
     public class CommiteService : ICommiteService
     {
         private readonly ApplicationDbContext _dBContext;
-        public CommiteService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public CommiteService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> AddCommite(AddCommiteDto addCommiteDto)
@@ -35,7 +38,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("CommiteService", addCommiteDto.CreatedBy.ToString(), "Commite added Successfully");
             return response;
         }
 
@@ -109,7 +112,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 0;
-
+            _logger.LogUpdate("CommiteService", updateCommite.CreatedBy.ToString(), "Commite Updated Successfully");
             return response;
         }
 
@@ -138,7 +141,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("CommiteService", commiteEmployeesdto.CreatedBy.ToString(), "Employees added to committe Successfully");
             return response;
 
         }
@@ -159,7 +162,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogUpdate("CommiteService", commiteEmployeesdto.CreatedBy.ToString(), "removed Employees from committe Successfully");
             return response;
 
         }

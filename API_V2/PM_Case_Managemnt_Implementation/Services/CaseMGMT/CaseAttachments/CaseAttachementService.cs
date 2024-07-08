@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
@@ -9,10 +10,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
     public class CaseAttachementService : ICaseAttachementService
     {
         private readonly ApplicationDbContext _dBContext;
-
-        public CaseAttachementService(ApplicationDbContext dBContext)
+        private readonly ILoggerManagerService _logger;
+        public CaseAttachementService(ApplicationDbContext dBContext, ILoggerManagerService logger)
         {
             _dBContext = dBContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<string>> AddMany(List<CaseAttachment> caseAttachments)
@@ -25,6 +27,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                 response.Message = "Succesfully saved";
                 response.Success = true;
                 response.Data = "OK";
+                //dindnt know who to put in created by part
+                //_logger.LogCreate("CaseAttachementService", caseAttachments., "Applicant added Successfully");
                 return response;
             } catch (Exception ex)
             {
@@ -86,6 +90,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                 response.Success = true;
                 response.Message = "Attachment removed successfully.";
                 response.Data = true;
+                _logger.LogUpdate("CaseAttachmentService", attachmentId.ToString(), "The specified attachment has been removed Successfully");
                 return response;
             }
             catch (Exception ex)

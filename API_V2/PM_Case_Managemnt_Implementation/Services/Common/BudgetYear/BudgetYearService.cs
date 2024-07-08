@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.AccessControl;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 
@@ -9,9 +11,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
     public class BudgetYearService : IBudgetyearService
     {
         private readonly ApplicationDbContext _dBContext;
-        public BudgetYearService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public BudgetYearService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage> CreateProgramBudgetYear(ProgramBudgetYearDto programBudgetYear)
@@ -29,7 +33,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             await _dBContext.AddAsync(addProgramBudgetYear);
             await _dBContext.SaveChangesAsync();
-
+            _logger.LogCreate("BudgetYearService", programBudgetYear.CreatedBy.ToString(), $"Program Budget year successfully created to the year {programBudgetYear.ToYear}.");
             return new ResponseMessage
             {
                 Message = "Program Budget Year Created Successfully",
@@ -58,7 +62,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             await _dBContext.SaveChangesAsync();
 
-
+            _logger.LogUpdate("BudgetYearService", programBudgetYear.CreatedBy.ToString(), "Program budget year edited Successfully");
             return new ResponseMessage
             {
                 Message = "Program Budget Year Successfully Edited",
@@ -82,7 +86,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             _dBContext.ProgramBudgetYears.Remove(editProgramBudgetYear);
             await _dBContext.SaveChangesAsync();
-
+            _logger.LogUpdate("BudgetYearService", programBudgetYeatId.ToString(), "Program Budget year  deleted Successfully");
             return new ResponseMessage
             {
                 Message = "Program Budget Year Deleted Successfully",
@@ -143,7 +147,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             await _dBContext.AddAsync(budgetYear);
             await _dBContext.SaveChangesAsync();
-
+            _logger.LogCreate("BudgetYearService", budgetYear.CreatedBy.ToString(), "Budget year created Successfully");
             return new ResponseMessage
             {
                 Message = "Budget Year Created Successfully",
@@ -186,7 +190,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
 
             await _dBContext.SaveChangesAsync();
-
+            _logger.LogUpdate("BudegtYearService", budgetYear.CreatedBy.ToString(), "Budget year updated Successfully");
             return new ResponseMessage
             {
                 Message = "Budget Year Updated Successfully",
@@ -211,6 +215,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             _dBContext.BudgetYears.Remove(budgetYear);
             await _dBContext.SaveChangesAsync();
+            
+            _logger.LogUpdate("BudgetYearService", budgetYearId.ToString(), "Budget year deleted Successfully");
 
             return new ResponseMessage
             {

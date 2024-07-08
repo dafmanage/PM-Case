@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -10,10 +11,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
     public class SmsTemplateService : ISmsTemplateService
     {
         private readonly ApplicationDbContext _dBContext;
+        private readonly ILoggerManagerService _logger;
 
-        public SmsTemplateService(ApplicationDbContext dBContext)
+        public SmsTemplateService(ApplicationDbContext dBContext, ILoggerManagerService logger)
         {
             _dBContext = dBContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<List<SmsTemplateGetDto>>> GetSmsTemplates(Guid subOrgId)
@@ -96,7 +99,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
 
                 await _dBContext.SmsTemplates.AddAsync(template);
                 await _dBContext.SaveChangesAsync();
-
+                _logger.LogCreate("SmsTemplateService", smsTemplate.CreatedBy.ToString(), "SMS template created Successfully");
                 return new ResponseMessage
                 {
                     Success = true,
@@ -137,7 +140,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
 
                     //_dBContext.Entry(template).State = EntityState.Modified;
                     await _dBContext.SaveChangesAsync();
-
+                    _logger.LogUpdate("SmsTemplateService", smsTemplate.CreatedBy.ToString(), "SMS Template updated Successfully");
                     return new ResponseMessage
                     {
                         Success = true,
@@ -170,6 +173,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SmsTemplate
             {
                 _dBContext.SmsTemplates.Remove(template);
                 await _dBContext.SaveChangesAsync();
+                _logger.LogUpdate("SmsTemplateService", id.ToString(), "SMS Template deleted Successfully");
                 return new ResponseMessage
                 {
                     Success = true,

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -14,9 +15,11 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
     {
 
         private readonly ApplicationDbContext _dBContext;
-        public PlanService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public PlanService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> CreatePlan(PlanDto plan)
@@ -57,7 +60,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
             response.Message = "Operation Successful.";
             response.Success = true;
             response.Data = 1;
-
+            _logger.LogCreate("PlanService", plan.Id.ToString(), "Plan Created Successfully");
             return response;
 
         }
@@ -250,7 +253,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                     await _dBContext.SaveChangesAsync();
 
                 }
-
+                _logger.LogUpdate("PlanService", plan.Id.ToString(), "Plan Updated Successfully");
 
                 return new ResponseMessage
                 {
@@ -438,6 +441,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plan
                     _dBContext.Plans.Remove(plan);
                     await _dBContext.SaveChangesAsync();
                 }
+                
+                _logger.LogUpdate("PlanService", plan.Id.ToString(), "Plan Deleted Successfully");
 
                 return new ResponseMessage
                 {

@@ -6,20 +6,21 @@ using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using System.Net;
 using System.Text;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
 {
     public class CaseMessagesService : ICaseMessagesService
     {
         private readonly ApplicationDbContext _dbContext;
-
+        private readonly ILoggerManagerService _logger;
         private readonly IConfiguration _configuration;
 
 
-        public CaseMessagesService(ApplicationDbContext dbContext, IConfiguration configuration)
+        public CaseMessagesService(ApplicationDbContext dbContext, IConfiguration configuration, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
-
+            _logger = logger;
             _configuration = configuration;
         }
 
@@ -41,6 +42,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
 
                 await _dbContext.CaseMessages.AddAsync(caseMessage);
                 await _dbContext.SaveChangesAsync();
+                
+                _logger.LogCreate("CaseMessagesService", caseMessagePost.CreatedBy.ToString(), "Case Message added Successfully");
             }
             catch (Exception ex)
             {
