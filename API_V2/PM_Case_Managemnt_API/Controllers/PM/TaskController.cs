@@ -32,7 +32,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
             }
         }
         [HttpGet("ById")]
-        public async Task<TaskVIewDto> GetSingleTask(Guid taskId)
+        public async Task<TaskViewDto> GetSingleTask(Guid taskId)
         {
 
             return await _taskService.GetSingleTask(taskId);

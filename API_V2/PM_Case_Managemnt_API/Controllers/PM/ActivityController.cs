@@ -1,22 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Services.PM.Activity;
+using PM_Case_Managemnt_Implementation.Services.PM.Activityy;
 using System.Net.Http.Headers;
 
 namespace PM_Case_Managemnt_API.Controllers.PM
 {
     [Route("api/PM/[controller]")]
     [ApiController]
-    public class ActivityController : ControllerBase
+    public class ActivityController(IActivityService activityService) : ControllerBase
     {
 
-        private readonly IActivityService _activityService;
-        public ActivityController(IActivityService activityService)
-        {
-            _activityService = activityService;
-        }
-
+        private readonly IActivityService _activityService = activityService;
 
         [HttpPost]
         public IActionResult Create([FromBody] ActivityDetailDto addActivityDto)
@@ -219,15 +214,14 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         public async Task<List<ActivityAttachmentDto>> GetActivityAtachments(Guid taskId)
         {
 
-            return await _activityService.getAttachemnts(taskId);
-
+            return await _activityService.GetAttachments(taskId);
 
         }
 
         [HttpGet("byActivityId")]
         public async Task<ActivityViewDto> getActivityById(Guid actId)
         {
-            return await _activityService.getActivityById(actId);
+            return await _activityService.GetActivityById(actId);
         }
         [HttpPost("AssignEmployee")]
 

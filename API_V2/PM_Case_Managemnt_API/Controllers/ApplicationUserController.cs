@@ -74,8 +74,6 @@ namespace PM_Case_Managemnt_API.Controllers
         {
 
             return Ok(await _authenticationService.GetRolesForUser());
-
-
         }
 
         [HttpGet("users")]
