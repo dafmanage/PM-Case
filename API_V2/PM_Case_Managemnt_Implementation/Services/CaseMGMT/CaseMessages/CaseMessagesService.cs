@@ -9,18 +9,11 @@ using System.Text;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
 {
-    public class CaseMessagesService : ICaseMessagesService
+    public class CaseMessagesService(ApplicationDbContext dbContext, IConfiguration configuration) : ICaseMessagesService
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ApplicationDbContext _dbContext = dbContext;
 
-        private readonly IConfiguration _configuration;
-
-        public CaseMessagesService(ApplicationDbContext dbContext, IConfiguration configuration)
-        {
-            _dbContext = dbContext;
-
-            _configuration = configuration;
-        }
+        private readonly IConfiguration _configuration = configuration;
 
         public async Task Add(CaseMessagesPostDto caseMessagePost)
         {

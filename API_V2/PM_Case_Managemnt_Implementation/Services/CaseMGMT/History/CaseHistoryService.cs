@@ -52,17 +52,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                     FromStructureId = caseHistoryPostDto.FromStructureId,
                     ToStructureId = caseHistoryPostDto.ToStructureId,
                     AffairHistoryStatus = AffairHistoryStatus.Waiting,
-                    //SeenDateTime = caseHistoryPostDto?.SeenDateTime,
-                    //TransferedDateTime = caseHistoryPostDto?.TransferedDateTime,
-                    //CompletedDateTime = caseHistoryPostDto?.CompletedDateTime,
-                    //RevertedAt = caseHistoryPostDto?.RevertedAt,
                     IsSmsSent = caseHistoryPostDto.IsSmsSent,
-                    //IsConfirmedBySeretery = caseHistoryPostDto.IsConfirmedBySeretery,
-                    //IsForwardedBySeretery = caseHistoryPostDto.IsConfirmedBySeretery,
-                    //SecreteryConfirmationDateTime = caseHistoryPostDto?.SecreteryConfirmationDateTime,
                     SecreteryId = caseHistoryPostDto?.SecreteryId,
-                    //ForwardedDateTime = caseHistoryPostDto?.ForwardedDateTime,
-                    //ForwardedById = caseHistoryPostDto?.ForwardedById,
                 };
 
                 if (history.ToEmployeeId == currCase.EmployeeId)
@@ -75,9 +66,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                 response.Message = "Operation Successfull";
                 response.Success = true;
                 response.Data = 1;
-
-                return response;
-
             }
             catch (Exception ex)
             {
@@ -85,9 +73,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Success = false;
                 response.Data = 0;
-
-                return response;
             }
+
+            return response;
         }
 
         public async Task<ResponseMessage<int>> SetCaseSeen(CaseHistorySeenDto seenDto)
@@ -235,7 +223,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
             }
         }
 
-
         public async Task<ResponseMessage<List<CaseEncodeGetDto>>> GetCaseHistory(Guid EmployeeId, Guid CaseHistoryId)
         {
             var response = new ResponseMessage<List<CaseEncodeGetDto>>();
@@ -253,12 +240,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.History
 
             var caseHistory = _dbContext.CaseHistories.Find(CaseHistoryId);
             var affair = _dbContext.Cases.Include(x => x.CaseType).Where(x => x.Id == caseHistory.CaseId).FirstOrDefault();
-
-            // ViewBag.affairtypes = Db.AffairTypes.Where(x => x.ParentAffairTypeId == af.AffairTypeId).ToList();
-            //ViewBag.parentaffairname = af.AffairType.AffairTypeTitle;
-
-
-
 
             List<CaseEncodeGetDto> affairHistories = await _dbContext.CaseHistories
                 .Include(a => a.Case)

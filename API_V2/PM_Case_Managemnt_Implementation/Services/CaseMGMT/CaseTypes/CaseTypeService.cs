@@ -9,10 +9,8 @@ using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
 {
-
     public class CaseTypeService : ICaseTypeService
     {
-
         private readonly ApplicationDbContext _dbContext;
         public CaseTypeService(ApplicationDbContext dbContext)
         {
@@ -48,8 +46,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 await _dbContext.AddAsync(caseType);
                 await _dbContext.SaveChangesAsync();
 
-                response.Data = 1;
-                response.Message = "Opertaion Successfull";
+                response.Data = 1; 
+                response.Message = "Opertaion Successful";
                 response.Success = true;
 
                 return response;
@@ -65,9 +63,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 return response;
             }
         }
-
-
-
 
         public async Task<ResponseMessage<int>> UpdateCaseType(CaseTypePostDto caseTypeDto)
         {
@@ -97,8 +92,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 response.Message = "Operation Succsessfull.";
                 response.Data = 1;
                 response.Success = true;
-
-                return response;
             }
             catch (Exception ex)
             {
@@ -106,14 +99,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 response.Data = 0;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Success = false;
-
-                return response;
             }
+
+            return response;
         }
-
-
-
-
 
         public async Task<ResponseMessage<List<CaseTypeGetDto>>> GetAll(Guid subOrgId)
         {
@@ -138,7 +127,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                         Counter = caseType.Counter,
 
                         TotalPayment = caseType.TotlaPayment,
-                        Children = _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseType.Id).Select(y => new CaseTypeGetDto
+                        Children = [.. _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseType.Id).Select(y => new CaseTypeGetDto
                         {
                             Id = y.Id,
                             CaseTypeTitle = y.CaseTypeTitle,
@@ -151,16 +140,14 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                             RowStatus = y.RowStatus.ToString(),
                             TotalPayment = y.TotlaPayment,
 
-                        }).ToList()
-                        //ParentCaseType = caseType.ParentCaseType
+                        })]
+                        
                     });
                 }
 
                 response.Message = "Operation Successfull.";
                 response.Data = result;
                 response.Success = true;
-
-                return response;
             }
             catch (Exception ex)
             {
@@ -168,9 +155,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 response.Data = null;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Success = false;
-
-                return response;
             }
+
+            return response;
         }
         public async Task<ResponseMessage<List<SelectListDto>>> GetAllByCaseForm(string caseForm, Guid subOrgId)
         {
@@ -186,16 +173,12 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                     {
                         Id = caseType.Id,
                         Name = caseType.CaseTypeTitle,
-
-
                     });
                 }
 
                 response.Message = "Operation Successfull";
                 response.Data = result;
                 response.Success = true;
-
-                return response;
             }
             catch (Exception ex)
             {
@@ -203,11 +186,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 response.Data = null;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Success = false;
-
-                return response;
             }
-        }
 
+            return response;
+        }
 
         public async Task<ResponseMessage<List<SelectListDto>>> GetAllSelectList(Guid subOrgId)
         {
@@ -218,7 +200,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                                                 {
                                                     Id = c.Id,
                                                     Name = c.CaseTypeTitle
-
                                                 }).ToListAsync();
             response.Data = result;
             response.Message = "Operation Successfull.";
@@ -235,10 +216,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             List<SelectListDto> result = await (from f in _dbContext.FileSettings.Where(x => x.CaseTypeId == caseTypeId)
                                                 select new SelectListDto
                                                 {
-
                                                     Id = f.Id,
                                                     Name = f.FileName
-
                                                 }).ToListAsync();
 
             response.Message = "Operation Successfull.";
@@ -246,7 +225,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             response.Success = true;
 
             return response;
-
 
         }
 
@@ -258,10 +236,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                     .OrderBy(x => x.OrderNumber)
                                                 select new SelectListDto
                                                 {
-
                                                     Id = f.Id,
                                                     Name = f.CaseTypeTitle
-
                                                 }).ToListAsync();
 
             response.Message = "Operational Message.";
@@ -271,56 +247,49 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             return response;
         }
 
-
         public async Task<ResponseMessage<int>> GetChildOrder(Guid caseTypeId)
         {
-
             var response = new ResponseMessage<int>();
 
-            var childCases = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId).OrderByDescending(x => x.OrderNumber).ToListAsync();
-            response.Message = "Operation Successfull.";
+        
+            var maxOrderNumber = await _dbContext.CaseTypes
+                .Where(x => x.ParentCaseTypeId == caseTypeId)
+                .MaxAsync(x => (int?)x.OrderNumber);
+
+            response.Message = "Operation Successful.";
             response.Success = true;
-            if (!childCases.Any())
-                response.Data = 1;
-            else
-                response.Data = (int)childCases.FirstOrDefault().OrderNumber + 1;
+            response.Data = (maxOrderNumber ?? 0) + 1;
 
             return response;
-
         }
 
         public async Task<ResponseMessage<int>> DeleteCaseType(Guid caseTypeId)
         {
-
             var response = new ResponseMessage<int>();
             var caseType = await _dbContext.CaseTypes.FindAsync(caseTypeId);
 
-            var childCases = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId).ToListAsync();
-
             if (caseType != null)
             {
+                var childCases = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId).ToListAsync();
+
                 _dbContext.CaseTypes.RemoveRange(childCases);
+                _dbContext.CaseTypes.Remove(caseType);
+
                 await _dbContext.SaveChangesAsync();
 
-                _dbContext.CaseTypes.Remove(caseType);
-                await _dbContext.SaveChangesAsync();
                 response.Message = "Deleted Successfully.";
                 response.Data = 1;
                 response.Success = true;
-
-                return response;
+            }
+            else
+            {
+                response.Message = "Case type not found.";
+                response.Data = 0;
+                response.Success = false;
             }
 
-            response.Message = "Could not find case type.";
-            response.Data = 0;
-            response.ErrorCode = HttpStatusCode.NotFound.ToString();
-            response.Success = false;
-
             return response;
-
-            ;
         }
-
 
         public async Task<ResponseMessage<List<CaseTypeGetDto>>> GetCaseTypeChildren(Guid caseTypeId)
         {
@@ -328,13 +297,12 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
             var response = new ResponseMessage<List<CaseTypeGetDto>>();
             try
             {
-
                 List<CaseTypeGetDto> children = await _dbContext.CaseTypes.Where(x => x.ParentCaseTypeId == caseTypeId).Select(y => new CaseTypeGetDto
                 {
                     Id = y.Id,
                     CaseTypeTitle = y.CaseTypeTitle,
                     Code = y.Code,
-                    CreatedAt = y.CreatedAt.ToString(),
+                    CreatedAt = y.CreatedAt.ToString("o"),
                     CreatedBy = y.CreatedBy,
                     Counter = y.Counter,
                     MeasurementUnit = y.MeasurementUnit.ToString(),
@@ -346,22 +314,18 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
 
                 response.Success = true;
                 response.Data = children;
-                response.Message = "Opertaion Successfull.";
-
-                return response;
+                response.Message = "Operation Successful.";
             }
 
             catch (Exception ex)
             {
-
                 response.Message = $"{ex.Message}";
                 response.Data = null;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Success = false;
-
-                return response;
             }
 
+            return response;
         }
 
     }

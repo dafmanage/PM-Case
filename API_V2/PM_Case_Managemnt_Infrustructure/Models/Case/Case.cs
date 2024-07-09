@@ -49,16 +49,13 @@ namespace PM_Case_Managemnt_Infrustructure.Models.CaseModel
 
 
         public virtual ICollection<CaseAttachment> CaseAttachments { get; set; }
-
-        /////
-        ///
         public Guid SubsidiaryOrganizationId { get; set; }
         public virtual SubsidiaryOrganization? SubsidiaryOrganization { get; set; }
     }
 
     public enum AffairStatus
     {
-        Pend,
+        Pending,
         Assigned,
         Completed,
         Encoded

@@ -12,16 +12,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
         public Task<ResponseMessage<string>> GetCaseNumber(Guid subOrgId);
         public Task<ResponseMessage<List<CaseEncodeGetDto>>> GetAllTransfred(Guid employeeId);
         public Task<ResponseMessage<List<CaseEncodeGetDto>>> MyCaseList(Guid employeeId);
-
         public Task<ResponseMessage<List<CaseEncodeGetDto>>> CompletedCases(Guid subOrgId);
-
         public Task<ResponseMessage<List<CaseEncodeGetDto>>> GetArchivedCases(Guid subOrgId);
-
-
-
-
         public Task<ResponseMessage<List<CaseEncodeGetDto>>> SearchCases(string filter, Guid subOrgId);
-
-
     }
 }

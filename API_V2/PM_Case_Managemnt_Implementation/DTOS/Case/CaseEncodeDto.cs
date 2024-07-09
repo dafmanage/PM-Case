@@ -52,11 +52,7 @@ namespace PM_Case_Managemnt_Implementation.DTOS.CaseDto
     }
     public class CaseEncodePostDto
     {
-
-        //public string DocumentPath { get; set; }
-        //public DateTime? CompletedAt { get; set; }
-        //public AffairStatus AffairStatus { get; set; }
-        public Guid caseID { get; set; }
+        public Guid CaseID { get; set; }
         public string CaseNumber { get; set; }
         public string LetterNumber { get; set; }
         public string LetterSubject { get; set; }
@@ -68,9 +64,6 @@ namespace PM_Case_Managemnt_Implementation.DTOS.CaseDto
         public Guid CreatedBy { get; set; }
         public Guid EncoderEmpId { get; set; }
         public Guid SubsidiaryOrganizationId { get; set; }
-
-
-        //public IFormFile[]? CaseAttachemnts { get; set; }
     }
     public class CaseEncodeGetDto
     {
