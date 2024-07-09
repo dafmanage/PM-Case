@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Helpers.Response;
+using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -170,7 +170,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
             }).ToListAsync();
         }
 
-        public async Task<ResponseMessage<int>> UpdatePlan(PlanDto plan)
+        public async Task<ResponseMessage> UpdatePlan(PlanDto plan)
         {
             try
             {
@@ -203,7 +203,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
                 }
 
 
-                return new ResponseMessage<int>
+                return new ResponseMessage
                 {
                     Success = true,
                     Message = "Project Updated Successfully"
@@ -211,20 +211,20 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
             }
             catch (Exception ex)
             {
-                return new ResponseMessage<int>
+                return new ResponseMessage
                 {
                     Success = false,
                     Message = ex.Message.ToString()
                 };
             }
         }
-        public async Task<ResponseMessage<int>> DeletePlan(Guid planId)
+        public async Task<ResponseMessage> DeletePlan(Guid planId)
         {
             var plan = await _dBContext.Plans.FindAsync(planId);
 
             if (plan == null)
             {
-                return new ResponseMessage<int>
+                return new ResponseMessage
                 {
                     Message = "Project Not Found!!!",
                     Success = false
@@ -323,6 +323,6 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
             }
 
             await _dBContext.SaveChangesAsync();
-      }
+        }
     }
- }
+}

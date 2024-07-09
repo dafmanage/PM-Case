@@ -71,13 +71,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                     name = "Appointment"
                 };
 
-                AppointmentGetDto ev = new AppointmentGetDto();
-                ev.id = appointment.Id.ToString();
-                ev.description = "Appointment with " + cases.Applicant.ApplicantName + " at " + appointment.Time + "\n Affair Number " + cases.CaseNumber;
-                ev.date = appointment.AppointementDate.ToString();
-                ev.everyYear = false;
-                ev.type = "event";
-                ev.name = "Appointment ";
 
 
                 response.Success = true;
@@ -115,7 +108,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                     ev.type = "event";
                     ev.name = string.IsNullOrEmpty(a.Remark) ? "Appointment " : a.Remark;
                     Events.Add(ev);
-                    
+
                 });
 
                 if (Events == null)

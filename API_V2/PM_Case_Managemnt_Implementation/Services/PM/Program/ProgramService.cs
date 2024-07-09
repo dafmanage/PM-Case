@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.PM.Plann;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -26,7 +26,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
             await _dBContext.AddAsync(program);
             await _dBContext.SaveChangesAsync();
 
-           return 1;
+            return 1;
         }
 
         public async Task<List<ProgramDto>> GetPrograms(Guid subOrgId)
@@ -34,25 +34,25 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
             var programs = await (from p in _dBContext.Programs
                                 .Where(x => x.SubsidiaryOrganizationId == subOrgId)
                                 .Include(x => x.ProgramBudgetYear)
-                                select new ProgramDto
-                                {
-                                    Id = p.Id,
-                                    ProgramName = p.ProgramName,
-                                    ProgramBudgetYear = $"{p.ProgramBudgetYear.Name} ({p.ProgramBudgetYear.FromYear} - {p.ProgramBudgetYear.ToYear})",
-                                    NumberOfProjects = _dBContext.Plans.Count(x => x.ProgramId == p.Id),
-                                    ProgramStructure = _dBContext.Plans
-                                                        .Include(x => x.Structure)
-                                                        .Where(x => x.ProgramId == p.Id)
-                                                        .GroupBy(x => x.Structure.StructureName)
-                                                        .Select(g => new ProgramStructureDto
-                                                        {
-                                                            StructureName = $"{g.Key} ({_dBContext.Employees.FirstOrDefault(y => y.OrganizationalStructureId == g.First().StructureId && y.Position == Position.Director).FullName})",
-                                                            StructureHead = $"{g.Count()} Projects"
-                                                        })
-                                                        .ToList(),
-                                    ProgramPlannedBudget = p.ProgramPlannedBudget,
-                                    Remark = p.Remark
-                                })
+                                  select new ProgramDto
+                                  {
+                                      Id = p.Id,
+                                      ProgramName = p.ProgramName,
+                                      ProgramBudgetYear = $"{p.ProgramBudgetYear.Name} ({p.ProgramBudgetYear.FromYear} - {p.ProgramBudgetYear.ToYear})",
+                                      NumberOfProjects = _dBContext.Plans.Count(x => x.ProgramId == p.Id),
+                                      ProgramStructure = _dBContext.Plans
+                                                          .Include(x => x.Structure)
+                                                          .Where(x => x.ProgramId == p.Id)
+                                                          .GroupBy(x => x.Structure.StructureName)
+                                                          .Select(g => new ProgramStructureDto
+                                                          {
+                                                              StructureName = $"{g.Key} ({_dBContext.Employees.FirstOrDefault(y => y.OrganizationalStructureId == g.First().StructureId && y.Position == Position.Director).FullName})",
+                                                              StructureHead = $"{g.Count()} Projects"
+                                                          })
+                                                          .ToList(),
+                                      ProgramPlannedBudget = p.ProgramPlannedBudget,
+                                      Remark = p.Remark
+                                  })
                                 .ToListAsync();
 
             return programs;
@@ -137,7 +137,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
         public async Task<ResponseMessage<int>> DeleteProgram(Guid programId)
         {
             var prog = await _dBContext.Programs.FindAsync(programId);
-            
+
             if (prog == null)
             {
                 return new ResponseMessage<int>
@@ -160,7 +160,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
                 _dBContext.Programs.Remove(prog);
                 await _dBContext.SaveChangesAsync();
 
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = true,
                     Message = "Program Deleted Successfully !!!"
@@ -168,7 +168,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
             }
             catch (Exception ex)
             {
-                return new ResponseMessage
+                return new ResponseMessage<int>
                 {
                     Success = false,
                     Message = ex.Message
