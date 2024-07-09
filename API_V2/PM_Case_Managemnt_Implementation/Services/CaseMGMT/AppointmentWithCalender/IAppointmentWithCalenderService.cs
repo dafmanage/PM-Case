@@ -1,7 +1,7 @@
 ﻿using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 
-namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCalenderService
+namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCalender
 {
     public interface IAppointmentWithCalenderService
     {

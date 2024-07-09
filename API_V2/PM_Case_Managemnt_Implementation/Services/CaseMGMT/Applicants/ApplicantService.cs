@@ -39,17 +39,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.Success = true;
                 response.Message = "Applicant added Successfully";
                 response.Data = applicant.Id;
-                return response;
             }
             catch (Exception ex)
             {
                 response.Success = false;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Message = $"Error adding applicant - {ex.Message}";
-                response.Data = default(Guid);
-
-                return response;
+                response.Data = Guid.Empty;
             }
+            return response;
         }
 
         public async Task<ResponseMessage<Guid>> Update(ApplicantPostDto applicantPost)
@@ -79,18 +77,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
                 response.Success = true;
                 response.Message = "Updated Successfully";
                 response.Data = applicant.Id;
-                return response;
-
             }
             catch (Exception ex)
             {
                 response.Success = false;
                 response.Message = "Error while updating";
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-                response.Data = default(Guid);
-
-                return response;
+                response.Data = Guid.Empty;
             }
+            return response;
         }
 
         public async Task<ResponseMessage<List<ApplicantGetDto>>> GetAll(Guid subOrgId)
