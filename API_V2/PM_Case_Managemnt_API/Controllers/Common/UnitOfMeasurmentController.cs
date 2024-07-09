@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Services.Common;
-using PM_Case_Managemnt_Infrustructure.Models.Common;
 
 
 namespace PM_Case_Managemnt_API.Controllers.Common
@@ -45,22 +44,22 @@ namespace PM_Case_Managemnt_API.Controllers.Common
         }
         [HttpGet]
 
-        public async Task<List<UnitOfMeasurment>> GetUnitOfMeasurment(Guid subOrgId)
+        public async Task<IActionResult> GetUnitOfMeasurment(Guid subOrgId)
         {
 
 
 
-            return await _unitOfMeasurmentService.GetUnitOfMeasurment(subOrgId);
+            return Ok(await _unitOfMeasurmentService.GetUnitOfMeasurment(subOrgId));
         }
 
         [HttpGet("unitmeasurmentlist")]
 
-        public async Task<List<SelectListDto>> getUnitOfMeasurment(Guid subOrgId)
+        public async Task<IActionResult> getUnitOfMeasurment(Guid subOrgId)
         {
 
 
 
-            return await _unitOfMeasurmentService.getUnitOfMeasurmentSelectList(subOrgId);
+            return Ok(await _unitOfMeasurmentService.getUnitOfMeasurmentSelectList(subOrgId));
         }
 
         [HttpPut]

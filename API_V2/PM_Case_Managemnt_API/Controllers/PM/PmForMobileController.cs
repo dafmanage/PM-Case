@@ -166,14 +166,14 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
             var progress = _db.ActivityProgresses.Find(Guid.Parse(ProgressId));
 
-            approvalStatus approvalstatus;
+            ApprovalStatus approvalstatus;
             if (status)
             {
-                approvalstatus = approvalStatus.approved;
+                approvalstatus = ApprovalStatus.Approved;
             }
             else
             {
-                approvalstatus = approvalStatus.rejected;
+                approvalstatus = ApprovalStatus.Rejected;
             }
 
 
@@ -338,7 +338,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                 ac.ActualEnd = DateTime.Now;
             }
             ac.ActualWorked += activityProgress.ActualWorked;
-            ac.ActualBudget = ac.ActProgress.Where(x => x.IsApprovedByManager == approvalStatus.approved && x.IsApprovedByDirector == approvalStatus.approved && x.IsApprovedByFinance == approvalStatus.approved).Sum(x => x.ActualBudget);
+            ac.ActualBudget = ac.ActProgress.Where(x => x.IsApprovedByManager == ApprovalStatus.Approved && x.IsApprovedByDirector == ApprovalStatus.Approved && x.IsApprovedByFinance == ApprovalStatus.Approved).Sum(x => x.ActualBudget);
             _db.SaveChanges();
 
 
@@ -361,12 +361,12 @@ namespace PM_Case_Managemnt_API.Controllers.PM
 
 
                 .Where(x => (x.FinanceId == currentUser.Id || x.ProjectManagerId == currentUser.Id || (x.StructureId == currentUser.OrganizationalStructureId && currentUser.Position == Position.Director))
-   && (x.Activities.Any(z => z.ActProgress.Any(a => a.IsApprovedByManager == approvalStatus.pending || a.IsApprovedByDirector == approvalStatus.pending || a.IsApprovedByFinance == approvalStatus.pending)))
+   && (x.Activities.Any(z => z.ActProgress.Any(a => a.IsApprovedByManager == ApprovalStatus.Pending || a.IsApprovedByDirector == ApprovalStatus.Pending || a.IsApprovedByFinance == ApprovalStatus.Pending)))
 
    ||
-   (x.Tasks.Any(q => q.ActivitiesParents.Any(g => g.Activities.Any(z => z.ActProgress.Any(a => a.IsApprovedByManager == approvalStatus.pending || a.IsApprovedByDirector == approvalStatus.pending || a.IsApprovedByFinance == approvalStatus.pending)))))
+   (x.Tasks.Any(q => q.ActivitiesParents.Any(g => g.Activities.Any(z => z.ActProgress.Any(a => a.IsApprovedByManager == ApprovalStatus.Pending || a.IsApprovedByDirector == ApprovalStatus.Pending || a.IsApprovedByFinance == ApprovalStatus.Pending)))))
    ||
-   (x.Tasks.Any(y => y.Activities.Any(z => z.ActProgress.Any(a => a.IsApprovedByManager == approvalStatus.pending || a.IsApprovedByDirector == approvalStatus.pending || a.IsApprovedByFinance == approvalStatus.pending))))).ToList();
+   (x.Tasks.Any(y => y.Activities.Any(z => z.ActProgress.Any(a => a.IsApprovedByManager == ApprovalStatus.Pending || a.IsApprovedByDirector == ApprovalStatus.Pending || a.IsApprovedByFinance == ApprovalStatus.Pending))))).ToList();
 
 
 
@@ -390,7 +390,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                                 {
                                     foreach (var progress in act.ActProgress)
                                     {
-                                        if (progress.IsApprovedByManager == approvalStatus.pending || progress.IsApprovedByDirector == approvalStatus.pending || progress.IsApprovedByFinance == approvalStatus.pending)
+                                        if (progress.IsApprovedByManager == ApprovalStatus.Pending || progress.IsApprovedByDirector == ApprovalStatus.Pending || progress.IsApprovedByFinance == ApprovalStatus.Pending)
                                         {
                                             NotificationViewModel notifyApproval = new NotificationViewModel();
                                             notifyApproval.PorgressId = progress.Id;
@@ -414,7 +414,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                             {
                                 foreach (var progress in act.ActProgress)
                                 {
-                                    if (progress.IsApprovedByManager == approvalStatus.pending || progress.IsApprovedByDirector == approvalStatus.pending || progress.IsApprovedByFinance == approvalStatus.pending)
+                                    if (progress.IsApprovedByManager == ApprovalStatus.Pending || progress.IsApprovedByDirector == ApprovalStatus.Pending || progress.IsApprovedByFinance == ApprovalStatus.Pending)
                                     {
                                         NotificationViewModel notifyApproval = new NotificationViewModel();
                                         notifyApproval.PorgressId = progress.Id;
@@ -438,7 +438,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                     {
                         foreach (var progress in act.ActProgress)
                         {
-                            if (progress.IsApprovedByManager == approvalStatus.pending || progress.IsApprovedByDirector == approvalStatus.pending || progress.IsApprovedByFinance == approvalStatus.pending)
+                            if (progress.IsApprovedByManager == ApprovalStatus.Pending || progress.IsApprovedByDirector == ApprovalStatus.Pending || progress.IsApprovedByFinance == ApprovalStatus.Pending)
                             {
                                 NotificationViewModel notifyApproval = new NotificationViewModel();
                                 notifyApproval.PorgressId = progress.Id;
@@ -525,7 +525,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                 act.ActivityName = a.ActivityParentId != null ? a.ActivityParent.ActivityParentDescription : a.ActivityDescription;
                 act.TaskId = (a.ActivityParentId != null ? a.ActivityParentId : a.TaskId != null ? a.TaskId : a.PlanId).ToString();
                 act.ActivityId = a.Id;
-                act.ShouldStart = a.ShouldStat;
+                act.ShouldStart = a.ShouldStart;
                 act.ShouldEnd = a.ShouldEnd;
                 act.ActualEnd = a.ActualEnd;
                 act.ActualStart = a.ActualStart;
@@ -675,7 +675,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                 task.PlanName = t.PlanName;
                 task.TaskName = "-----------";
                 task.TaskId = "-------------";
-                task.ShouldStart = t.Activities.Any() ? t.Activities.FirstOrDefault().ShouldStat : DateTime.Now;
+                task.ShouldStart = t.Activities.Any() ? t.Activities.FirstOrDefault().ShouldStart : DateTime.Now;
                 task.ActualStart = t.Activities.Any() ? t.Activities.FirstOrDefault()?.ActualStart : DateTime.Now;
                 task.ShouldEnd = t.Activities?.FirstOrDefault()?.ShouldEnd;
                 task.ActualEnd = t.Activities?.FirstOrDefault()?.ActualEnd;
@@ -726,7 +726,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
 
 
 
-                foreach (var a in t.Activities.Where(x => x.AssignedEmploye.Any(y => y.EmployeeId == employeeId) && x.targetDivision != null))
+                foreach (var a in t.Activities.Where(x => x.AssignedEmploye.Any(y => y.EmployeeId == employeeId) && x.TargetDivision != null))
                 {
                     ActivityViewModel act = new ActivityViewModel();
                     act.ProgramName = a.Plan.Program.ProgramName;
@@ -736,7 +736,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                     act.ActivityName = a.ActivityDescription;
                     act.TaskId = a.TaskId.ToString();
                     act.ActivityId = a.Id;
-                    act.ShouldStart = a.ShouldStat;
+                    act.ShouldStart = a.ShouldStart;
                     act.ShouldEnd = a.ShouldEnd;
                     act.ActualEnd = a.ActualEnd;
                     act.ActualStart = a.ActualStart;
@@ -803,7 +803,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                             h = i + 6;
                         }
                         string strMonthName = mfi.GetMonthName(h).ToString();
-                        tar.target = a.targetDivision == TargetDivision.Monthly ? strMonthName + "( " + o.Target + " %)" : "Quarter " + o.Order.ToString() + " (OverAll " + o.Target + " %)";
+                        tar.target = a.TargetDivision == TargetDivision.Monthly ? strMonthName + "( " + o.Target + " %)" : "Quarter " + o.Order.ToString() + " (OverAll " + o.Target + " %)";
                         act.TargetDivisionVM.Add(tar);
                     }
 
@@ -873,7 +873,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                     act.ActivityName = a.ActivityDescription;
                     act.TaskId = a.PlanId.ToString();
                     act.ActivityId = a.Id;
-                    act.ShouldStart = a.ShouldStat;
+                    act.ShouldStart = a.ShouldStart;
                     act.ShouldEnd = a.ShouldEnd;
                     act.ActualEnd = a.ActualEnd;
                     act.ActualStart = a.ActualStart;
@@ -1038,7 +1038,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                     {
 
 
-                        foreach (var a in actaparent.Activities.Where(x => x.AssignedEmploye.Any(y => y.EmployeeId == employeeId) && x.targetDivision != null))
+                        foreach (var a in actaparent.Activities.Where(x => x.AssignedEmploye.Any(y => y.EmployeeId == employeeId) && x.TargetDivision != null))
                         {
                             ActivityViewModel act = new ActivityViewModel();
                             act.ProgramName = a.ActivityParent.Task.Plan.Program.ProgramName;
@@ -1047,7 +1047,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                             act.ActivityName = a.ActivityDescription;
                             act.TaskId = a.ActivityParent.TaskId.ToString();
                             act.ActivityId = a.Id;
-                            act.ShouldStart = a.ShouldStat;
+                            act.ShouldStart = a.ShouldStart;
                             act.ShouldEnd = a.ShouldEnd;
                             act.ActualEnd = a.ActualEnd;
                             act.ActualStart = a.ActualStart;
@@ -1114,7 +1114,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                                     h = i + 6;
                                 }
                                 string strMonthName = mfi.GetMonthName(h).ToString();
-                                tar.target = a.targetDivision == TargetDivision.Monthly ? strMonthName + "( " + o.Target + " %)" : "Quarter " + o.Order.ToString() + " (OverAll " + o.Target + " %)";
+                                tar.target = a.TargetDivision == TargetDivision.Monthly ? strMonthName + "( " + o.Target + " %)" : "Quarter " + o.Order.ToString() + " (OverAll " + o.Target + " %)";
                                 act.TargetDivisionVM.Add(tar);
                             }
 
@@ -1184,7 +1184,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                             act.ActivityName = a.ActivityDescription;
                             act.TaskId = a.TaskId.ToString();
                             act.ActivityId = a.Id;
-                            act.ShouldStart = a.ShouldStat;
+                            act.ShouldStart = a.ShouldStart;
                             act.ShouldEnd = a.ShouldEnd;
                             act.ActualEnd = a.ActualEnd;
                             act.ActualStart = a.ActualStart;
@@ -1297,7 +1297,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                         act.ActivityName = a.ActivityDescription;
                         act.TaskId = a.TaskId.ToString();
                         act.ActivityId = a.Id;
-                        act.ShouldStart = a.ShouldStat;
+                        act.ShouldStart = a.ShouldStart;
                         act.ShouldEnd = a.ShouldEnd;
                         act.ActualEnd = a.ActualEnd;
                         act.ActualStart = a.ActualStart;
@@ -1364,7 +1364,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                                 h = i + 6;
                             }
                             string strMonthName = mfi.GetMonthName(h).ToString();
-                            tar.target = a.targetDivision == TargetDivision.Monthly ? strMonthName + "( " + o.Target + " %)" : "Quarter " + o.Order.ToString() + " (OverAll " + o.Target + " %)";
+                            tar.target = a.TargetDivision == TargetDivision.Monthly ? strMonthName + "( " + o.Target + " %)" : "Quarter " + o.Order.ToString() + " (OverAll " + o.Target + " %)";
                             act.TargetDivisionVM.Add(tar);
                         }
 
@@ -1434,7 +1434,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
                         act.ActivityName = a.ActivityDescription;
                         act.TaskId = a.TaskId.ToString();
                         act.ActivityId = a.Id;
-                        act.ShouldStart = a.ShouldStat;
+                        act.ShouldStart = a.ShouldStart;
                         act.ShouldEnd = a.ShouldEnd;
                         act.ActualEnd = a.ActualEnd;
                         act.ActualStart = a.ActualStart;
@@ -1758,9 +1758,9 @@ namespace PM_Case_Managemnt_API.Controllers.PM
             public double ActualWorked { get; set; }
             public string DocumentPath { get; set; }
             public string FinanceDocumentPath { get; set; }
-            public approvalStatus IsApprovedByManager { get; set; }
-            public approvalStatus IsApprovedByFinance { get; set; }
-            public approvalStatus IsApprovedByDirector { get; set; }
+            public ApprovalStatus IsApprovedByManager { get; set; }
+            public ApprovalStatus IsApprovedByFinance { get; set; }
+            public ApprovalStatus IsApprovedByDirector { get; set; }
             public string Remark { get; set; }
 
             public string FinanceId { get; set; }

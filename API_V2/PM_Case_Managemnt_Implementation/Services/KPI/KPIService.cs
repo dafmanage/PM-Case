@@ -282,7 +282,7 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 return response;
             }
 
-            kpis.ActiveYears = kpis.ActiveYearsString?.Split(',').Select(int.Parse).ToList() ?? new List<int>();
+            kpis.ActiveYears = kpis.ActiveYearsString?.Split(',').Select(int.Parse).ToList() ?? [];
 
 
             if (kpis.HasSubsidiaryOrganization)
@@ -312,9 +312,9 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                                                                         Year = x.activity.ShouldEnd.Year,
                                                                         Data = (_dbContext.ActivityProgresses
                                                                             .Where(z => z.ActivityId == x.activity.Id
-                                                                                && (z.IsApprovedByDirector == approvalStatus.approved
-                                                                                    || z.IsApprovedByFinance == approvalStatus.approved
-                                                                                    || z.IsApprovedByManager == approvalStatus.approved))
+                                                                                && (z.IsApprovedByDirector == ApprovalStatus.Approved
+                                                                                    || z.IsApprovedByFinance == ApprovalStatus.Approved
+                                                                                    || z.IsApprovedByManager == ApprovalStatus.Approved))
                                                                             .Sum(z => z.ActualWorked)).ToString()
                                                                     }
                                                                 }

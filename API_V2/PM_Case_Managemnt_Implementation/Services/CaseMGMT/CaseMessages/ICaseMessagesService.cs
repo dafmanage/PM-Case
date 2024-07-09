@@ -6,6 +6,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService
     {
         public Task Add(CaseMessagesPostDto caseMessagesPost);
         public Task<List<CaseUnsentMessagesGetDto>> GetMany(Guid subOrgId, bool MessageStatus);
-        public Task SemdMessages(List<CaseUnsentMessagesGetDto> Messages);
+        public Task SendMessages(List<CaseUnsentMessagesGetDto> Messages);
     }
 }

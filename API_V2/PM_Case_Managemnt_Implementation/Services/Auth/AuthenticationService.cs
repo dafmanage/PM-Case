@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Infrustructure.Data;
@@ -25,6 +26,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
         private readonly ApplicationDbContext _dbcontext;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ILoggerManagerService _logManager;
 
         public AuthenticationService(
             ApplicationDbContext dbcontext,
@@ -32,7 +34,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
             SignInManager<ApplicationUser> signInManager,
             IOptions<ApplicationSettings> appSettings,
             IHubContext<EncoderHub, IEncoderHubInterface> encoderHub,
-            RoleManager<IdentityRole> roleManager
+            RoleManager<IdentityRole> roleManager,
+            ILoggerManagerService logManager
 )
         {
             _userManager = userManager;
@@ -41,6 +44,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
             _dbcontext = dbcontext;
             _encoderHub = encoderHub;
             _roleManager = roleManager;
+            _logManager = logManager;
         }
 
 
@@ -132,6 +136,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                 var securityToken = tokenHandler.CreateToken(tokenDescriptor);
                 var token = tokenHandler.WriteToken(securityToken);
 
+                _logManager.LogCreate("AuthenticationModule", user.Id, "Login SuccessFul For Create");
+                _logManager.LogUpdate("AuthenticationModule", user.Id, "Login SuccessFul For Update");
                 // await _encoderHub.Groups.AddToGroupAsync(Context.ConnectionId, user.EmployeesId);
                 return new ObjectResult(new { token });
             }
@@ -276,7 +282,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                     return notAssignedRoles;
                 }
 
-                return new List<SelectRolesListDto>();
+                return [];
 
             }
 

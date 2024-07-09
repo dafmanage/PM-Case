@@ -42,7 +42,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
             var response = new ResponseMessage<List<CaseAttachment>>();
             try
             {
-                List<CaseAttachment> attachemnts = new List<CaseAttachment>();
+                List<CaseAttachment> attachemnts = [];
 
                 if (CaseId == null)
                     attachemnts = await _dBContext.CaseAttachments.Where(x => x.Case.SubsidiaryOrganizationId == subOrgId).ToListAsync();

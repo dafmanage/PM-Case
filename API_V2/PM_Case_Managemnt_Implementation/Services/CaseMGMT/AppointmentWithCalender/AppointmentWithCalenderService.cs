@@ -34,8 +34,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                 //}
                 var hist = _dbContext.CaseHistories.Find(appointmentWithCalender.CaseId);
 
-
-
                 AppointementWithCalender appointment = new()
                 {
                     Id = Guid.NewGuid(),
@@ -63,14 +61,16 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                 await _dbContext.AppointementWithCalender.AddAsync(appointment);
                 await _dbContext.SaveChangesAsync();
 
+                var ev = new AppointmentGetDto
+                {
+                    id = appointment.Id.ToString(),
+                    description = $"Appointment with {cases.Applicant.ApplicantName} at {appointment.Time}\n Affair Number {cases.CaseNumber}",
+                    date = appointment.AppointementDate.ToString(),
+                    everyYear = false,
+                    type = "event",
+                    name = "Appointment"
+                };
 
-                AppointmentGetDto ev = new AppointmentGetDto();
-                ev.id = appointment.Id.ToString();
-                ev.description = "Appointment with " + cases.Applicant.ApplicantName + " at " + appointment.Time + "\n Affair Number " + cases.CaseNumber;
-                ev.date = appointment.AppointementDate.ToString();
-                ev.everyYear = false;
-                ev.type = "event";
-                ev.name = "Appointment ";
 
 
                 response.Success = true;
@@ -95,8 +95,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
             var response = new ResponseMessage<List<AppointmentGetDto>>();
             try
             {
-
-                List<AppointmentGetDto> Events = new List<AppointmentGetDto>();
+                List<AppointmentGetDto> Events = [];
 
                 var appointements = _dbContext.AppointementWithCalender.Where(x => x.EmployeeId == employeeId).Include(a => a.Case).ToList();
                 appointements.ForEach(a =>
@@ -109,6 +108,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                     ev.type = "event";
                     ev.name = string.IsNullOrEmpty(a.Remark) ? "Appointment " : a.Remark;
                     Events.Add(ev);
+
                 });
 
                 if (Events == null)
@@ -123,11 +123,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                 response.Success = true;
                 response.Data = Events;
                 return response;
-
-
-
-
-
 
             }
             catch (Exception ex)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Analytics;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.Common.Analytics;
 
 namespace PM_Case_Managemnt_API.Controllers.Common.Analytics
@@ -17,7 +18,7 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Analytics
 
         [HttpGet]
         [Route("getOverallBudget")]
-        public async Task<SubOrgsPlannedandusedBudgetDtos> GetOverallBudget()
+        public async Task<ResponseMessage<SubOrgsPlannedandusedBudgetDtos>> GetOverallBudget()
         {
             return await analyticsService.GetOverallBudget();
         }

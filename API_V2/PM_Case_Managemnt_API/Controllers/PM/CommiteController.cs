@@ -7,15 +7,9 @@ namespace PM_Case_Managemnt_API.Controllers.PM
 {
     [Route("api/PM/[controller]")]
     [ApiController]
-    public class CommiteController : Controller
+    public class CommiteController(ICommiteService commiteService) : Controller
     {
-        private readonly ICommiteService _commiteService;
-        public CommiteController(ICommiteService commiteService)
-        {
-            _commiteService = commiteService;
-        }
-
-
+        private readonly ICommiteService _commiteService = commiteService;
 
         [HttpPost]
         public IActionResult Create([FromBody] AddCommiteDto addCommiteDto)
@@ -90,7 +84,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
             try
             {
-                var response = _commiteService.AddEmployeestoCommitte(commite);
+                var response = _commiteService.AddEmployeesToCommittee(commite);
                 return Ok(new { response });
 
             }
@@ -105,7 +99,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
             try
             {
-                var response = _commiteService.RemoveEmployeestoCommitte(commite);
+                var response = _commiteService.RemoveEmployeesFromCommittee(commite);
                 return Ok(new { response });
 
             }

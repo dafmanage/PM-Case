@@ -130,8 +130,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                     AssignedToEmployeeId = toEmployee,
                     ForwardedToEmployeeId = toEmployeeCC
 
-
-
                 };
                 _dbContext.CaseIssues.Add(issueCase);
                 _dbContext.SaveChanges();
@@ -234,8 +232,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Data = "OK";
                 return response;
             }
-
-
 
             catch (Exception ex)
             {

@@ -20,9 +20,9 @@ namespace PM_Case_Managemnt_Infrustructure.Models.PM
         public virtual ActivityTargetDivision Quarter { get; set; }
         //  public string DocumentPath { get; set; } = null!;
         public string? FinanceDocumentPath { get; set; }
-        public approvalStatus IsApprovedByManager { get; set; }
-        public approvalStatus IsApprovedByFinance { get; set; }
-        public approvalStatus IsApprovedByDirector { get; set; }
+        public ApprovalStatus IsApprovedByManager { get; set; }
+        public ApprovalStatus IsApprovedByFinance { get; set; }
+        public ApprovalStatus IsApprovedByDirector { get; set; }
         public string? FinanceApprovalRemark { get; set; }
         public string? CoordinatorApprovalRemark { get; set; }
         public string? DirectorApprovalRemark { get; set; }
@@ -41,11 +41,10 @@ namespace PM_Case_Managemnt_Infrustructure.Models.PM
         SimpleProgress,
         Finalize
     }
-
-    public enum approvalStatus
-    {
-        pending,
-        approved,
-        rejected
+    public enum ApprovalStatus
+    {   
+        Pending,
+        Approved,
+        Rejected
     }
 }

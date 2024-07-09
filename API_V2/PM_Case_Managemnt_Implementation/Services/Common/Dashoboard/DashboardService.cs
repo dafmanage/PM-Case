@@ -15,12 +15,12 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
         private readonly ApplicationDbContext _dBContext;
         private Random rnd = new Random();
 
-        List<ProjectList> ProjectLists = new List<ProjectList>();
-        List<AboutToExpireProjects> aboutToExpireProjects = new List<AboutToExpireProjects>();
+        List<ProjectList> ProjectLists = [];
+        List<AboutToExpireProjects> aboutToExpireProjects = [];
 
         public BudgetYear budget = new BudgetYear();
         public Guid structureId = Guid.Empty;
-        List<progress_Strucure> ps = new List<progress_Strucure>();
+        List<progress_Strucure> ps = [];
         public DashboardService(ApplicationDbContext context)
         {
             _dBContext = context;
@@ -104,7 +104,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                 .Include(a => a.CaseHistories)
                 .Where(x => x.AffairStatus == AffairStatus.Completed && x.SubsidiaryOrganizationId == subOrgId).ToList();
 
-            report = new List<TopAffairsViewmodel>();
+            report = [];
             foreach (var affair in allAffairps.ToList())
             {
                 var eachReport = new TopAffairsViewmodel();
@@ -154,14 +154,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
             var Chart = new CaseReportChartDto();
 
-            Chart.labels = new List<string>() { "LateProgress", "completed" };
-            Chart.datasets = new List<DataSets>();
+            Chart.labels = ["LateProgress", "completed"];
+            Chart.datasets = [];
 
             var datas = new DataSets();
 
-            datas.data = new List<int>() { dashboard.pendingReports.Count(), dashboard.completedReports.Count() };
-            datas.hoverBackgroundColor = new List<string>() { "#fe5e2b", "#2cb436" };
-            datas.backgroundColor = new List<string>() { "#fe5e2b", "#2cb436" };
+            datas.data = [dashboard.pendingReports.Count(), dashboard.completedReports.Count()];
+            datas.hoverBackgroundColor = ["#fe5e2b", "#2cb436"];
+            datas.backgroundColor = ["#fe5e2b", "#2cb436"];
 
             Chart.datasets.Add(datas);
 
@@ -194,8 +194,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
 
 
             barChartDto barChart = new barChartDto();
-            barChart.labels = new List<string>() { "ጥር", "የካቲት", "መጋቢት", "ሚያዚያ", "ግንቦት", "ሰኔ", "ሃምሌ", "ነሃሴ", "መስከረም", "ጥቅምት", "ህዳር", "ታህሳስ" };
-            barChart.datasets = new List<barChartDetailDto>();
+            barChart.labels = ["ጥር", "የካቲት", "መጋቢት", "ሚያዚያ", "ግንቦት", "ሰኔ", "ሃምሌ", "ነሃሴ", "መስከረም", "ጥቅምት", "ህዳር", "ታህሳስ"];
+            barChart.datasets = [];
 
 
 
@@ -213,7 +213,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                     backgroundColor = String.Format("#{0:X6}", rnd.Next(0x1000000))
                 };
 
-                dataset.data = new List<int>();
+                dataset.data = [];
 
                 foreach (var month in monthList)
                 {
@@ -288,7 +288,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
         public float CommisionerPerformanceThisYear(Guid subOrgId)
         {
             float totalContribution = 0;
-            ps = new List<progress_Strucure>();
+            ps = [];
             if (structureId == Guid.Empty)
             {
                 var structu = _dBContext.OrganizationalStructures.Include(x => x.SubTask).Where(x => x.ParentStructureId == null).FirstOrDefault();
@@ -315,11 +315,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                         float ActualPlan = 0;
                         float Goal = 0;
                         var Tasks = planItems.Tasks;
-                        if (!Tasks.Any() && !planItems.Activities.Any())
+                        if (Tasks.Count == 0 && planItems.Activities.Count == 0)
                         {
                             Pro_Goal = Pro_Goal + Plans.Sum(x => x.PlanWeight);
                         }
-                        else if (planItems.Activities.Any())
+                        else if (planItems.Activities.Count != 0)
                         {
                             Pro_Goal = Pro_Goal + ((planItems.Activities.First().Goal * (float)planItems.PlanWeight) / Plans.Sum(x => x.PlanWeight));
                         }
@@ -329,7 +329,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                             float BeginingPercent = 0;
                             float ActualWorkedPercent = 0;
                             float GoalPercent = 0;
-                            if (!Activities.Any() && !taskItems.Activities.Any())
+                            if (Activities.Count == 0 && !taskItems.Activities.Any())
                             {
                                 Goal = Goal + planItems.PlanWeight;
                             }
@@ -414,11 +414,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                     float ActualPlan = 0;
                     float Goal = 0;
                     var Tasks = planItems.Tasks.ToList();
-                    if (!Tasks.Any() && !planItems.Activities.Any())
+                    if (Tasks.Count == 0 && planItems.Activities.Count == 0)
                     {
                         Pro_Goal = Pro_Goal + Plans.Sum(x => x.PlanWeight);
                     }
-                    else if (planItems.Activities.Any())
+                    else if (planItems.Activities.Count != 0)
                     {
                         Pro_Goal = Pro_Goal + ((planItems.Activities.FirstOrDefault().Goal * (float)planItems.PlanWeight) / Plans.Sum(x => x.PlanWeight));
                     }
@@ -428,7 +428,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                         float BeginingPercent = 0;
                         float ActualWorkedPercent = 0;
                         float GoalPercent = 0;
-                        if (!Activities.Any() && !taskItems.Activities.Any())
+                        if (Activities.Count == 0 && !taskItems.Activities.Any())
                         {
                             Goal = Goal + planItems.PlanWeight;
                         }
@@ -603,11 +603,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                 ActualPlan = 0;
                 Goal = 0;
                 var Tasks = planItems.Tasks.ToList();
-                if (planItems.HasTask && planItems.Tasks.Any())
+                if (planItems.HasTask && planItems.Tasks.Count != 0)
                 {
                     foreach (var taskItems in Tasks)
                     {
-                        if (!taskItems.HasActivityParent && taskItems.Activities.Any() && taskItems.Weight != null)
+                        if (!taskItems.HasActivityParent && taskItems.Activities.Count != 0 && taskItems.Weight != null)
                         {
                             BeginingPlan = BeginingPlan + ((taskItems.Activities.FirstOrDefault().Begining * (float)taskItems.Weight) / planItems.PlanWeight);
                             ActualPlan = ActualPlan + ((taskItems.Activities.FirstOrDefault().ActualWorked * (float)taskItems.Weight) / planItems.PlanWeight);
@@ -617,14 +617,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                             Goal = planItems.PlanWeight == 0 ? Goal : Goal + (((float)taskGoal * (float)taskItems.Weight) / planItems.PlanWeight);
                             OverallProgress = (OverallProgress + ((taskItems.Activities.FirstOrDefault().ActualWorked + taskItems.Activities.FirstOrDefault().Begining) * (float)taskItems.Weight) / planItems.PlanWeight);
                         }
-                        else if (taskItems.ActivitiesParents.Any())
+                        else if (taskItems.ActivitiesParents.Count != 0)
                         {
                             var Activities = taskItems.ActivitiesParents;
                             float BeginingPercent = 0;
                             float ActualWorkedPercent = 0;
                             float GoalPercent = 0;
                             float oProgress = 0;
-                            if (!Activities.Any())
+                            if (Activities.Count == 0)
                             {
                                 Goal = Goal + planItems.PlanWeight;
                             }
@@ -647,7 +647,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                         }
                     }
                 }
-                else if (planItems.Activities.Any())
+                else if (planItems.Activities.Count != 0)
                 {
                     Goal = Goal + (float)planItems.Activities.First().Goal;
                     BeginingPlan = BeginingPlan + (float)planItems.Activities.First().Begining;
@@ -724,14 +724,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Dashoboard
                 structureId = Structure_Hierarchy.Id;
             }
             PmDashboardBarchartDto bugetYears = new PmDashboardBarchartDto();
-            bugetYears.labels = new List<string>();
-            bugetYears.datasets = new List<PmDashboardBarchartDateset>();
+            bugetYears.labels = [];
+            bugetYears.datasets = [];
             var dataset1 = new PmDashboardBarchartDateset
             {
                 label = "budget year contributon graph",
-                data = new List<float>(),
-                backgroundColor = new List<string>(),
-                borderColor = new List<string>(),
+                data = [],
+                backgroundColor = [],
+                borderColor = [],
                 borderWidth = 1
 
             };

@@ -1,20 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PM_Case_Managemnt_Implementation.Services.PM.ProgressReport;
-using static PM_Case_Managemnt_Implementation.Services.PM.ProgressReport.ProgressReportService;
+using PM_Case_Managemnt_Implementation.DTOS.PM;
+using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Services.PM.ProgresReport;
 
 namespace PM_Case_Managemnt_API.Controllers.PM
 {
     [Route("api/PM/[controller]")]
     [ApiController]
-    public class ProgressReportController : ControllerBase
+    public class ProgressReportController(IProgressReportService progressReportService) : ControllerBase
     {
 
-        private readonly IProgressReportService _progressReportService;
-        public ProgressReportController(IProgressReportService progressReportService)
-        {
-            _progressReportService = progressReportService;
-        }
-
+        private readonly IProgressReportService _progressReportService = progressReportService;
 
         [HttpGet("DirectorLevelPerformance")]
         public async Task<IActionResult> GetOrganizationDiaram(Guid subOrgId, Guid? BranchId)
@@ -71,7 +67,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
             try
             {
-                return Ok(await _progressReportService.ProgresssReport(filterationCriteria));
+                return Ok(progressReportService.GenerateProgressReport(filterationCriteria));
             }
             catch (Exception ex)
             {
@@ -85,7 +81,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         {
             try
             {
-                return Ok(await _progressReportService.GetProgressByStructure(BudgetYea, selectStructureId, ReportBy));
+                return Ok(progressReportService.GetProgressByStructure(BudgetYea, selectStructureId, ReportBy));
             }
             catch (Exception ex)
             {

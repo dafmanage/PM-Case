@@ -53,10 +53,10 @@ namespace PM_Case_Managemnt_Implementation.Helpers
                     {
                         Uri apiUri = new Uri(uri);
                         ByteArrayContent body = new ByteArrayContent(byteArray, 0, byteArray.Length);
-                        MultipartFormDataContent multiPartFormData = new MultipartFormDataContent
-                                {
+                        MultipartFormDataContent multiPartFormData =
+                                [
                                     body
-                                };
+                                ];
                         HttpResponseMessage result = await c.PostAsync(apiUri, multiPartFormData);
                     }
                 }
@@ -97,10 +97,10 @@ namespace PM_Case_Managemnt_Implementation.Helpers
                     {
                         Uri apiUri = new Uri(uri);
                         ByteArrayContent body = new ByteArrayContent(byteArray, 0, byteArray.Length);
-                        MultipartFormDataContent multiPartFormData = new MultipartFormDataContent
-                                {
+                        MultipartFormDataContent multiPartFormData =
+                                [
                                     body
-                                };
+                                ];
                         try
                         {
                             HttpResponseMessage result = await c.PostAsync(apiUri, multiPartFormData);

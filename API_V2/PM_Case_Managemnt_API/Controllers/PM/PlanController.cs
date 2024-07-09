@@ -1,19 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
-using PM_Case_Managemnt_Implementation.Services.PM.Plan;
+using PM_Case_Managemnt_Implementation.Services.PM.Plann;
 
 namespace PM_Case_Managemnt_API.Controllers.PM
 {
     [Route("api/PM/[controller]")]
     [ApiController]
-    public class PlanController : ControllerBase
+    public class PlanController(IPlanService planService) : ControllerBase
     {
 
-        private readonly IPlanService _planService;
-        public PlanController(IPlanService planService)
-        {
-            _planService = planService;
-        }
+        private readonly IPlanService _planService = planService;
 
         [HttpPost]
         public IActionResult Create([FromBody] PlanDto plan)

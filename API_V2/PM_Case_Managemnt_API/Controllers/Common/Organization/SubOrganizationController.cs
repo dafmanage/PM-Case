@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Organization;
 using PM_Case_Managemnt_Implementation.Services.Common.SubsidiaryOrganization;
-using PM_Case_Managemnt_Infrustructure.Models.Common.Organization;
 
 namespace PM_Case_Managemnt_API.Controllers.Common.Organization
 {
@@ -35,16 +33,16 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
 
         [HttpGet]
 
-        public async Task<List<SubsidiaryOrganization>> getSubsidiaryOrganization()
+        public async Task<IActionResult> getSubsidiaryOrganization()
         {
-            return await _subOrganizationService.GetSubsidiaryOrganization();
+            return Ok(await _subOrganizationService.GetSubsidiaryOrganization());
         }
 
         [HttpGet("ById")]
 
-        public async Task<SubsidiaryOrganization> getSubsidiaryOrganizationById(Guid subOrgId)
+        public async Task<IActionResult> getSubsidiaryOrganizationById(Guid subOrgId)
         {
-            return await _subOrganizationService.GetSubsidiaryOrganizationById(subOrgId);
+            return Ok(await _subOrganizationService.GetSubsidiaryOrganizationById(subOrgId));
         }
 
         [HttpPut, DisableRequestSizeLimit]
@@ -77,10 +75,10 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
 
         [HttpGet("selectlist")]
 
-        public async Task<List<SelectListDto>> GetSubsidiaryOrganizationSelectList()
+        public async Task<IActionResult> GetSubsidiaryOrganizationSelectList()
         {
 
-            return await _subOrganizationService.GetSubOrgSelectList();
+            return Ok(await _subOrganizationService.GetSubOrgSelectList());
         }
 
     }

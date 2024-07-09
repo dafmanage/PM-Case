@@ -42,22 +42,20 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Organization
         }
         [HttpGet]
 
-        public async Task<List<OrgStructureDto>> GetBranches(Guid SubOrgId)
+        public async Task<IActionResult> GetBranches(Guid SubOrgId)
         {
 
-
-
-            return await _branchService.GetOrganizationBranches(SubOrgId);
+            return Ok(await _branchService.GetOrganizationBranches(SubOrgId));
         }
 
         [HttpGet("branchlist")]
 
-        public async Task<List<SelectListDto>> GetBranchList(Guid SubOrgId)
+        public async Task<IActionResult> GetBranchList(Guid SubOrgId)
         {
 
 
 
-            return await _branchService.getBranchSelectList(SubOrgId);
+            return Ok(await _branchService.getBranchSelectList(SubOrgId));
         }
 
 
