@@ -282,7 +282,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Auth
                     return notAssignedRoles;
                 }
 
-                return new List<SelectRolesListDto>();
+                return [];
 
             }
 

@@ -126,7 +126,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
                 }).ToListAsync();
 
 
-            if (!list.Any())
+            if (list.Count == 0)
             {
                 list =  await (from x in _dBContext.OrganizationalStructures.Where(y => y.Id == branchId)
                     select new SelectListDto
@@ -198,7 +198,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             var DiagramDro = new DiagramDto()
             {
-                data = new
+                Data = new
                 {
                     name = parentStructure.StructureName,
                     weight = "  ( " + Decimal.Round((decimal)(parentStructure.Weight), 2) + "% ",
@@ -206,14 +206,14 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
                                        employess.FirstOrDefault(x => x.OrganizationalStructureId == parentStructure.Id && x.Position == Position.Director)?.FullName
 
                 },
-                label = parentStructure.StructureName,
-                expanded = true,
-                type = "organization",
-                styleClass = "bg-success text-white",
-                id = parentStructure.Id,
-                order = parentStructure.Order,
-                children = new List<DiagramDto>()
-          
+                Label = parentStructure.StructureName,
+                Expanded = true,
+                Type = "organization",
+                StyleClass = "bg-success text-white",
+                Id = parentStructure.Id,
+                Order = parentStructure.Order,
+                Children = []
+
             };
 
             childs.Add(DiagramDro);
@@ -222,9 +222,9 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
             foreach (var items in remainingStractures)
             {
-                var children = orgStructures.Where(x => x.ParentStructureId == items).Select(x => new DiagramDto
+                var Children = orgStructures.Where(x => x.ParentStructureId == items).Select(x => new DiagramDto
                 {
-                    data = new
+                    Data = new
                     {
                         name = x.StructureName,
                         weight = "  ( " + Decimal.Round((decimal)((x.Weight / x.ParentStructure.Weight) * 100), 2) + "% of " + Decimal.Round((decimal)x.ParentStructure.Weight, 2) + " ) ",
@@ -233,40 +233,40 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
                     },
 
-                    label = x.StructureName,
-                    expanded = true,
-                    type = "organization",
-                    styleClass = x.Order % 2 == 1 ? "bg-secondary text-white" : "bg-success text-white",
-                    id = x.Id,
-                    parentId = x.ParentStructureId,
-                    order = x.Order,
-                    children = new List<DiagramDto>()
+                    Label = x.StructureName,
+                    Expanded = true,
+                    Type = "organization",
+                    StyleClass = x.Order % 2 == 1 ? "bg-secondary text-white" : "bg-success text-white",
+                    Id = x.Id,
+                    ParentId = x.ParentStructureId,
+                    Order = x.Order,
+                    Children = new List<DiagramDto>()
                 }).ToList();
 
 
-                childs.AddRange(children);
+                childs.AddRange(Children);
 
 
             }
-            for (var j = childs.Max(x => x.order); j >= 0; j--)
+            for (var j = childs.Max(x => x.Order); j >= 0; j--)
             {
-                var childList = childs.Where(x => x.order == j).ToList();
+                var childList = childs.Where(x => x.Order == j).ToList();
                 foreach (var item in childList)
                 {
 
-                    var org = childs.FirstOrDefault(x => x.id == item.parentId);
+                    var org = childs.FirstOrDefault(x => x.Id == item.ParentId);
 
                     if (org != null)
                     {
-                        org.children.Add(item);
+                        org.Children.Add(item);
                     }
 
 
                 }
             }
-            List<DiagramDto> result = new List<DiagramDto>();
+            List<DiagramDto> result = [];
 
-            if (childs.Any())
+            if (childs.Count != 0)
             {
                 result.Add(childs[0]);
             }

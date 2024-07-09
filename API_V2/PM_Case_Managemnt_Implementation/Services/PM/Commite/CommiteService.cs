@@ -28,44 +28,51 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
                 RowStatus = RowStatus.Active,
                 SubsidiaryOrganizationId = addCommiteDto.SubsidiaryOrganizationId
             };
+
             await _dBContext.AddAsync(Commite);
             await _dBContext.SaveChangesAsync();
+
             return 1;
         }
 
         public async Task<List<CommiteListDto>> GetCommiteLists(Guid subOrgId)
         {
-            return await (from t in _dBContext.Commitees.Include(x => x.Employees).Where(y => y.SubsidiaryOrganizationId == subOrgId).AsNoTracking()
-                          select new CommiteListDto
-                          {
-                              Id = t.Id,
-                              Name = t.CommiteeName,
-                              NoOfEmployees = t.Employees.Count(),
-                              EmployeeList = t.Employees.Select(e => new SelectListDto
-                              {
-                                  Name = e.Employee.FullName,
-                                  CommiteeStatus = e.CommiteeEmployeeStatus.ToString(),
-                                  Id = e.Employee.Id,
-                              }).ToList(),
-                              Remark = t.Remark
-                          }).ToListAsync();
-
-
+            return await _dBContext.Commitees
+                .Include(x => x.Employees)
+                .Where(y => y.SubsidiaryOrganizationId == subOrgId)
+                .AsNoTracking()
+                .Select(t => new CommiteListDto
+                {
+                    Id = t.Id,
+                    Name = t.CommiteeName,
+                    NoOfEmployees = t.Employees.Count(),
+                    EmployeeList = t.Employees.Select(e => new SelectListDto
+                    {
+                        Name = e.Employee.FullName,
+                        CommiteeStatus = e.CommiteeEmployeeStatus.ToString(),
+                        Id = e.Employee.Id,
+                    }).ToList(),
+                    Remark = t.Remark
+                }).ToListAsync();
         }
 
-        public async Task<List<SelectListDto>> GetNotIncludedEmployees(Guid CommiteId, Guid subOrgId)
+        public async Task<List<SelectListDto>> GetNotIncludedEmployees(Guid commiteId, Guid subOrgId)
         {
-            var EmployeeSelectList = await (from e in _dBContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.OrganizationalStructure.SubsidiaryOrganizationId == subOrgId)
+            var notIncludedEmployees = await _dBContext.Employees
+                .Include(e => e.OrganizationalStructure)
+                .Where(e => e.OrganizationalStructure.SubsidiaryOrganizationId == subOrgId)
+                .Where(e => !_dBContext.CommiteEmployees
+                    .Where(ce => ce.CommiteeId == commiteId)
+                    .Select(ce => ce.EmployeeId)
+                    .Contains(e.Id))
+                .Select(e => new SelectListDto
+                {
+                    Id = e.Id,
+                    Name = $"{e.FullName} ({e.OrganizationalStructure.StructureName})"
+                })
+                .ToListAsync();
 
-                                            where !(_dBContext.CommiteEmployees.Where(x => x.CommiteeId.Equals(CommiteId)).Select(x => x.EmployeeId).Contains(e.Id))
-                                            select new SelectListDto
-                                            {
-                                                Id = e.Id,
-                                                Name = e.FullName + " ( " + e.OrganizationalStructure.StructureName + " ) "
-
-                                            }).ToListAsync();
-
-            return EmployeeSelectList;
+            return notIncludedEmployees;
         }
 
         public async Task<int> UpdateCommite(UpdateCommiteDto updateCommite)
@@ -83,45 +90,36 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
             return 0;
         }
 
-        public async Task<int> AddEmployeestoCommitte(CommiteEmployeesdto commiteEmployeesdto)
+        public async Task<int> AddEmployeesToCommittee(CommiteEmployeesdto commiteEmployeesDto)
         {
-
-            foreach (var c in commiteEmployeesdto.EmployeeList)
+            var committeeEmployees = commiteEmployeesDto.EmployeeList.Select(employeeId => new CommitesEmployees
             {
+                Id = Guid.NewGuid(),
+                CommiteeId = commiteEmployeesDto.CommiteeId,
+                EmployeeId = employeeId,
+                CreatedAt = DateTime.Now,
+                CreatedBy = commiteEmployeesDto.CreatedBy
+            }).ToList();
 
-                var committeeemployee = new CommitesEmployees
-                {
-                    Id = Guid.NewGuid(),
-                    CommiteeId = commiteEmployeesdto.CommiteeId,
-                    EmployeeId = c,
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = commiteEmployeesdto.CreatedBy
-
-                };
-
-                await _dBContext.AddAsync(committeeemployee);
-                await _dBContext.SaveChangesAsync();
-
-            }
+            await _dBContext.AddRangeAsync(committeeEmployees);
+            await _dBContext.SaveChangesAsync();
 
             return 1;
-
         }
-        public async Task<int> RemoveEmployeestoCommitte(CommiteEmployeesdto commiteEmployeesdto)
+
+        public async Task<int> RemoveEmployeesFromCommittee(CommiteEmployeesdto commiteEmployeesDto)
         {
+            var employeesToRemove = await _dBContext.CommiteEmployees
+                .Where(x => x.CommiteeId == commiteEmployeesDto.CommiteeId && commiteEmployeesDto.EmployeeList.Contains(x.EmployeeId))
+                .ToListAsync();
 
-            foreach (var c in commiteEmployeesdto.EmployeeList)
+            if (employeesToRemove.Count != 0)
             {
-
-                var emp = _dBContext.CommiteEmployees.Where(x => x.CommiteeId == commiteEmployeesdto.CommiteeId && x.EmployeeId == c);
-
-                _dBContext.RemoveRange(emp);
+                _dBContext.RemoveRange(employeesToRemove);
                 await _dBContext.SaveChangesAsync();
-
             }
 
             return 1;
-
         }
 
         public async Task<List<SelectListDto>> GetSelectListCommittee(Guid subOrgId)
@@ -134,10 +132,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
                               Name = c.CommiteeName
                           }).ToListAsync();
         }
-
         public async Task<List<SelectListDto>> GetCommiteeEmployees(Guid comitteId)
         {
-
             return await _dBContext.CommiteEmployees.Include(x => x.Employee).Where(x => x.CommiteeId == comitteId).Select(x => new SelectListDto
             {
                 Id = x.Id,
@@ -146,8 +142,5 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Commite
 
             }).ToListAsync();
         }
-
-
-
     }
 }

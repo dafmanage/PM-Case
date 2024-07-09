@@ -7,9 +7,9 @@ namespace PM_Case_Managemnt_Infrustructure.Models.PM
     {
         public ActivityParent()
         {
-            Activities = new HashSet<Activity>();
-            TaskMemos = new HashSet<TaskMemo>();
-            TaskMember = new HashSet<TaskMembers>();
+            Activities = [];
+            TaskMemos = [];
+            TaskMember = [];
         }
         public Guid? TaskId { get; set; }
         public virtual Task Task { get; set; }
@@ -27,21 +27,11 @@ namespace PM_Case_Managemnt_Infrustructure.Models.PM
         public Status Status { get; set; }
         public bool HasActivity { get; set; }
         public bool IsClassfiedToBranch { get; set; }
-
         public float BaseLine { get; set; }
-
-
-
         public Guid? UnitOfMeasurmentId { get; set; }
         public UnitOfMeasurment UnitOfMeasurment { get; set; }
-
-
         public ICollection<Activity> Activities { get; set; }
-
-
         public ICollection<TaskMemo> TaskMemos { get; set; }
-
-
         public ICollection<TaskMembers> TaskMember { get; set; }
     }
 }

@@ -25,7 +25,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         private readonly ICaseEncodeService _caseEncodeService;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
 
-
         public CaseProccessingService(
             ApplicationDbContext dbContext,
             UserManager<ApplicationUser> userManager,
@@ -321,18 +320,18 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 await _dbContext.SaveChangesAsync();
 
                 var employees = await _dbContext.Employees.Include(x => x.OrganizationalStructure).Where(x => x.Id == selectedHistory.ToEmployeeId).ToListAsync();
-                if (employees.Any())
+                if (employees.Count != 0)
 
                 {
                     var employee = employees.FirstOrDefault();
 
                     var activities = await _dbContext.Activities.Where(x => x.CaseTypeId == currentCase.CaseTypeId && x.OrganizationalStructureId == employee.OrganizationalStructure.OrganizationBranchId).ToListAsync();
 
-                    if (activities.Any())
+                    if (activities.Count != 0)
                     {
                         var activity = activities.FirstOrDefault();
                         var actTarget = await _dbContext.ActivityTargetDivisions.Where(x => x.ActivityId == activity.Id).ToListAsync();
-                        if (activity != null && actTarget.Any())
+                        if (activity != null && actTarget.Count != 0)
                         {
 
                             var activityProgress2 = new ActivityProgress
@@ -770,12 +769,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 return response;
             }
 
-
-
-
-
-
-
         }
 
 
@@ -969,12 +962,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             }
 
         }
-
-
     }
-
-
-
     public class CaseState
     {
         public string CurrentState { get; set; }

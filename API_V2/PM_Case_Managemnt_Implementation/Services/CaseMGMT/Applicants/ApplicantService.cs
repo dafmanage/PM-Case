@@ -102,7 +102,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants
             try
             {
                 List<Applicant> applicants = await _dbContext.Applicants.Where(x => x.SubsidiaryOrganizationId == subOrgId).ToListAsync();
-                List<ApplicantGetDto> result = new();
+                List<ApplicantGetDto> result = [];
 
                 if (applicants == null || !applicants.Any())
                 {

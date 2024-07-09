@@ -13,26 +13,12 @@ using Task = PM_Case_Managemnt_Infrustructure.Models.PM.Task;
 
 namespace PM_Case_Managemnt_Infrustructure.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-        {
-        }
-
         public virtual DbSet<OrganizationProfile> OrganizationProfile { get; set; }
-
-        //public virtual DbSet<OrganizationBranch> OrganizationBranches { get; set; }
-
         public virtual DbSet<OrganizationalStructure> OrganizationalStructures { get; set; }
-
         public virtual DbSet<SubsidiaryOrganization> SubsidiaryOrganizations { get; set; }
-
-        //
-
         public DbSet<Employee> Employees { get; set; }
-        // public DbSet<EmployeeStructures> EmployeesStructures { get; set; }
 
 
         // Archive
@@ -40,23 +26,18 @@ namespace PM_Case_Managemnt_Infrustructure.Data
         public DbSet<Row> Rows { get; set; }
         public DbSet<Shelf> Shelf { get; set; }
 
-        // 
-
+        // Budget
         public DbSet<ProgramBudgetYear> ProgramBudgetYears { get; set; }
-
         public DbSet<BudgetYear> BudgetYears { get; set; }
-
         public DbSet<UnitOfMeasurment> UnitOfMeasurment { get; set; }
 
 
         //Standardized Forms 
-
         public DbSet<StandrizedForm> StandrizedForms { get; set; }
         public DbSet<StandardizedFormDocuments> FormDocuments { get; set; }
 
 
         //case 
-
         public DbSet<Applicant> Applicants { get; set; }
         public DbSet<Appointement> Appointements { get; set; }
         public DbSet<AppointementWithCalender> AppointementWithCalender { get; set; }
@@ -67,12 +48,10 @@ namespace PM_Case_Managemnt_Infrustructure.Data
         public DbSet<CaseHistoryAttachment> CaseHistoryAttachments { get; set; }
         public DbSet<CaseMessages> CaseMessages { get; set; }
         public DbSet<CaseType> CaseTypes { get; set; }
-        // public DbSet<CaseForward> CaseForwards { get; set; }
         public DbSet<FileSetting> FileSettings { get; set; }
         public DbSet<FilesInformation> FilesInformations { get; set; }
 
-        // pm 
-
+        // PM 
         public DbSet<Programs> Programs { get; set; }
         public DbSet<Plan> Plans { get; set; }
         public DbSet<ActivityParent> ActivityParents { get; set; }
@@ -88,7 +67,6 @@ namespace PM_Case_Managemnt_Infrustructure.Data
         public DbSet<TaskMembers> TaskMembers { get; set; }
         public DbSet<TaskMemo> TaskMemos { get; set; }
         public DbSet<TaskMemoReply> TaskMemoReplies { get; set; }
-
         public DbSet<QuarterSetting> QuarterSettings { get; set; }
 
 

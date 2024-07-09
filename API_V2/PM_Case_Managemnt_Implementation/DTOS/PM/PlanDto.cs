@@ -64,19 +64,19 @@ namespace PM_Case_Managemnt_Implementation.DTOS.PM
 
         public string EndDate { get; set; }
 
-        public List<TaskVIewDto> Tasks { get; set; }
+        public List<TaskViewDto> Tasks { get; set; }
 
     }
 
-    public class TaskVIewDto
+    public class TaskViewDto
     {
         public Guid Id { get; set; }
 
         public string TaskName { get; set; }
 
         public float? TaskWeight { get; set; }
-
-        public float RemianingWeight { get; set; }
+        
+        public float RemainingWeight { get; set; }
 
         public int NumberofActivities { get; set; }
 

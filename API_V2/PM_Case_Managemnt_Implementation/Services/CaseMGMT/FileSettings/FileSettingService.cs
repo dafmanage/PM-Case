@@ -107,7 +107,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
             try
             {
                 List<FileSetting> fileSettings = await _dbContext.FileSettings.Where(x => x.CaseType.SubsidiaryOrganizationId == subOrgId).Include(x => x.CaseType).ToListAsync();
-                List<FileSettingGetDto> result = new();
+                List<FileSettingGetDto> result = [];
 
                 foreach (FileSetting fileSetting in fileSettings)
                 {

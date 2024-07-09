@@ -282,7 +282,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
             var response = new ResponseMessage<List<CaseEncodeGetDto>>();
             try
             {
-                List<CaseEncodeGetDto> cases2 = new List<CaseEncodeGetDto>();
+                List<CaseEncodeGetDto> cases2 = [];
                 List<CaseEncodeGetDto> cases =
                     await _dbContext.Cases.Where(ca => ca.CreatedBy.Equals(userId) && ca.AffairStatus.Equals(AffairStatus.Encoded))
                     .Include(p => p.Employee)
