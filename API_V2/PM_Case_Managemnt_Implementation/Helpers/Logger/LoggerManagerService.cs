@@ -27,13 +27,14 @@ namespace PM_Case_Managemnt_Implementation.Helpers.Logger
             LogWithProperties(LogLevel.Warning, "Update", module, createdById, message);
         }
 
-        private void LogWithProperties(LogLevel logLevel, string logType, string module, string userId, string message)
+        private void LogWithProperties(LogLevel logLevel, string operationType, string module, string userId, string message)
         {
+            using (LogContext.PushProperty("OperationType", operationType))
             using (LogContext.PushProperty("ChangedOn", DateTime.UtcNow))
             using (LogContext.PushProperty("Module", module))
             using (LogContext.PushProperty("UserId", userId))
             {
-                _logger.Log(logLevel, $"{logType}: {message}");
+                _logger.Log(logLevel, $"{{OperationType}}: {message}");
             }
         }
     }
