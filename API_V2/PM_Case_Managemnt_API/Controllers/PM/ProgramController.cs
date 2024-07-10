@@ -36,13 +36,13 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         public async Task<List<ProgramDto>> GetPrograms(Guid subOrgId)
         {
             var response = await _programService.GetPrograms(subOrgId);
-            return response;
+            return response.Data;
         }
         [HttpGet("selectlist")]
         public async Task<List<SelectListDto>> GetProgramsSelectList(Guid subOrgId)
         {
             var response = await _programService.GetProgramsSelectList(subOrgId);
-            return response;
+            return response.Data;
         }
 
         [HttpGet("id")]
@@ -50,7 +50,7 @@ namespace PM_Case_Managemnt_API.Controllers.PM
         public async Task<ProgramDto> GetProgramById(Guid programId)
         {
             var response = await _programService.GetProgramsById(programId);
-            return response;
+            return response.Data;
         }
 
         [HttpPut("editProgram")]

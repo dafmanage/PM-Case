@@ -9,9 +9,9 @@ namespace PM_Case_Managemnt_API.Controllers.Case
     public class ApplicantController : ControllerBase
     {
 
-        private readonly IApplicantService _applicantService;
+        private readonly IApplicantServices _applicantService;
 
-        public ApplicantController(IApplicantService applicantService)
+        public ApplicantController(IApplicantServices applicantService)
         {
             _applicantService = applicantService;
         }

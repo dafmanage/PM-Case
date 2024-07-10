@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_API.Models.KPI;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.KPI;
+using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.KPI;
@@ -13,10 +15,12 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
     public class KPIService : IKPIService
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly ILoggerManagerService _logger;
 
-        public KPIService(ApplicationDbContext dbContext)
+        public KPIService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> AddKPI(KPIPostDto kpiPost)
@@ -64,8 +68,8 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 await _dbContext.KPIs.AddAsync(kpi);
                 await _dbContext.SaveChangesAsync();
-
-                return new ResponseMessage<int>
+                _logger.LogCreate("KPIService", kpi.CreatedBy.ToString(), "KPI added Successfully");
+                return new ResponseMessage
                 {
                     Success = true,
                     Message = "KPI Added Successfully"
@@ -122,8 +126,8 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 await _dbContext.KPIDetails.AddAsync(kpiGoal);
                 await _dbContext.SaveChangesAsync();
-
-                return new ResponseMessage<int>
+                _logger.LogCreate("KPIService", kpiGoalPost.CreatedBy.ToString(), "KPI Goal added Successfully");
+                return new ResponseMessage
                 {
                     Success = true,
                     Message = "KPI Goal Added Successfully"
@@ -170,8 +174,8 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 await _dbContext.KPIDetails.AddRangeAsync(kpiDetails);
                 await _dbContext.SaveChangesAsync();
-
-                return new ResponseMessage<int>
+                _logger.LogCreate("KPIService", kpiDetailsPost.CreatedBy.ToString(), "KPI Details added Successfully");
+                return new ResponseMessage
                 {
                     Success = true,
                     Message = "KPI Details Added Successfully"
@@ -214,11 +218,11 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
 
                 await _dbContext.KPIDatas.AddAsync(kpiData);
                 await _dbContext.SaveChangesAsync();
-
-                return new ResponseMessage<int>
+                _logger.LogCreate("KPIService", kpiDataPost.CreatedBy.ToString(), "KPI Data added Successfully");
+                return new ResponseMessage
                 {
                     Success = true,
-                    Message = "KPI Datas Added Successfully"
+                    Message = "KPI Data Added Successfully"
                 };
             }
             catch (Exception ex)
@@ -384,8 +388,8 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 kpi.ActiveYearsString = kpiGet.ActiveYearsString;
 
                 await _dbContext.SaveChangesAsync();
-
-                return new ResponseMessage<int>
+                _logger.LogUpdate("KPIService", kpiGet.CreatedBy.ToString(), "KPI Updated Successfully");
+                return new ResponseMessage
                 {
                     Success = true,
                     Message = "KPI Updated Successfully"
@@ -416,8 +420,8 @@ namespace PM_Case_Managemnt_Implementation.Services.KPI
                 kpiDetail.MainGoal = kpiDetailsGet.MainGoal;
 
                 await _dbContext.SaveChangesAsync();
-
-                return new ResponseMessage<int>
+                _logger.LogUpdate("KPIService", kpiDetailsGet.CreatedBy.ToString(), "KPI Detail Updated Successfully");
+                return new ResponseMessage
                 {
                     Success = true,
                     Message = "KPI Detail Updated Successfully"

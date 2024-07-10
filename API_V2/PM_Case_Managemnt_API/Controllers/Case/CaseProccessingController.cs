@@ -7,6 +7,7 @@ using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using System.Net.Http.Headers;
+using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
 
 namespace PM_Case_Managemnt_API.Controllers.Case
 {
@@ -16,9 +17,9 @@ namespace PM_Case_Managemnt_API.Controllers.Case
     {
         private readonly ICaseProccessingService _caseProcessingService;
         private readonly ApplicationDbContext _dbContext;
-        private readonly IApplicantService _applicantService;
+        private readonly IApplicantServices _applicantService;
 
-        public CaseProccessingController(ICaseProccessingService caseProccessingService, ApplicationDbContext dBContext, IApplicantService applicantService)
+        public CaseProccessingController(ICaseProccessingService caseProccessingService, ApplicationDbContext dBContext, IApplicantServices applicantService)
         {
             _caseProcessingService = caseProccessingService;
             _dbContext = dBContext;
@@ -96,8 +97,8 @@ namespace PM_Case_Managemnt_API.Controllers.Case
 
                         if (history.Case.ApplicantId != null)
                         {
-                            var applicant = _applicantService.GetApplicantById(history.Case.ApplicantId);
-                            applicantName = applicant.Result.Data.ApplicantName; // replace with actual applicant name
+                            var applicant =await _applicantService.GetApplicantById(history.Case.ApplicantId);
+                            applicantName = applicant.Data.ApplicantName; // replace with actual applicant name
 
                         }
                         else
@@ -204,8 +205,8 @@ namespace PM_Case_Managemnt_API.Controllers.Case
 
                         if (history.Case.ApplicantId != null)
                         {
-                            var applicant = _applicantService.GetApplicantById(history.Case.ApplicantId);
-                            applicantName = applicant.Result.Data.ApplicantName; // replace with actual applicant name
+                            var applicant =await _applicantService.GetApplicantById(history.Case.ApplicantId);
+                            applicantName = applicant.Data.ApplicantName; // replace with actual applicant name
 
                         }
                         else

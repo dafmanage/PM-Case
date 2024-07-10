@@ -4,13 +4,21 @@ using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
-using System.Net;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Appointment
 {
-    public class AppointmentService(ApplicationDbContext dbContext) : IAppointmentService
+    public class AppointmentService : IAppointmentService
     {
-        private readonly ApplicationDbContext _dbContext = dbContext;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ILoggerManagerService _logger;
+        
+        public AppointmentService(ApplicationDbContext dbContext, ILoggerManagerService logger)
+        {
+            _dbContext = dbContext;
+            _logger = logger;
+        }
+
 
         public async Task<ResponseMessage<Guid>> Add(AppointmentPostDto appointmentPostDto)
         {
@@ -36,18 +44,20 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.Appointment
                 response.Success = true;
                 response.Message = "Appointment added Succesfully";
                 response.Data = appointment.Id;
-
-            }
-            catch (Exception ex)
+                _logger.LogCreate("AppointmentService", appointmentPostDto.CreatedBy.ToString(), "Appointment added Successfully");
+                return response;
+                
+            } catch (Exception ex)
             {
                 response.Success = false;
                 response.Message = "Wasnt not able to create appointment";
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-                response.Data = Guid.Empty;
+                response.Data = default(Guid);
+                //_logger.LogException("AppointmentService", appointmentPostDto.CreatedBy.ToString(), $"Error adding appointment: {ex.Message}");
+                return response;
             }
-             return response;
         }
-        public async Task<ResponseMessage<List<AppointmentGetDto>>> GetAll()
+        public async Task<ResponseMessage<List<Appointement>>> GetAll()
         {
             var response = new ResponseMessage<List<AppointmentGetDto>>();
             try

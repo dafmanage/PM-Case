@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
@@ -12,9 +13,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
     public class CaseTypeService : ICaseTypeService
     {
         private readonly ApplicationDbContext _dbContext;
-        public CaseTypeService(ApplicationDbContext dbContext)
+        private readonly ILoggerManagerService _logger;
+        public CaseTypeService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> Add(CaseTypePostDto caseTypeDto)
@@ -49,7 +52,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 response.Data = 1; 
                 response.Message = "Opertaion Successful";
                 response.Success = true;
-
+                _logger.LogCreate("CaseTypeService", caseTypeDto.CreatedBy.ToString(), "Case type added Successfully");
                 return response;
 
             }
@@ -92,6 +95,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 response.Message = "Operation Succsessfull.";
                 response.Data = 1;
                 response.Success = true;
+                _logger.LogUpdate("CaseTypeService", caseTypeDto.CreatedBy.ToString(), "Case type updated Successfully");
+                return response;
             }
             catch (Exception ex)
             {
@@ -280,7 +285,13 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.CaseTypes
                 response.Message = "Deleted Successfully.";
                 response.Data = 1;
                 response.Success = true;
+
+                _logger.LogUpdate("CaseTypeService", caseTypeId.ToString(), "Case type deleted Successfully");
+                
             }
+
+            
+;
             else
             {
                 response.Message = "Case type not found.";

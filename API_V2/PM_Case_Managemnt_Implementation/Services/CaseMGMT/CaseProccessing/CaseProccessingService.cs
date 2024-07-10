@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Implementation.Services.CaseService.Encode;
@@ -23,19 +24,22 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
         private readonly ISMSHelper _smshelper;
         private readonly ICaseEncodeService _caseEncodeService;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
+        private readonly ILoggerManagerService _logger;
 
         public CaseProccessingService(
             ApplicationDbContext dbContext,
             UserManager<ApplicationUser> userManager,
             ISMSHelper smshelper,
             ICaseEncodeService caseEncodeService,
-            IHubContext<EncoderHub, IEncoderHubInterface> encoderHub)
+            IHubContext<EncoderHub, IEncoderHubInterface> encoderHub,
+            ILoggerManagerService logger)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _smshelper = smshelper;
             _caseEncodeService = caseEncodeService;
             _encoderHub = encoderHub;
+            _logger = logger;
 
         }
 
@@ -71,6 +75,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Success = true;
                 response.Data = 1;
                 response.Message = "Successfull";
+                _logger.LogCreate("Case Processing Service", confirmTranscationDto.EmployeeId.ToString(), "Transaction confirmed Successfully");
+                return response;
             }
             catch (Exception ex)
             {
@@ -169,6 +175,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Message = "Operation Successful";
                 response.Data = 1;
                 response.Success = true;
+                _logger.LogCreate("CaseProcessingService", caseAssignDto.AssignedByEmployeeId.ToString(), $"case assigned to {caseAssignDto.AssignedToEmployeeId} Successfully");
+                return response;
+
             }
             catch (Exception ex)
             {
@@ -310,6 +319,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Message = "Operation Successfull";
                 response.Data = 1;
                 response.Success = true;
+                _logger.LogUpdate("CaseProcessingService", caseCompleteDto.CaseHistoryId.ToString(), "Case Completed.");
+                return response;
 
             }
             catch (Exception ex)
@@ -391,6 +402,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Data = 1;
                 response.Success = true;
                 response.Message = "Opertation Succesfull";
+                _logger.LogUpdate("CaseProcessingService", revertCase.CaseHistoryId.ToString(), "Case reverted.");
+                return response;
             }
             catch (Exception ex)
             {
@@ -500,7 +513,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Message = "Operation Successfull.";
                 response.Data = 1;
                 response.Success = true;
-
+                _logger.LogCreate("CaseProcessingService", caseTransferDto.FromEmployeeId.ToString(), $"case transfered to {caseTransferDto.ToEmployeeId} Successfully");
                 return response;
             }
             catch (Exception ex)
@@ -555,6 +568,11 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Message = "Added Successfully";
                 response.Data = 1;
                 response.Success = true;
+                _logger.LogCreate("CaseProcessingService", caseHistoryId.ToString(), "Case added to waiting Successfully");
+                return response;
+
+
+
             }
             catch (Exception ex)
             {
@@ -576,7 +594,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
             response.Message = "Successfull.";
             response.Success = true;
             response.Data = 1;
-
+            
             return response;
         }
 
@@ -726,6 +744,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT
                 response.Message = "Operation Successfull";
                 response.Data = 1;
                 response.Success = true;
+                    
+                _logger.LogUpdate("CaseProcessingService", archivedCaseDto.CaseId.ToString(), "Case added to archive Successfully");
+                return response;
+
             }
 
             catch (Exception ex)

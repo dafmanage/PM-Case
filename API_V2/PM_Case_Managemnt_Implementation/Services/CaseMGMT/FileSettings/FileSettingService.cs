@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
+using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
@@ -10,9 +12,13 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
     public class FileSettingService : IFileSettingsService
     {
         private readonly ApplicationDbContext _dbContext;
-        public FileSettingService(ApplicationDbContext dbContext)
+        private readonly ILoggerManagerService _logger;
+
+
+        public FileSettingService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> Add(FileSettingPostDto fileSettingPost)
@@ -36,6 +42,8 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                 response.Message = "file setting created succesfully.";
                 response.Success = true;
                 response.Data = 1;
+                _logger.LogCreate("FileSettingService", fileSettingPost.CreatedBy.ToString(), "File added Successfully");
+                return response;
             }
             catch (Exception ex)
             {
@@ -59,6 +67,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                 fileSet.CaseTypeId = fileSettingPost.CaseTypeId;
 
                 await _dbContext.SaveChangesAsync();
+                _logger.LogUpdate("FileSettingService", fileSettingPost.CreatedBy.ToString(), "File updated Successfully");
             }
             catch (Exception ex)
             {
@@ -83,6 +92,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                 {
                     return new ResponseMessage<int> { Data = 0, Success = false, Message = "File Setting Not Found" };
                 }
+
+                _logger.LogUpdate("ApplicantService", fileId.ToString(), "File deleted Successfully");
+
             }
             catch (Exception ex)
             {

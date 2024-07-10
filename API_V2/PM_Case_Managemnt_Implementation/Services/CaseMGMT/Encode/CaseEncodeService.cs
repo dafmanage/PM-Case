@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
 using PM_Case_Managemnt_Infrustructure.Data;
@@ -19,13 +20,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private IHubContext<EncoderHub, IEncoderHubInterface> _encoderHub;
+        private readonly ILoggerManagerService _logger;
 
         public CaseEncodeService(ApplicationDbContext dbContext, UserManager<ApplicationUser> userManager,
-            IHubContext<EncoderHub, IEncoderHubInterface> encoderHub)
+            IHubContext<EncoderHub, IEncoderHubInterface> encoderHub, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _encoderHub = encoderHub;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<string>> Add(CaseEncodePostDto caseEncodePostDto)
@@ -167,6 +170,7 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.Encode
             _dbContext.Cases.Update(caseToUpdate);
             await _dbContext.SaveChangesAsync();
 
+            _logger.LogUpdate("CaseEncodeService", caseEncodePostDto.CreatedBy.ToString(), "Case Encode updated Successfully");
             return new ResponseMessage<string>
             {
                 Message = "Operation Successful",

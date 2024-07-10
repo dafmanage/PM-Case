@@ -1,8 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
+using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
-using PM_Case_Managemnt_Implementation.Services.PM.Plann;
+using PM_Case_Managemnt_Implementation.Services.PM.Plan;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -15,83 +18,117 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
     public class ProgramService(ApplicationDbContext context, IPlanService planService) : IProgramService
     {
 
-        private readonly ApplicationDbContext _dBContext = context;
-        private readonly IPlanService planService = planService;
+        private readonly ApplicationDbContext _dBContext;
+        private readonly ILoggerManagerService _logger;
+        private readonly IPlanService planService;
 
-        public async Task<int> CreateProgram(Programs program)
+        public ProgramService(ApplicationDbContext context, IPlanService planService,
+            ILoggerManagerService logger)
         {
+            _dBContext = context;
+            _logger = logger;
+            this.planService = planService;
+        }
+
+        public async Task<ResponseMessage<int>> CreateProgram(Programs program)
+        {
+
+            var response = new ResponseMessage<int>();
+
             program.Id = Guid.NewGuid();
             program.CreatedAt = DateTime.Now;
 
             await _dBContext.AddAsync(program);
             await _dBContext.SaveChangesAsync();
 
-            return 1;
+            _logger.LogCreate("ProgramService", program.CreatedBy.ToString(), "Program Created Successfully");
+
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+
+            return response;
+
         }
 
-        public async Task<List<ProgramDto>> GetPrograms(Guid subOrgId)
+        public async Task<ResponseMessage<List<ProgramDto>>> GetPrograms(Guid subOrgId)
         {
-            var programs = await (from p in _dBContext.Programs
-                                .Where(x => x.SubsidiaryOrganizationId == subOrgId)
-                                .Include(x => x.ProgramBudgetYear)
-                                  select new ProgramDto
-                                  {
-                                      Id = p.Id,
-                                      ProgramName = p.ProgramName,
-                                      ProgramBudgetYear = $"{p.ProgramBudgetYear.Name} ({p.ProgramBudgetYear.FromYear} - {p.ProgramBudgetYear.ToYear})",
-                                      NumberOfProjects = _dBContext.Plans.Count(x => x.ProgramId == p.Id),
-                                      ProgramStructure = _dBContext.Plans
-                                                          .Include(x => x.Structure)
-                                                          .Where(x => x.ProgramId == p.Id)
-                                                          .GroupBy(x => x.Structure.StructureName)
-                                                          .Select(g => new ProgramStructureDto
-                                                          {
-                                                              StructureName = $"{g.Key} ({_dBContext.Employees.FirstOrDefault(y => y.OrganizationalStructureId == g.First().StructureId && y.Position == Position.Director).FullName})",
-                                                              StructureHead = $"{g.Count()} Projects"
-                                                          })
-                                                          .ToList(),
-                                      ProgramPlannedBudget = p.ProgramPlannedBudget,
-                                      Remark = p.Remark
-                                  })
-                                .ToListAsync();
 
-            return programs;
+            var response = new ResponseMessage<List<ProgramDto>>();
+
+
+            List<ProgramDto> result = await (from p in _dBContext.Programs.Where(x => x.SubsidiaryOrganizationId == subOrgId).Include(x => x.ProgramBudgetYear)
+                          select new ProgramDto
+                          {
+                              Id = p.Id,
+                              ProgramName = p.ProgramName,
+                              ProgramBudgetYear = p.ProgramBudgetYear.Name + " ( " + p.ProgramBudgetYear.FromYear + " - " + p.ProgramBudgetYear.ToYear + " )",
+                              NumberOfProjects = _dBContext.Plans.Where(x => x.ProgramId == p.Id).Count(), //must be seen
+                              ProgramStructure = _dBContext.Plans
+                              .Include(x => x.Structure)
+                              .Where(x => x.ProgramId == p.Id)
+                              .Select(x => new ProgramStructureDto
+                              {
+                                  StructureName = x.Structure.StructureName + "( " + _dBContext.Employees.Where(y => y.OrganizationalStructureId == x.StructureId && y.Position == Position.Director).FirstOrDefault().FullName + " )",
+                                  //StructureHead = 
+                              })
+                                .GroupBy(x => x.StructureName)
+                                .Select(g => new ProgramStructureDto
+                                {
+                                    StructureName = g.Key,
+                                    StructureHead = g.Count().ToString() + " Projects"
+
+                                })
+                                .ToList(),
+                              ProgramPlannedBudget = p.ProgramPlannedBudget,
+                              Remark = p.Remark
+
+
+                          }).ToListAsync();
+
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
+
+            return response;
+
         }
 
-
-        public async Task<List<SelectListDto>> GetProgramsSelectList(Guid subOrgId)
+        public async Task<ResponseMessage<List<SelectListDto>>> GetProgramsSelectList(Guid subOrgId)
         {
-            return await (from p in _dBContext.Programs.Where(n => n.SubsidiaryOrganizationId == subOrgId)
+
+            var response = new ResponseMessage<List<SelectListDto>>();
+
+
+            List<SelectListDto> result = await (from p in _dBContext.Programs.Where(n => n.SubsidiaryOrganizationId == subOrgId)
                           select new SelectListDto
                           {
                               Id = p.Id,
                               Name = p.ProgramName
                           }).ToListAsync();
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
+
+            return response;
         }
 
-        public async Task<ProgramDto> GetProgramsById(Guid programId)
+        public async Task<ResponseMessage<ProgramDto>> GetProgramsById(Guid programId)
         {
-            var program = await _dBContext.Programs
-                                        .Include(x => x.ProgramBudgetYear)
-                                        .FirstOrDefaultAsync(x => x.Id == programId);
+            var response = new ResponseMessage<ProgramDto>();
 
+            var program = _dBContext.Programs.Include(x => x.ProgramBudgetYear).Where(x => x.Id == programId).FirstOrDefault();
+           
             if (program == null)
             {
-                // Handle case where program with given id is not found
-                return null;
+                response.Message = "Program not found.";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                return response;
             }
-
-            var numberOfProjects = await _dBContext.Plans
-                                                .CountAsync(x => x.ProgramId == programId);
-
-            var remainingBudget = program.ProgramPlannedBudget - await _dBContext.Plans
-                                                                                .Where(x => x.ProgramId == program.Id)
-                                                                                .SumAsync(x => x.PlandBudget);
-
-            var remainingWeight = 100 - await _dBContext.Plans
-                                                        .Where(x => x.ProgramId == program.Id)
-                                                        .SumAsync(x => x.PlanWeight);
-
+            
             var programDto = new ProgramDto
             {
                 ProgramName = program.ProgramName,
@@ -103,7 +140,12 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
                 Remark = program.Remark
             };
 
-            return programDto;
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = programDto;
+
+            return response; 
+
         }
 
         public async Task<ResponseMessage<int>> UpdateProgram(ProgramPostDto program)
@@ -117,8 +159,8 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Program
                 prog.Remark = program.Remark;
 
                 await _dBContext.SaveChangesAsync();
-
-                return new ResponseMessage<int>
+                _logger.LogUpdate("ProgramService", program.Id.ToString(), "Program Updated Successfully");
+                return new ResponseMessage
                 {
                     Success = true,
                     Message = "Program Updated Successfully"

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Auth;
@@ -17,10 +18,13 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
 
         private readonly ApplicationDbContext _dBContext;
         private readonly UserManager<ApplicationUser> _userManager;
-        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        private readonly ILoggerManagerService _logger;
+        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
+            ILoggerManagerService logger)
         {
             _dBContext = context;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> CreateEmployee(EmployeeDto employee)
@@ -58,6 +62,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
                 response.Message = "OPeration Successfull";
                 response.Success = true;
                 response.Data = 1;
+                _logger.LogCreate("EmployeeService", employee.Id.ToString(), "Employee created Successfully");
                 return response;
             }
             catch (Exception ex)
@@ -249,7 +254,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common
             response.Message = "Operation Successful.";
             response.Data = 1;
             response.Success = true;
-            
+            _logger.LogUpdate("EmployeeService", employeeDto.Id.ToString(), "Employee updated Successfully");
             return response;
 
         }

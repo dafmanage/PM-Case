@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Analytics;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -11,9 +12,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.Analytics
     {
 
         private readonly ApplicationDbContext _dBContext;
-        public AnalyticsService(ApplicationDbContext context)
+        private readonly ILoggerManagerService _logger;
+        public AnalyticsService(ApplicationDbContext context, ILoggerManagerService logger)
         {
             _dBContext = context;
+            _logger = logger;
         }
 
          public async Task<ResponseMessage<SubOrgsPlannedandusedBudgetDtos>> GetOverallBudget()

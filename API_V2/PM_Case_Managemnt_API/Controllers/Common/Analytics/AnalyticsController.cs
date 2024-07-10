@@ -20,7 +20,8 @@ namespace PM_Case_Managemnt_API.Controllers.Common.Analytics
         [Route("getOverallBudget")]
         public async Task<ResponseMessage<SubOrgsPlannedandusedBudgetDtos>> GetOverallBudget()
         {
-            return await analyticsService.GetOverallBudget();
+            var result = await analyticsService.GetOverallBudget();
+            return result.Data;
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
+using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.CaseModel;
@@ -9,11 +11,20 @@ using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCalender
 {
-    public class AppointmentWithCalenderService(ApplicationDbContext dbContext, ISMSHelper sMSHelper) : IAppointmentWithCalenderService
+    public class AppointmentWithCalenderService : IAppointmentWithCalenderService
     {
-        private readonly ApplicationDbContext _dbContext = dbContext;
-        private readonly ISMSHelper _smsService = sMSHelper;
-        public async Task<ResponseMessage<AppointmentGetDto>> Add(AppointmentWithCalenderPostDto appointmentWithCalender)
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ISMSHelper _smsService;
+        private readonly ILoggerManagerService _logger;
+
+        public AppointmentWithCalenderService(ApplicationDbContext dbContext, ISMSHelper sMSHelper, ILoggerManagerService logger)
+        {
+            _dbContext = dbContext;
+            _smsService = sMSHelper;
+            _logger = logger;
+        }
+
+       public async Task<ResponseMessage<AppointmentGetDto>> Add(AppointmentWithCalenderPostDto appointmentWithCalender)
         {
             var response = new ResponseMessage<AppointmentGetDto>();
             try
@@ -75,6 +86,9 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCale
                 response.Success = true;
                 response.Message = "Operation Successful";
                 response.Data = ev;
+
+                _logger.LogCreate("AppointmentWithCalenderService", appointmentWithCalender.CreatedBy.ToString(), "Appointment with calendar added successfully.");
+                return response;
             }
             catch (Exception ex)
             {

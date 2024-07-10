@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Net;
+using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.PM;
 using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
+using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
 using PM_Case_Managemnt_Infrustructure.Models.PM;
@@ -14,10 +17,17 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
     public class PlanService(ApplicationDbContext context) : IPlanService
     {
 
-        private readonly ApplicationDbContext _dBContext = context;
-
-        public async Task<int> CreatePlan(PlanDto plan)
+        private readonly ApplicationDbContext _dBContext;
+        private readonly ILoggerManagerService _logger;
+        public PlanService(ApplicationDbContext context, ILoggerManagerService logger)
         {
+            _dBContext = context;
+            _logger = logger;
+        }
+
+        public async Task<ResponseMessage<int>> CreatePlan(PlanDto plan)
+        {
+            var response = new ResponseMessage<int>();
             var budgetYear = await _dBContext.BudgetYears.FindAsync(plan.BudgetYearId);
 
             var newPlan = new PM_Case_Managemnt_Infrustructure.Models.PM.Plan
@@ -42,74 +52,92 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
 
             await _dBContext.AddAsync(newPlan);
             await _dBContext.SaveChangesAsync();
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = 1;
+            _logger.LogCreate("PlanService", plan.Id.ToString(), "Plan Created Successfully");
+            return response;
 
-            return 1;
         }
 
-        public async Task<List<PlanViewDto>> GetPlans(Guid? programId, Guid subOrgId)
+        public async Task<ResponseMessage<List<PlanViewDto>>> GetPlans(Guid? programId, Guid SubOrgId)
         {
-            var plans = _dBContext.Plans
-                .Include(x => x.Structure)
-                .Include(x => x.ProjectManager)
-                .Include(x => x.Finance)
-                .Where(x => programId != null ? x.ProgramId == programId : x.Structure.SubsidiaryOrganizationId == subOrgId);
+            var response = new ResponseMessage<List<PlanViewDto>>();
 
-            return await plans.Select(p => new PlanViewDto
-            {
-                Id = p.Id,
-                PlanName = p.PlanName,
-                PlanWeight = p.PlanWeight,
-                PlandBudget = p.PlandBudget,
-                StructureName = p.Structure.StructureName,
-                RemainingBudget = p.PlandBudget - _dBContext.Tasks.Where(x => x.PlanId == p.Id).Sum(x => x.PlanedBudget),
-                ProjectManager = p.ProjectManager.FullName,
-                FinanceManager = p.Finance.FullName,
-                Director = _dBContext.Employees
-                    .Where(x => x.Position == Position.Director && x.OrganizationalStructureId == p.StructureId)
-                    .Select(x => x.FullName)
-                    .FirstOrDefault(),
-                ProjectType = p.ProjectType.ToString(),
-                NumberOfTask = _dBContext.Tasks.Count(x => x.PlanId == p.Id),
-                NumberOfActivities = _dBContext.Activities
-                    .Include(x => x.ActivityParent.Task.Plan)
-                    .Count(x => x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id),
-                NumberOfTaskCompleted = _dBContext.Activities
-                    .Include(x => x.ActivityParent.Task.Plan)
-                    .Count(x => x.Status == Status.Finalized && (x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id)),
-                HasTask = p.HasTask,
-                BudgetYearId = p.BudgetYearId,
-                ProgramId = p.ProgramId,
-                Remark = p.Remark,
-                StructureId = p.StructureId,
-                ProjectManagerId = p.ProjectManagerId,
-                FinanceId = p.FinanceId,
-                ProjectFunder = p.ProjectFunder,
-                BranchId = p.Structure.OrganizationBranchId
-            }).ToListAsync();
+            var plans = programId != null ? _dBContext.Plans.Include(x => x.Structure).Include(x => x.ProjectManager).Include(x => x.Finance).Where(x => x.ProgramId == programId) :
+                _dBContext.Plans.Include(x => x.Structure).Include(x => x.ProjectManager).Include(x => x.Finance).Where(z => z.Structure.SubsidiaryOrganizationId == SubOrgId);
+
+
+            List<PlanViewDto> result =  await (from p in plans
+
+                          select new PlanViewDto
+                          {
+                              Id = p.Id,
+                              PlanName = p.PlanName,
+                              PlanWeight = p.PlanWeight,
+                              PlandBudget = p.PlandBudget,
+                              StructureName = p.Structure.StructureName,
+                              RemainingBudget = p.PlandBudget - _dBContext.Tasks.Where(x => x.PlanId == p.Id).Sum(x => x.PlanedBudget),
+                              ProjectManager = p.ProjectManager.FullName,
+                              FinanceManager = p.Finance.FullName,
+                              Director = _dBContext.Employees.Where(x => x.Position == Position.Director && x.OrganizationalStructureId == p.StructureId).FirstOrDefault().FullName,
+                              ProjectType = p.ProjectType.ToString(),
+                              NumberOfTask = _dBContext.Tasks.Count(x => x.PlanId == p.Id),
+                              NumberOfActivities = _dBContext.Activities.Include(x => x.ActivityParent.Task.Plan).Where(x => x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id).Count(),
+                              NumberOfTaskCompleted = _dBContext.Activities.Include(x => x.ActivityParent.Task.Plan).Where(x => x.Status == Status.Finalized && (x.PlanId == p.Id || x.Task.PlanId == p.Id || x.ActivityParent.Task.PlanId == p.Id)).Count(),
+                              HasTask = p.HasTask,
+                              BudgetYearId = p.BudgetYearId,
+                              ProgramId = p.ProgramId,
+                              Remark = p.Remark,
+                              StructureId = p.StructureId,
+                              ProjectManagerId = p.ProjectManagerId,
+                              FinanceId = p.FinanceId,
+                              ProjectFunder = p.ProjectFunder,
+                              BranchId = p.Structure.OrganizationBranchId
+                          }).ToListAsync();
+
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
+
+            return response;
+
+
         }
 
-        public async Task<PlanSingleViewDto> GetSinglePlan(Guid planId)
-        {
-            var plan = await _dBContext.Plans
-                .Where(x => x.Id == planId)
-                .Select(p => new PlanSingleViewDto
-                {
-                    Id = p.Id,
-                    PlanName = p.PlanName,
-                    PlanWeight = p.PlanWeight,
-                    PlannedBudget = p.PlandBudget,
-                    RemainingBudget = p.PlandBudget,
-                    EndDate = p.PeriodEndAt.ToString(),
-                    StartDate = p.PeriodStartAt.ToString()
-                })
-                .FirstOrDefaultAsync();
 
-            if (plan == null)
+        public async Task<ResponseMessage<PlanSingleViewDto>> GetSinglePlan(Guid planId)
+        {
+
+            var response = new ResponseMessage<PlanSingleViewDto>();
+
+            var plan = await (from p in _dBContext.Plans.Where(x => x.Id == planId)
+                              select new PlanSingleViewDto
+                              {
+                                  Id = p.Id,
+                                  PlanName = p.PlanName,
+                                  PlanWeight = p.PlanWeight,
+                                  PlannedBudget = p.PlandBudget,
+                                  RemainingBudget = p.PlandBudget,
+                                  //RemainingWeight = float.Parse((100.0 - taskweightSum).ToString()),
+                                  EndDate = p.PeriodEndAt.ToString(),
+                                  StartDate = p.PeriodStartAt.ToString(),
+                                  //Tasks = tasks
+                              }).FirstOrDefaultAsync();
+
+                              }).FirstOrDefaultAsync();
+
+        if (plan == null)
             {
-                return null;
+                response.Message = "Plan not found.";
+                response.Success = false;
+                response.Data = null;
+                response.ErrorCode = HttpStatusCode.NotFound.ToString();
+
+                return response;
             }
 
-            var tasks = await _dBContext.Tasks
+    var tasks = await _dBContext.Tasks
                 .Include(t => t.Plan)
                 .Where(t => t.PlanId == planId)
                 .Select(t => new TaskViewDto
@@ -158,16 +186,34 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
             plan.RemainingWeight = float.Parse((plan.PlanWeight - taskWeightSum).ToString());
             plan.Tasks = tasks;
 
-            return plan;
+
+
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = plan;
+
+            return response;
         }
 
-        public async Task<List<SelectListDto>> GetPlansSelectList(Guid ProgramId)
+
+        public async Task<ResponseMessage<List<SelectListDto>>> GetPlansSelectList(Guid ProgramId)
         {
-            return await _dBContext.Plans.Where(x => x.ProgramId == ProgramId).Select(x => new SelectListDto
+
+            var response = new ResponseMessage<List<SelectListDto>>();
+
+
+            List<SelectListDto> result =  await _dBContext.Plans.Where(x => x.ProgramId == ProgramId).Select(x => new SelectListDto
             {
                 Name = x.PlanName,
                 Id = x.Id
             }).ToListAsync();
+            
+            response.Message = "Operation Successful.";
+            response.Success = true;
+            response.Data = result;
+
+            return response;
+
         }
 
         public async Task<ResponseMessage> UpdatePlan(PlanDto plan)
@@ -201,7 +247,7 @@ namespace PM_Case_Managemnt_Implementation.Services.PM.Plann
                     await _dBContext.SaveChangesAsync();
 
                 }
-
+                _logger.LogUpdate("PlanService", plan.Id.ToString(), "Plan Updated Successfully");
 
                 return new ResponseMessage
                 {

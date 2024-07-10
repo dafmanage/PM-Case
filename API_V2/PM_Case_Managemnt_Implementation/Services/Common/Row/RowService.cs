@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Archive;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Infrustructure.Data;
 using PM_Case_Managemnt_Infrustructure.Models.Common;
@@ -10,10 +11,11 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.RowService
     public class RowService : IRowService
     {
         private readonly ApplicationDbContext _dbContext;
-
-        public RowService(ApplicationDbContext dbContext)
+        private readonly ILoggerManagerService _logger;
+        public RowService(ApplicationDbContext dbContext, ILoggerManagerService logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> Add(RowPostDto rowPost)
@@ -40,7 +42,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.RowService
                 response.Message = "Operation Successful.";
                 response.Data = 1;
                 response.Success = true;
-
+                _logger.LogCreate("RowService", rowPost.CreatedBy.ToString(), "Row added Successfully");
                 return response;
             } catch (Exception ex)
             {

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PM_Case_Managemnt_Implementation.DTOS.Common;
 using PM_Case_Managemnt_Implementation.DTOS.Common.Organization;
+using PM_Case_Managemnt_Implementation.Helpers;
+using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Services.Auth;
 using PM_Case_Managemnt_Implementation.Services.Common.SubsidiaryOrganization;
@@ -20,18 +22,21 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
         private readonly IEmployeeService _empService;
         private readonly IOrgStructureService _orgStucService;
         private UserManager<ApplicationUser> _userManager;
+        private readonly ILoggerManagerService _logger;
 
         public SubsidiaryOrganizationService(ApplicationDbContext dbContext,
             IAuthenticationService authService,
             IEmployeeService empService,
             IOrgStructureService orgStucService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            ILoggerManagerService logger)
         {
             _dBContext = dbContext;
             _authService = authService;
             _empService = empService;
             _orgStucService = orgStucService;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<ResponseMessage<int>> CreateSubsidiaryOrganization(SubOrgDto subOrg)
@@ -123,7 +128,7 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
                 response.Message = "Operation Successful.";
                 response.Data = 1;
                 response.Success = true;
-            
+                _logger.LogCreate("SubsidiaryOrganizationService", subOrg.Id.ToString(), "Subsidiary Organization Created Successfully");
                 return response;
             }
             catch (Exception ex)
@@ -165,7 +170,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
             _dBContext.Entry(subsidiaryOrganization).State = EntityState.Modified;
             await _dBContext.SaveChangesAsync();
-            return new ResponseMessage<int>
+            _logger.LogUpdate("SubsidiaryOrganizationService", subOrg.Id.ToString(), "Subsidiary Organization Updated Successfully");
+            return new ResponseMessage
             {
                 Success = true,
                 Message = "Subsidiary Organization Updated Successfully"
@@ -349,8 +355,8 @@ namespace PM_Case_Managemnt_Implementation.Services.Common.SubOrganization
 
             _dBContext.SubsidiaryOrganizations.Remove(subOrg);
             await _dBContext.SaveChangesAsync();
-
-            return new ResponseMessage<int>
+            _logger.LogUpdate("SubsidiaryOrganizationService", subOrg.Id.ToString(), "Subsidiary Organization Deleted Successfully");
+            return new ResponseMessage
             {
                 Success = true,
                 Message = "Subsidiary Organization Deleted Successfully"
