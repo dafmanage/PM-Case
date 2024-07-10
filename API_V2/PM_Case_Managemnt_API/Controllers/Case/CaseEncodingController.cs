@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
+using PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.DTOS.CaseDto;
 using PM_Case_Managemnt_Implementation.Helpers.Response;
 using PM_Case_Managemnt_Implementation.Hubs.EncoderHub;
@@ -209,9 +209,9 @@ namespace PM_Case_Managemnt_API.Controllers.Case
         {
             try
             {
-                CaseEncodePostDto caseEncodePostDto = new CaseEncodePostDto()
+                CaseEncodePostDto caseEncodePostDto = new()
                 {
-                    caseID = Guid.Parse(Request.Form["caseId"]),
+                    CaseID = Guid.Parse(Request.Form["caseId"]),
                     CaseNumber = Request.Form["CaseNumber"],
                     LetterNumber = Request.Form["LetterNumber"],
                     LetterSubject = Request.Form["LetterSubject"],

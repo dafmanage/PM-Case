@@ -1,12 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PM_Case_Managemnt_API.Services.CaseMGMT.Applicants;
+using PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants;
 using PM_Case_Managemnt_Implementation.Helpers;
 using PM_Case_Managemnt_Implementation.Helpers.Logger;
 using PM_Case_Managemnt_Implementation.Services.Auth;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT;
-using PM_Case_Managemnt_Implementation.Services.CaseMGMT.Applicants;
-using PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentService;
-using PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCalenderService;
+using PM_Case_Managemnt_Implementation.Services.CaseMGMT.Appointment;
+using PM_Case_Managemnt_Implementation.Services.CaseMGMT.AppointmentWithCalender;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseForwardService;
 using PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseMessagesService;

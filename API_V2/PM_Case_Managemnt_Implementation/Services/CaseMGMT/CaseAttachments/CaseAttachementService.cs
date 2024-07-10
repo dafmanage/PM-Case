@@ -6,14 +6,9 @@ using System.Net;
 
 namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
 {
-    public class CaseAttachementService : ICaseAttachementService
+    public class CaseAttachementService(ApplicationDbContext dBContext) : ICaseAttachementService
     {
-        private readonly ApplicationDbContext _dBContext;
-
-        public CaseAttachementService(ApplicationDbContext dBContext)
-        {
-            _dBContext = dBContext;
-        }
+        private readonly ApplicationDbContext _dBContext = dBContext;
 
         public async Task<ResponseMessage<string>> AddMany(List<CaseAttachment> caseAttachments)
         {
@@ -25,19 +20,18 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                 response.Message = "Succesfully saved";
                 response.Success = true;
                 response.Data = "OK";
-                return response;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 response.Message = "Error adding attachements";
                 response.Success = false;
                 response.Data = null;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-                return response;
             }
+            return response;
         }
 
-        public async Task<ResponseMessage<List<CaseAttachment>>> GetAll(Guid subOrgId, string CaseId = null)
+        public async Task<ResponseMessage<List<CaseAttachment>>> GetAll(Guid subOrgId, string? CaseId = null)
         {
             var response = new ResponseMessage<List<CaseAttachment>>();
             try
@@ -59,16 +53,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                 response.Message = "Attachments fetched successfully";
                 response.Success = true;
                 response.Data = attachemnts;
-                return response;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 response.Message = "Error Getting Attachments";
                 response.Success = false;
                 response.Data = null;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-                return response;
             }
+            return response;
         }
 
         public ResponseMessage<bool> RemoveAttachment(Guid attachmentId)
@@ -91,16 +84,15 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseMGMT.CaseAttachments
                 response.Success = true;
                 response.Message = "Attachment removed successfully.";
                 response.Data = true;
-                return response;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 response.Message = "Error while removing attachment";
                 response.Success = false;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
                 response.Data = false;
-                return response;
             }
+            return response;
         }
     }
 }

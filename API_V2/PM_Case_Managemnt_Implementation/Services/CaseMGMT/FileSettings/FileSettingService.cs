@@ -10,8 +10,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
     public class FileSettingService : IFileSettingsService
     {
         private readonly ApplicationDbContext _dbContext;
-
-
         public FileSettingService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -38,8 +36,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                 response.Message = "file setting created succesfully.";
                 response.Success = true;
                 response.Data = 1;
-
-                return response;
             }
             catch (Exception ex)
             {
@@ -47,18 +43,16 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                 response.Success = false;
                 response.Data = 0;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-
-                return response;
             }
+
+            return response;
         }
 
         public async Task<ResponseMessage<int>> UpdateFilesetting(FileSettingPostDto fileSettingPost)
         {
-            var response = new ResponseMessage<int>();
             try
             {
                 var fileSet = await _dbContext.FileSettings.FindAsync(fileSettingPost.Id);
-
 
                 fileSet.FileName = fileSettingPost.Name;
                 fileSet.FileType = Enum.Parse<FileType>(fileSettingPost.FileType);
@@ -73,7 +67,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
 
             return new ResponseMessage<int> { Data = 1, Success = true, Message = "File Updated Successfully" };
         }
-
 
         public async Task<ResponseMessage<int>> DeleteFileSetting(Guid fileId)
         {
@@ -90,8 +83,6 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                 {
                     return new ResponseMessage<int> { Data = 0, Success = false, Message = "File Setting Not Found" };
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -106,12 +97,10 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
             var response = new ResponseMessage<List<FileSettingGetDto>>();
             try
             {
-                List<FileSetting> fileSettings = await _dbContext.FileSettings.Where(x => x.CaseType.SubsidiaryOrganizationId == subOrgId).Include(x => x.CaseType).ToListAsync();
-                List<FileSettingGetDto> result = [];
-
-                foreach (FileSetting fileSetting in fileSettings)
-                {
-                    result.Add(new FileSettingGetDto
+                response.Data = await _dbContext.FileSettings
+                    .Where(x => x.CaseType.SubsidiaryOrganizationId == subOrgId)
+                    .Include(x => x.CaseType)
+                    .Select(fileSetting => new FileSettingGetDto
                     {
                         Id = fileSetting.Id,
                         CaseTypeTitle = fileSetting.CaseType.CaseTypeTitle,
@@ -120,25 +109,22 @@ namespace PM_Case_Managemnt_Implementation.Services.CaseService.FileSettings
                         Name = fileSetting.FileName,
                         FileType = fileSetting.FileType.ToString(),
                         RowStatus = fileSetting.RowStatus.ToString(),
-                    });
-                }
+                    })
+                    .ToListAsync();
 
-                response.Message = "retived file setting successfully.";
+                response.Message = "Retrieved file settings successfully.";
                 response.Success = true;
-                response.Data = result;
-
-                return response;
-
             }
             catch (Exception ex)
             {
-                response.Message = $"Error retrieving file settings, {ex.Message}";
+                response.Message = $"Error retrieving file settings: {ex.Message}";
                 response.Success = false;
                 response.Data = null;
                 response.ErrorCode = HttpStatusCode.InternalServerError.ToString();
-
-                return response;
             }
+
+            return response;
         }
+
     }
 }

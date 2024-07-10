@@ -12,8 +12,7 @@ namespace PM_Case_Managemnt_Implementation.DTOS.CaseDto
 
     public class AppointmentGetDto
     {
-
-        public string id { get; set; }
+        public string Id { get; set; }
         public string name { get; set; }
         public string description { get; set; }
         public string badge { get; set; }
