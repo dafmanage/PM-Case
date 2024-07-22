@@ -365,3 +365,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /API_V2/PM_Case_Managemnt_API/Assets
+
+ui-version-2/.angular
